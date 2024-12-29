@@ -1,11 +1,14 @@
 import TopcatModelCategory.PseudoFunctor.LaxNatTrans
+import TopcatModelCategory.PseudoFunctor.Pseudofunctor
 import TopcatModelCategory.Iso
+import TopcatModelCategory.CatCommSq
 import Mathlib.CategoryTheory.Bicategory.LocallyDiscrete
 import Mathlib.CategoryTheory.Bicategory.Functor.Pseudofunctor
 import Mathlib.CategoryTheory.Category.Cat
 import Mathlib.CategoryTheory.MorphismProperty.Composition
 import Mathlib.CategoryTheory.MorphismProperty.Retract
 import Mathlib.CategoryTheory.MorphismProperty.Concrete
+import Mathlib.CategoryTheory.CommSq
 
 universe w₁ w₂ v₁ v₂ u₁ u₂
 
@@ -140,6 +143,27 @@ instance : (ofPseudofunctor F).HasTwoOutOfThreeProperty where
     rw [ofPseudofunctor_iff] at hf hfg
     have := Functor.isEquivalence_of_iso (F.mapComp ⟨f⟩ ⟨g⟩)
     exact Functor.isEquivalence_of_comp_left (F.map ⟨f⟩) (F.map ⟨g⟩)
+
+instance : (ofPseudofunctor F).IsStableUnderRetracts where
+  of_retract {X₁ X₂ Y₁ Y₂ f g} hf hg := by
+    rw [ofPseudofunctor_iff] at hg ⊢
+    let e₁ : F.map ⟨hf.i.left⟩ ⋙ F.map ⟨hf.r.left⟩ ≅ 𝟭 _ := by
+      refine (F.mapComp' _ _ _ ?_).symm ≪≫ F.mapId ⟨X₁⟩
+      rw [← Quiver.Hom.id_toLoc, ← hf.left.retract, Quiver.Hom.comp_toLoc]
+      rfl
+    let e₂ : F.map ⟨hf.i.right⟩ ⋙ F.map ⟨hf.r.right⟩ ≅ 𝟭 _ := by
+      refine (F.mapComp' _ _ _ ?_).symm ≪≫ F.mapId ⟨X₂⟩
+      rw [← Quiver.Hom.id_toLoc, ← hf.right.retract, Quiver.Hom.comp_toLoc]
+      rfl
+    have sq : CommSq hf.i.left f g hf.i.right := ⟨hf.i.w⟩
+    have sq' : CommSq hf.r.left g f hf.r.right := ⟨hf.r.w⟩
+    letI := F.catCommSqOfSq sq
+    letI := F.catCommSqOfSq sq'
+    apply Functor.isEquivalence_of_retract (e₁ := e₁) (e₂ := e₂) (F := F.map ⟨f⟩) (G := F.map ⟨g⟩)
+    ext X
+    dsimp [e₁, e₂]
+    simp
+    sorry
 
 end
 
