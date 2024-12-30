@@ -160,10 +160,19 @@ instance : (ofPseudofunctor F).IsStableUnderRetracts where
     letI := F.catCommSqOfSq sq
     letI := F.catCommSqOfSq sq'
     apply Functor.isEquivalence_of_retract (e₁ := e₁) (e₂ := e₂) (F := F.map ⟨f⟩) (G := F.map ⟨g⟩)
+    dsimp [CatCommSq.iso]
     ext X
-    dsimp [e₁, e₂]
+    rw [← cancel_epi ((F.map ⟨f⟩).map ((F.mapComp' ⟨hf.i.left⟩ ⟨hf.r.left⟩ ⟨𝟙 _⟩
+      (by rw [← hf.left.retract]; rfl)).hom.app X))]
+    have := NatTrans.congr_app (congr_arg Iso.hom (F.isoMapOfSq_horiz_comp
+      sq sq' hf.left.retract hf.right.retract)) X
+    dsimp [e₁, e₂] at this ⊢
+    simp only [comp_id, id_comp] at this ⊢
+    erw [← reassoc_of% this]
+    rw [F.isoMapOfSq_horiz_id f]
+    dsimp
+    erw [← Functor.map_comp, Iso.hom_inv_id_app_assoc]
     simp
-    sorry
 
 end
 
