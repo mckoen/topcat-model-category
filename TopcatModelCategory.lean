@@ -3,6 +3,7 @@ import TopcatModelCategory.CatCommSq
 import TopcatModelCategory.Factorization
 import TopcatModelCategory.Homotopy
 import TopcatModelCategory.Iso
+import TopcatModelCategory.JoyalTrickDual
 import TopcatModelCategory.MorphismProperty
 import TopcatModelCategory.PseudoFunctor.LaxNatTrans
 import TopcatModelCategory.PseudoFunctor.MorphismProperty
