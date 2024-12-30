@@ -1,5 +1,7 @@
 import Mathlib.CategoryTheory.SmallObject.Basic
 import Mathlib.AlgebraicTopology.ModelCategory.Basic
+import Mathlib.AlgebraicTopology.ModelCategory.JoyalTrick
+import TopcatModelCategory.JoyalTrickDual
 import TopcatModelCategory.Factorization
 import TopcatModelCategory.MorphismProperty
 
@@ -175,16 +177,26 @@ instance : (cofibrations π.Cat).HasFunctorialFactorization (trivialFibrations �
     (by rfl) (by rw [I_rlp_eq_trivialFibrations])
 
 instance {A B X Y : π.Cat} (i : A ⟶ B) (p : X ⟶ Y)
-    [Cofibration i] [WeakEquivalence i] [Fibration p] : HasLiftingProperty i p := by
-  sorry
-
-instance {A B X Y : π.Cat} (i : A ⟶ B) (p : X ⟶ Y)
-    [Cofibration i] [Fibration p] [WeakEquivalence p] : HasLiftingProperty i p := by
+    [Cofibration i] [WeakEquivalence p] [Fibration p] : HasLiftingProperty i p := by
   have hi := mem_cofibrations i
   have hp := mem_trivialFibrations p
   rw [cofibrations_eq] at hi
   rw [← π.I_rlp_eq_trivialFibrations] at hp
   exact hi p hp
+
+instance : (fibrations π.Cat).IsStableUnderComposition := by
+  rw [fibrations_eq]
+  infer_instance
+
+instance : (fibrations π.Cat).IsStableUnderBaseChange := by
+  rw [fibrations_eq]
+  infer_instance
+
+instance {A B X Y : π.Cat} (i : A ⟶ B) (p : X ⟶ Y)
+    [Cofibration i] [WeakEquivalence i] [Fibration p] : HasLiftingProperty i p := by
+  apply ModelCategory.joyal_trick_dual
+  intros
+  infer_instance
 
 instance : ModelCategory π.Cat where
 
