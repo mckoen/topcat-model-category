@@ -1,3 +1,8 @@
 import TopcatModelCategory.Basic
+import TopcatModelCategory.CatCommSq
 import TopcatModelCategory.Homotopy
+import TopcatModelCategory.Iso
+import TopcatModelCategory.ModelCategory
 import TopcatModelCategory.PseudoFunctor.LaxNatTrans
+import TopcatModelCategory.PseudoFunctor.MorphismProperty
+import TopcatModelCategory.PseudoFunctor.Pseudofunctor
