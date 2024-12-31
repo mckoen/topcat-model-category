@@ -1,16 +1,13 @@
 import Mathlib.CategoryTheory.MorphismProperty.Limits
 
-universe w t v u
+universe w t t' v u
 
 open CategoryTheory Limits
 
 namespace HomotopicalAlgebra
 
 variable {C : Type u} [Category.{v} C]
-
-section
-
-variable {α : Type t} {A B : α → C} (j : ∀ i, A i ⟶ B i)
+  {α : Type t} {A B : α → C} (j : ∀ i, A i ⟶ B i)
   {X₁ X₂ : C} (f : X₁ ⟶ X₂)
 
 structure AttachCells where
@@ -21,7 +18,7 @@ structure AttachCells where
   isColimit₁ : IsColimit cofan₁
   isColimit₂ : IsColimit cofan₂
   m : cofan₁.pt ⟶ cofan₂.pt
-  hm (i : ι) : cofan₁.inj i ≫ m = j (π i) ≫ cofan₂.inj i
+  hm (i : ι) : cofan₁.inj i ≫ m = j (π i) ≫ cofan₂.inj i := by aesop_cat
   g₁ : cofan₁.pt ⟶ X₁
   g₂ : cofan₂.pt ⟶ X₂
   isPushout : IsPushout g₁ m f g₂
@@ -29,6 +26,8 @@ structure AttachCells where
 namespace AttachCells
 
 open MorphismProperty
+
+attribute [reassoc (attr := simp)] hm
 
 variable {j f} (c : AttachCells.{w} j f)
 
@@ -42,7 +41,6 @@ lemma pushouts_coproducts : (coproducts.{w} (ofHoms j)).pushouts f := by
   rw [this, coproducts_iff]
   exact ⟨c.ι, ⟨_, _, _, _, c.isColimit₁, c.isColimit₂, _, fun i ↦ ⟨_⟩⟩⟩
 
--- the map for the cell corresponding to `i : c.ι`
 def cell (i : c.ι) : B (c.π i) ⟶ X₂ := c.cofan₂.inj i ≫ c.g₂
 
 lemma cell_def (i : c.ι) : c.cell i = c.cofan₂.inj i ≫ c.g₂ := rfl
@@ -53,6 +51,39 @@ lemma hom_ext {Z : C} {φ φ' : X₂ ⟶ Z}
   apply c.isPushout.hom_ext h₀
   apply Cofan.IsColimit.hom_ext c.isColimit₂
   simpa [cell_def] using h
+
+section
+
+variable {α' : Type t'} {A' B' : α' → C} (j' : ∀ i', A' i' ⟶ B' i')
+  (a : α → α') (ha : ∀ (i : α), Arrow.mk (j i) ≅ Arrow.mk (j' (a i)))
+
+def chg : AttachCells j' f where
+  ι := c.ι
+  π := a ∘ c.π
+  cofan₁ := Cofan.mk c.cofan₁.pt
+    (fun i ↦ Arrow.leftFunc.map (ha (c.π i)).inv ≫ c.cofan₁.inj i)
+  cofan₂ := Cofan.mk c.cofan₂.pt
+    (fun i ↦ Arrow.rightFunc.map (ha (c.π i)).inv ≫ c.cofan₂.inj i)
+  isColimit₁ := by
+    let e : Discrete.functor (fun i ↦ A (c.π i)) ≅
+        Discrete.functor (fun i ↦ A' (a (c.π i))) :=
+      Discrete.natIso (fun ⟨i⟩ ↦ Arrow.leftFunc.mapIso (ha (c.π i)))
+    refine (IsColimit.precomposeHomEquiv e _).1
+      (IsColimit.ofIsoColimit c.isColimit₁ (Cofan.ext (Iso.refl _) (fun i ↦ ?_)))
+    simp [Cocones.precompose, e, Cofan.inj]
+  isColimit₂ := by
+    let e : Discrete.functor (fun i ↦ B (c.π i)) ≅
+        Discrete.functor (fun i ↦ B' (a (c.π i))) :=
+      Discrete.natIso (fun ⟨i⟩ ↦ Arrow.rightFunc.mapIso (ha (c.π i)))
+    refine (IsColimit.precomposeHomEquiv e _).1
+      (IsColimit.ofIsoColimit c.isColimit₂ (Cofan.ext (Iso.refl _) (fun i ↦ ?_)))
+    simp [Cocones.precompose, e, Cofan.inj]
+  m := c.m
+  g₁ := c.g₁
+  g₂ := c.g₂
+  isPushout := c.isPushout
+
+end
 
 end AttachCells
 
@@ -66,14 +97,11 @@ lemma nonempty_attachCells_iff :
     obtain ⟨m', hm'⟩ : ∃ m', m' = m := ⟨_, rfl⟩
     rw [coproducts_iff, ← hm'] at h
     obtain ⟨ι, ⟨F₁, F₂, c₁, c₂, h₁, h₂, φ, hφ⟩⟩ := h
-    let Y₁ (i : ι) : C := F₁.obj ⟨i⟩
-    let Y₂ (i : ι) : C := F₂.obj ⟨i⟩
-    let ψ (i : ι) : Y₁ i ⟶ Y₂ i := φ.app ⟨i⟩
     let π (i : ι) : α := ((ofHoms_iff _ _).1 (hφ ⟨i⟩)).choose
-    let e (i : ι) : Arrow.mk (ψ i) ≅ Arrow.mk (j (π i)) :=
+    let e (i : ι) : Arrow.mk (φ.app ⟨i⟩) ≅ Arrow.mk (j (π i)) :=
       eqToIso (((ofHoms_iff _ _).1 (hφ ⟨i⟩)).choose_spec)
-    let e₁ (i : ι) : Y₁ i ≅ A (π i) := Arrow.leftFunc.mapIso (e i)
-    let e₂ (i : ι) : Y₂ i ≅ B (π i) := Arrow.rightFunc.mapIso (e i)
+    let e₁ (i : ι) : F₁.obj ⟨i⟩ ≅ A (π i) := Arrow.leftFunc.mapIso (e i)
+    let e₂ (i : ι) : F₂.obj ⟨i⟩ ≅ B (π i) := Arrow.rightFunc.mapIso (e i)
     exact ⟨{
         ι := ι
         π := π
@@ -92,7 +120,5 @@ lemma nonempty_attachCells_iff :
           dsimp [e₁, e₂] at eq₁ eq₂ ⊢
           rw [Category.assoc, ← eq₁, reassoc_of% eq₂]
         isPushout := sq }⟩
-
-end
 
 end HomotopicalAlgebra
