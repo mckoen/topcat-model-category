@@ -38,10 +38,11 @@ def truncLE (j : J) : TransfiniteCompositionOfShape (Set.Iic j)
     (c.isoBot.inv ≫ c.F.map (homOfLE bot_le : ⊥ ⟶ j)) where
   F := c.F.restrictionLE j
   isoBot := c.isoBot
-  isWellOrderContinuous := sorry
   incl := (c.F.coconeLE j).ι
   isColimit := c.F.isColimitCoconeLE j
   fac := rfl
+
+variable (j : J)
 
 end TransfiniteCompositionOfShape
 

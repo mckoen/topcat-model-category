@@ -1,5 +1,8 @@
+import TopcatModelCategory.AttachCells
 import TopcatModelCategory.Basic
+import TopcatModelCategory.CWComplex
 import TopcatModelCategory.CatCommSq
+import TopcatModelCategory.CellComplex
 import TopcatModelCategory.Factorization
 import TopcatModelCategory.Homotopy
 import TopcatModelCategory.Iso
