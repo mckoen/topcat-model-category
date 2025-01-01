@@ -3,12 +3,15 @@ import TopcatModelCategory.Basic
 import TopcatModelCategory.CWComplex
 import TopcatModelCategory.CatCommSq
 import TopcatModelCategory.CellComplex
+import TopcatModelCategory.ClosedEmbeddings
 import TopcatModelCategory.Factorization
-import TopcatModelCategory.Homotopy
+import TopcatModelCategory.Homotopy.Basic
 import TopcatModelCategory.Iso
 import TopcatModelCategory.JoyalTrickDual
 import TopcatModelCategory.MorphismProperty
 import TopcatModelCategory.PseudoFunctor.LaxNatTrans
 import TopcatModelCategory.PseudoFunctor.MorphismProperty
 import TopcatModelCategory.PseudoFunctor.Pseudofunctor
+import TopcatModelCategory.TopCatIsColimit
 import TopcatModelCategory.TopPackage
+import TopcatModelCategory.WellOrderContinuous
