@@ -41,14 +41,20 @@ instance : CompleteLattice (Subpresheaf P) where
   le_inf _ _ _ h₁ h₂ _ _ h := ⟨h₁ _ h, h₂ _ h⟩
   sSup S :=
     { obj U := sSup (Set.image (fun T ↦ T.obj U) S)
-      map := sorry }
-  le_sSup := sorry
-  sSup_le := sorry
+      map f x hx := by
+        obtain ⟨_, ⟨F, h, rfl⟩, h'⟩ := hx
+        simp only [Set.sSup_eq_sUnion, Set.sUnion_image, Set.preimage_iUnion,
+          Set.mem_iUnion, Set.mem_preimage, exists_prop]
+        exact ⟨_, h, F.map f h'⟩ }
+  le_sSup _ _ _ _ _ := by aesop
+  sSup_le _ _ _ _ _ := by aesop
   sInf S :=
     { obj U := sInf (Set.image (fun T ↦ T.obj U) S)
-      map := sorry }
-  sInf_le := sorry
-  le_sInf := sorry
+      map f x hx := by
+        rintro _ ⟨F, h, rfl⟩
+        exact F.map f (hx _ ⟨_, h, rfl⟩) }
+  sInf_le _ _ _ _ _ := by aesop
+  le_sInf _ _ _ _ _ := by aesop
   bot :=
     { obj U := ⊥
       map := by simp }
