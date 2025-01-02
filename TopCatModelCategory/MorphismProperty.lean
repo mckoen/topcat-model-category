@@ -1,7 +1,7 @@
 import Mathlib.CategoryTheory.MorphismProperty.TransfiniteComposition
 import Mathlib.CategoryTheory.SmallObject.IsCardinalForSmallObjectArgument
 
-universe w v u
+universe w v v' u u'
 
 local instance Cardinal.aleph0_isRegular : Fact Cardinal.aleph0.{w}.IsRegular where
   out := Cardinal.isRegular_aleph0
@@ -14,7 +14,7 @@ namespace CategoryTheory.MorphismProperty
 
 attribute [local instance] Cardinal.orderbot_aleph0_ord_to_type
 
-variable {C : Type u} [Category.{v} C]
+variable {C : Type u} [Category.{v} C] {D : Type u'} [Category.{v'} D]
 
 lemma monotone_coproducts {W₁ W₂ : MorphismProperty C} (h : W₁ ≤ W₂) :
     coproducts.{w} W₁ ≤ coproducts.{w} W₂ := by
@@ -36,6 +36,14 @@ lemma sInf_iff (S : Set (MorphismProperty C)) {X Y : C} (f : X ⟶ Y) :
     sInf S f ↔ ∀ (W : S), W.1 f := by
   dsimp [sInf, iInf]
   aesop
+
+@[simp]
+lemma max_iff (W₁ W₂ : MorphismProperty C) {X Y : C} (f : X ⟶ Y) :
+    (W₁ ⊔ W₂) f ↔ W₁ f ∨ W₂ f := Iff.rfl
+
+instance isSmall_sup {ι : Type w'} (W : ι → MorphismProperty C) [∀ i, IsSmall.{w} (W i)]
+    [Small.{w} ι] :
+    IsSmall.{w} (⨆ i, W i) := sorry
 
 section
 
@@ -91,6 +99,15 @@ instance [W₁.HasTwoOutOfThreeProperty] [W₂.HasTwoOutOfThreeProperty] :
     (W₁ ⊓ W₂).HasTwoOutOfThreeProperty where
   of_postcomp f g hg hfg := ⟨W₁.of_postcomp f g hg.1 hfg.1, W₂.of_postcomp f g hg.2 hfg.2⟩
   of_precomp f g hf hfg := ⟨W₁.of_precomp f g hf.1 hfg.1, W₂.of_precomp f g hf.2 hfg.2⟩
+
+end
+
+section
+
+variable (W : MorphismProperty D) (F : C ⥤ D)
+
+instance [W.IsStableUnderRetracts] : (W.inverseImage F).IsStableUnderRetracts where
+  of_retract r h := W.of_retract (r.map F.mapArrow) h
 
 end
 

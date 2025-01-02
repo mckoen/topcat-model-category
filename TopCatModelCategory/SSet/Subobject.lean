@@ -91,7 +91,10 @@ variable {S} in
 lemma coe_ext {Δ : SimplexCategoryᵒᵖ} {x y : S.obj Δ} (h : x.val = y.val) : x = y :=
   Subtype.ext h
 
-abbrev ι : (S : SSet.{u}) ⟶ X := GrothendieckTopology.Subpresheaf.ι S
+def ι : (S : SSet.{u}) ⟶ X := GrothendieckTopology.Subpresheaf.ι S
+
+instance mono_ι : Mono S.ι := by dsimp [ι]; infer_instance
+
 
 @[simp]
 lemma ι_app {Δ : SimplexCategoryᵒᵖ} (x : S.obj Δ) :
@@ -165,6 +168,12 @@ lemma subobjectHorn_toSSet (n : ℕ) (i : Fin (n + 1)) :
 
 lemma subobjectHorn_ι (n : ℕ) (i : Fin (n + 1)) :
     (subobjectHorn.{u} n i).ι = hornInclusion n i := rfl
+
+instance mono_boundaryInclusion (n : ℕ) : Mono (boundaryInclusion.{u} n) :=
+  (subobjectBoundary n).mono_ι
+
+instance mono_hornInclusion (n : ℕ) (i : Fin (n + 1)): Mono (hornInclusion.{u} n i) :=
+  (subobjectHorn n i).mono_ι
 
 section
 

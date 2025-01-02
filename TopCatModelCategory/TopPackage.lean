@@ -1,9 +1,9 @@
 import Mathlib.CategoryTheory.SmallObject.Basic
 import Mathlib.AlgebraicTopology.ModelCategory.Basic
 import Mathlib.AlgebraicTopology.ModelCategory.JoyalTrick
-import TopcatModelCategory.JoyalTrickDual
-import TopcatModelCategory.Factorization
-import TopcatModelCategory.MorphismProperty
+import TopCatModelCategory.JoyalTrickDual
+import TopCatModelCategory.Factorization
+import TopCatModelCategory.MorphismProperty
 
 open CategoryTheory Limits MorphismProperty
 
@@ -31,12 +31,13 @@ structure TopPackage where
   -- axioms
   hasTwoOutOfThreeProperty : W.HasTwoOutOfThreeProperty := by infer_instance
   isStableUnderRetracts : W.IsStableUnderRetracts := by infer_instance
-  J_le_I' : J' ≤ I'
+  rlp_I'_le_rlp_J' : I'.rlp ≤ J'.rlp
   fibration_is_trivial_iff' {X Y : T} (p : X ⟶ Y) (hp : J'.rlp p) :
     I'.rlp p ↔ W p
   src_I_le_S' {A B : T} (i : A ⟶ B) (hi : I' i) : A ∈ S'
+  src_J_le_S' {A B : T} (j : A ⟶ B) (hj : J' i) : A ∈ S'
   preservesColimit' (X : T) (hX : X ∈ S') (F : ℕ ⥤ T)
-    (hF : ∀ (n : ℕ), (coproducts.{w} I').pushouts (F.map (homOfLE n.le_succ))) :
+    (hF : ∀ (n : ℕ), (coproducts.{w} (I' ⊔ J')).pushouts (F.map (homOfLE n.le_succ))) :
     PreservesColimit F (coyoneda.obj (Opposite.op X))
   infiniteCompositions_le_W' :
     (coproducts.{w} J').pushouts.transfiniteCompositionsOfShape ℕ ≤ W'
@@ -54,7 +55,7 @@ instance : Category π.Cat := inferInstanceAs (Category T)
 def I : MorphismProperty π.Cat := π.I'
 def J : MorphismProperty π.Cat := π.J'
 
-lemma J_le_I : π.J ≤ π.I := π.J_le_I'
+--lemma J_le_I : π.J ≤ π.I := π.J_le_I'
 
 instance : LocallySmall.{w} π.Cat := π.locallySmall
 
@@ -100,14 +101,15 @@ lemma src_I_le_S {A B : T} (i : A ⟶ B) (hi : π.I i) : A ∈ π.S :=
   π.src_I_le_S' i hi
 
 lemma src_J_le_S {A B : T} (j : A ⟶ B) (hj : π.J j) : A ∈ π.S :=
-  π.src_I_le_S j (π.J_le_I j hj)
+  π.src_J_le_S' j hj
 
 attribute [local instance] Cardinal.aleph0_isRegular
   Cardinal.orderbot_aleph0_ord_to_type
 
-lemma preservesColimit (X : π.Cat) (hX : X ∈ π.S) {A B : π.Cat} (i : A ⟶ B) (hi : π.I i)
+lemma preservesColimit (X : π.Cat) (hX : X ∈ π.S)
     (F : Cardinal.aleph0.{w}.ord.toType ⥤ π.Cat)
-    (hF : ∀ j (hj : ¬IsMax j), (coproducts.{w} π.I).pushouts (F.map (homOfLE (Order.le_succ j)))) :
+    (hF : ∀ j (hj : ¬IsMax j),
+      (coproducts.{w} (π.I ⊔ π.J)).pushouts (F.map (homOfLE (Order.le_succ j)))) :
     PreservesColimit F (coyoneda.obj (Opposite.op X)) := by
   sorry
 
@@ -115,14 +117,15 @@ instance isCardinalForSmallObjectArgument_I :
     π.I.IsCardinalForSmallObjectArgument Cardinal.aleph0.{w} where
   hasIterationOfShape := by infer_instance
   preservesColimit {A B} i hi F _ hF :=
-    π.preservesColimit A (π.src_I_le_S i hi) i hi F hF
+    π.preservesColimit A (π.src_I_le_S i hi) F
+      (fun j hj ↦ monotone_pushouts (monotone_coproducts le_sup_left) _ (hF j hj))
 
 instance isCardinalForSmallObjectArgument_J :
     π.J.IsCardinalForSmallObjectArgument Cardinal.aleph0.{w} where
   hasIterationOfShape := by infer_instance
-  preservesColimit {A B} j hj F _ hF :=
-    π.preservesColimit A (π.src_J_le_S j hj) j (π.J_le_I j hj) F
-      (fun j hj ↦ monotone_pushouts (monotone_coproducts (J_le_I π)) _ (hF j hj))
+  preservesColimit {A B} i hi F _ hF :=
+    π.preservesColimit A (π.src_J_le_S i hi) F
+      (fun j hj ↦ monotone_pushouts (monotone_coproducts le_sup_right) _ (hF j hj))
 
 instance : HasSmallObjectArgument.{w} π.I where
   exists_cardinal := ⟨Cardinal.aleph0.{w}, inferInstance, inferInstance, inferInstance⟩
@@ -130,8 +133,11 @@ instance : HasSmallObjectArgument.{w} π.I where
 instance : HasSmallObjectArgument.{w} π.J where
   exists_cardinal := ⟨Cardinal.aleph0.{w}, inferInstance, inferInstance, inferInstance⟩
 
+lemma rlp_I_le_rlp_J : π.I.rlp ≤ π.J.rlp :=
+  π.rlp_I'_le_rlp_J'
+
 lemma J_rlp_llp_le_cofibrations : π.J.rlp.llp ≤ cofibrations π.Cat :=
-  antitone_llp (antitone_rlp π.J_le_I)
+  antitone_llp π.rlp_I_le_rlp_J
 
 lemma infiniteCompositions_le_weakEquivalences :
     (coproducts.{w} π.J).pushouts.transfiniteCompositionsOfShape ℕ ≤
@@ -166,7 +172,7 @@ lemma I_rlp_eq_trivialFibrations : π.I.rlp = trivialFibrations π.Cat := by
   simp only [trivialFibrations, fibrations_eq, min_iff]
   constructor
   · intro hp
-    have hp' := antitone_rlp π.J_le_I _ hp
+    have hp' := π.rlp_I_le_rlp_J _ hp
     rw [π.fibration_is_trivial_iff p hp'] at hp
     exact ⟨hp', hp⟩
   · rintro ⟨hp', hp⟩
@@ -198,7 +204,7 @@ instance {A B X Y : π.Cat} (i : A ⟶ B) (p : X ⟶ Y)
   intros
   infer_instance
 
-instance : ModelCategory π.Cat where
+instance modelCategory : ModelCategory π.Cat where
 
 end TopPackage
 

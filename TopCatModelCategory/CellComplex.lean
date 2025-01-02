@@ -1,4 +1,4 @@
-import TopcatModelCategory.AttachCells
+import TopCatModelCategory.AttachCells
 import Mathlib.Order.SuccPred.Basic
 import Mathlib.CategoryTheory.MorphismProperty.TransfiniteComposition
 

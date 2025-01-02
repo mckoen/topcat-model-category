@@ -1,8 +1,8 @@
-import TopcatModelCategory.PseudoFunctor.LaxNatTrans
-import TopcatModelCategory.PseudoFunctor.Pseudofunctor
-import TopcatModelCategory.Iso
-import TopcatModelCategory.MorphismProperty
-import TopcatModelCategory.CatCommSq
+import TopCatModelCategory.PseudoFunctor.LaxNatTrans
+import TopCatModelCategory.PseudoFunctor.Pseudofunctor
+import TopCatModelCategory.Iso
+import TopCatModelCategory.MorphismProperty
+import TopCatModelCategory.CatCommSq
 import Mathlib.CategoryTheory.Bicategory.LocallyDiscrete
 import Mathlib.CategoryTheory.Bicategory.Functor.Pseudofunctor
 import Mathlib.CategoryTheory.Category.Cat

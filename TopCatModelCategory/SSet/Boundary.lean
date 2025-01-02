@@ -1,4 +1,4 @@
-import TopcatModelCategory.SSet.Subobject
+import TopCatModelCategory.SSet.Subobject
 import Mathlib.Data.Finite.Card
 
 universe u

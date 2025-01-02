@@ -1,4 +1,4 @@
-import TopcatModelCategory.CellComplex
+import TopCatModelCategory.CellComplex
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Topology.Category.TopCat.Limits.Basic
 
@@ -29,9 +29,10 @@ def diskBoundaryInclusion (n : ℕ) : ∂𝔻 n ⟶ 𝔻 n where
 @[simp]
 def basicCell (n : ℕ) (_ : Unit) : ∂𝔻 n ⟶ 𝔻 n := diskBoundaryInclusion n
 
+end RelativeCWComplex
+
+open RelativeCWComplex in
 abbrev RelativeCWComplex {X Y : TopCat.{u}} (f : X ⟶ Y) := RelativeCellComplex basicCell f
 abbrev CWComplex (X : TopCat.{u}) := RelativeCWComplex (initial.to X)
-
-end RelativeCWComplex
 
 end TopCat

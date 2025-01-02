@@ -11,5 +11,5 @@ package "topcat-model-category" where
 require "leanprover-community" / "mathlib"
 
 @[default_target]
-lean_lib «TopcatModelCategory» where
+lean_lib «TopCatModelCategory» where
   -- add any library configuration options here
