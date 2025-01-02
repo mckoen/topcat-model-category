@@ -164,19 +164,24 @@ instance : (trivialCofibrations π.Cat).HasFunctorialFactorization (fibrations �
   MorphismProperty.hasFunctorialFactorization_of_le (W₂ := π.J.rlp)
     (π.J_rlp_llp_le_trivialCofibrations) (by rfl)
 
-lemma fibration_is_trivial_iff {X Y : π.Cat} (p : X ⟶ Y) (hp : π.J.rlp p) :
-    π.I.rlp p ↔ weakEquivalences π.Cat p := π.fibration_is_trivial_iff' p hp
+
+lemma I_rlp_iff_weakEquivalence_of_fibration {X Y : π.Cat} (p : X ⟶ Y) [hp : Fibration p] :
+    π.I.rlp p ↔ WeakEquivalence p := by
+  rw [weakEquivalence_iff]
+  rw [fibration_iff] at hp
+  exact π.fibration_is_trivial_iff' p hp
 
 lemma I_rlp_eq_trivialFibrations : π.I.rlp = trivialFibrations π.Cat := by
   ext X Y p
-  simp only [trivialFibrations, fibrations_eq, min_iff]
+  rw [mem_trivialFibrations_iff]
   constructor
   · intro hp
     have hp' := π.rlp_I_le_rlp_J _ hp
-    rw [π.fibration_is_trivial_iff p hp'] at hp
+    rw [← fibrations_eq, ← fibration_iff] at hp'
+    rw [π.I_rlp_iff_weakEquivalence_of_fibration] at hp
     exact ⟨hp', hp⟩
   · rintro ⟨hp', hp⟩
-    rwa [π.fibration_is_trivial_iff p hp']
+    rwa [π.I_rlp_iff_weakEquivalence_of_fibration]
 
 instance : (cofibrations π.Cat).HasFunctorialFactorization (trivialFibrations π.Cat) :=
   MorphismProperty.hasFunctorialFactorization_of_le (W₁ := π.I.rlp.llp) (W₂ := π.I.rlp)

@@ -2,11 +2,9 @@ import TopCatModelCategory.TopPackage
 import Mathlib.Topology.Category.TopCat.Limits.Basic
 import Mathlib.AlgebraicTopology.SingularSet
 
-open HomotopicalAlgebra CategoryTheory
+open HomotopicalAlgebra CategoryTheory MorphismProperty
 
 namespace HomotopicalAlgebra
-
-open MorphismProperty
 
 def packageTopCat : TopPackage.{0} TopCat.{0} where
   W := sorry
@@ -30,5 +28,19 @@ namespace TopCat
 
 instance modelCategory : ModelCategory TopCat.{0} :=
   packageTopCat.modelCategory
+
+namespace ModelCategory
+
+lemma weakEquivalence_iff_of_fibration {X Y : TopCat.{0}} (f : X ⟶ Y) [Fibration f] :
+    (ofHoms (fun n ↦ SSet.toTop.map (SSet.boundaryInclusion.{0} n))).rlp f ↔
+      WeakEquivalence f :=
+  packageTopCat.I_rlp_iff_weakEquivalence_of_fibration f
+
+open SSet
+
+instance {X Y : TopCat.{0}} (f : X ⟶ Y) [Fibration f] [WeakEquivalence f] :
+    HasLiftingProperty (toTop.map (boundaryInclusion n)) f := sorry
+
+end ModelCategory
 
 end TopCat

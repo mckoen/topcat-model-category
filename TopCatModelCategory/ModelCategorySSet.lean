@@ -5,7 +5,7 @@ open HomotopicalAlgebra CategoryTheory
 
 namespace SSet
 
-namespace ModelStructure
+namespace ModelCategory
 
 open MorphismProperty SmallObject
 
@@ -128,7 +128,15 @@ instance {X Y : SSet.{0}} (f : X ⟶ Y) [Fibration f] :
     Fibration (toTop.map f) :=
   sorry
 
-lemma rlp_J_le_weakEquivalences : I.{0}.rlp ≤ weakEquivalences _ := sorry
+lemma rlp_I_le_weakEquivalences : I.{0}.rlp ≤ weakEquivalences _ := by
+  intro X Y f hf
+  have : Fibration f := by
+    rw [fibration_iff]
+    exact rlp_I_le_rlp_J _ hf
+  rw [weakEquivalences_eq, inverseImage_iff, ← HomotopicalAlgebra.weakEquivalence_iff]
+  --  ← TopCat.ModelCategory.weakEquivalence_iff_of_fibration]
+  --rintro _ _ _ ⟨n⟩
+  sorry
 
 instance : HasFunctorialFactorization (cofibrations SSet) (trivialFibrations SSet) := by
   apply MorphismProperty.hasFunctorialFactorization_of_le (W₁ := I.rlp.llp) (W₂ := I.rlp)
@@ -136,11 +144,11 @@ instance : HasFunctorialFactorization (cofibrations SSet) (trivialFibrations SSe
       transfiniteCompositions_pushouts_coproducts]
     apply retracts_le
   · rw [trivialFibrations, le_inf_iff]
-    exact ⟨rlp_I_le_rlp_J, rlp_J_le_weakEquivalences⟩
+    exact ⟨rlp_I_le_rlp_J, rlp_I_le_weakEquivalences⟩
 
-end ModelStructure
+end ModelCategory
 
-open ModelStructure
+open ModelCategory
 
 instance : ModelCategory SSet.{0} where
   cm4a := sorry
