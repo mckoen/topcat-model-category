@@ -128,23 +128,27 @@ instance {X Y : SSet.{0}} (f : X ⟶ Y) [Fibration f] :
     Fibration (toTop.map f) :=
   sorry
 
-lemma rlp_I_le_weakEquivalences : I.{0}.rlp ≤ weakEquivalences _ := by
-  intro X Y f hf
-  have : Fibration f := by
-    rw [fibration_iff]
-    exact rlp_I_le_rlp_J _ hf
-  rw [weakEquivalences_eq, inverseImage_iff, ← HomotopicalAlgebra.weakEquivalence_iff]
-  --  ← TopCat.ModelCategory.weakEquivalence_iff_of_fibration]
-  --rintro _ _ _ ⟨n⟩
+lemma weakEquivalence_iff_of_fibration {X Y : SSet.{0}} (f : X ⟶ Y) [Fibration f] :
+    I.rlp f ↔ WeakEquivalence f :=
   sorry
 
+lemma rlp_I_eq_trivialFibrations :
+    I.rlp = trivialFibrations SSet := by
+  ext X Y f
+  rw [mem_trivialFibrations_iff]
+  constructor
+  · intro hf
+    obtain : Fibration f := by simpa only [fibration_iff] using rlp_I_le_rlp_J _ hf
+    exact ⟨inferInstance, by rwa [← weakEquivalence_iff_of_fibration]⟩
+  · rintro ⟨_, _⟩
+    rwa [weakEquivalence_iff_of_fibration]
+
 instance : HasFunctorialFactorization (cofibrations SSet) (trivialFibrations SSet) := by
-  apply MorphismProperty.hasFunctorialFactorization_of_le (W₁ := I.rlp.llp) (W₂ := I.rlp)
-  · rw [rlp_llp_of_isCardinalForSmallObjectArgument _ .aleph0, cofibrations_eq,
-      transfiniteCompositions_pushouts_coproducts]
-    apply retracts_le
-  · rw [trivialFibrations, le_inf_iff]
-    exact ⟨rlp_I_le_rlp_J, rlp_I_le_weakEquivalences⟩
+  refine MorphismProperty.hasFunctorialFactorization_of_le (W₁ := I.rlp.llp) (W₂ := I.rlp) ?_
+    (by rw [rlp_I_eq_trivialFibrations])
+  rw [rlp_llp_of_isCardinalForSmallObjectArgument _ .aleph0, cofibrations_eq,
+    transfiniteCompositions_pushouts_coproducts]
+  apply retracts_le
 
 end ModelCategory
 
