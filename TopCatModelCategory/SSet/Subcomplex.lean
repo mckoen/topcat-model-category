@@ -14,9 +14,10 @@ import Mathlib.CategoryTheory.Sites.Subsheaf
 
 universe u
 
-open CategoryTheory MonoidalCategory Simplicial
+open CategoryTheory MonoidalCategory Simplicial Limits
 
 namespace CategoryTheory.GrothendieckTopology
+-- GrothendieckTopology.Subpresheaf should be moved...
 
 variable {C : Type*} [Category C] (P : Cᵒᵖ ⥤ Type*)
 
@@ -200,5 +201,45 @@ lemma toImageSubcomplex_apply_val {Δ : SimplexCategoryᵒᵖ} (x : X.obj Δ) :
 lemma toImageSubcomplex_ι : toImageSubcomplex f ≫ (Subcomplex.image f).ι = f := rfl
 
 end
+
+
+namespace Subcomplex
+
+variable {X}
+
+-- "bicartesian squares" involving subcomplexes of `X : SSet`
+structure Sq (A₁ A₂ A₃ A₄ : X.Subcomplex) where
+  max_eq : A₂ ⊔ A₃ = A₄
+  min_eq : A₂ ⊓ A₃ = A₁
+
+namespace Sq
+
+variable {A₁ A₂ A₃ A₄ : X.Subcomplex} (sq : Sq A₁ A₂ A₃ A₄)
+
+include sq
+
+lemma le₁₂ : A₁ ≤ A₂ := by rw [← sq.min_eq]; exact inf_le_left
+lemma le₁₃ : A₁ ≤ A₃ := by rw [← sq.min_eq]; exact inf_le_right
+lemma le₂₄ : A₂ ≤ A₄ := by rw [← sq.max_eq]; exact le_sup_left
+lemma le₃₄ : A₃ ≤ A₄ := by rw [← sq.max_eq]; exact le_sup_right
+
+-- the associated commutative square in `SSet`, which is both pushout and pullback
+lemma commSq : CommSq (homOfLE sq.le₁₂) (homOfLE sq.le₁₃)
+    (homOfLE sq.le₂₄) (homOfLE sq.le₃₄) := ⟨rfl⟩
+
+lemma isPushout : IsPushout (homOfLE sq.le₁₂) (homOfLE sq.le₁₃)
+    (homOfLE sq.le₂₄) (homOfLE sq.le₃₄) where
+  w := rfl
+  isColimit' := ⟨by
+    apply evaluationJointlyReflectsColimits
+    intro k
+    dsimp
+    -- need some little developments in Limits.Shapes.Types
+    sorry⟩
+
+end Sq
+
+
+end Subcomplex
 
 end SSet
