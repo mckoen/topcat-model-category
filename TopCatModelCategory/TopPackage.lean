@@ -3,7 +3,7 @@ import Mathlib.AlgebraicTopology.ModelCategory.Basic
 import Mathlib.AlgebraicTopology.ModelCategory.JoyalTrick
 import TopCatModelCategory.JoyalTrickDual
 import TopCatModelCategory.Factorization
-import TopCatModelCategory.MorphismProperty
+import TopCatModelCategory.ModelCategoryCopy
 
 open CategoryTheory Limits MorphismProperty
 
@@ -209,7 +209,14 @@ instance {A B X Y : π.Cat} (i : A ⟶ B) (p : X ⟶ Y)
   intros
   infer_instance
 
-instance modelCategory : ModelCategory π.Cat where
+instance modelCategoryCat : ModelCategory π.Cat where
+
+def modelCategory [CategoryWithWeakEquivalences T]
+    [CategoryWithCofibrations T] [CategoryWithFibrations T]
+    (h₁ : cofibrations T = π.I.rlp.llp)
+    (h₂ : fibrations T = π.J.rlp)
+    (h₃ : weakEquivalences T = π.W) : ModelCategory T :=
+  ModelCategory.copy π.modelCategoryCat h₁ h₂ h₃
 
 end TopPackage
 

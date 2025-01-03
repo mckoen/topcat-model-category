@@ -27,7 +27,7 @@ end HomotopicalAlgebra
 namespace TopCat
 
 instance modelCategory : ModelCategory TopCat.{0} :=
-  packageTopCat.modelCategory
+  packageTopCat.modelCategoryCat
 
 namespace ModelCategory
 

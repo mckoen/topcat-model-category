@@ -8,6 +8,7 @@ import TopCatModelCategory.Factorization
 import TopCatModelCategory.Homotopy.Basic
 import TopCatModelCategory.Iso
 import TopCatModelCategory.JoyalTrickDual
+import TopCatModelCategory.ModelCategoryCopy
 import TopCatModelCategory.ModelCategorySSet
 import TopCatModelCategory.ModelCategoryTopCat
 import TopCatModelCategory.MorphismProperty
