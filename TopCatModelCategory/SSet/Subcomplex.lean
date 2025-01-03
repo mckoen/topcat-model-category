@@ -8,7 +8,7 @@ import Mathlib.CategoryTheory.Sites.Subsheaf
 
 
 /-!
-# Subobjects of simplicial sets
+# Subcomplexes of simplicial sets
 
 -/
 
@@ -75,15 +75,15 @@ namespace SSet
 
 variable (X Y : SSet.{u})
 
-protected abbrev Subobject := GrothendieckTopology.Subpresheaf X
+protected abbrev Subcomplex := GrothendieckTopology.Subpresheaf X
 
-namespace Subobject
+namespace Subcomplex
 
 variable {X Y}
 
-variable (S : X.Subobject) (T : Y.Subobject)
+variable (S : X.Subcomplex) (T : Y.Subcomplex)
 
-instance : CoeOut X.Subobject SSet.{u} where
+instance : CoeOut X.Subcomplex SSet.{u} where
   coe := fun S ↦ S.toPresheaf
 
 variable {S} in
@@ -105,20 +105,20 @@ instance : Mono S.ι := by
   infer_instance
 
 @[simps]
-noncomputable def prod : (X ⊗ Y).Subobject where
+noncomputable def prod : (X ⊗ Y).Subcomplex where
   obj Δ := (S.obj Δ).prod (T.obj Δ)
   map i _ hx := ⟨S.map i hx.1, T.map i hx.2⟩
 
-lemma prod_monotone {S₁ S₂ : X.Subobject} (hX : S₁ ≤ S₂) {T₁ T₂ : Y.Subobject} (hY : T₁ ≤ T₂) :
+lemma prod_monotone {S₁ S₂ : X.Subcomplex} (hX : S₁ ≤ S₂) {T₁ T₂ : Y.Subcomplex} (hY : T₁ ≤ T₂) :
     S₁.prod T₁ ≤ S₂.prod T₂ :=
   fun _ _ hx => ⟨hX _ hx.1, hY _ hx.2⟩
 
-example : PartialOrder X.Subobject := inferInstance
-example : SemilatticeSup X.Subobject := inferInstance
+example : PartialOrder X.Subcomplex := inferInstance
+example : SemilatticeSup X.Subcomplex := inferInstance
 
 section
 
-variable {S₁ S₂ : X.Subobject} (h : S₁ ≤ S₂)
+variable {S₁ S₂ : X.Subcomplex} (h : S₁ ≤ S₂)
 
 def homOfLE : (S₁ : SSet.{u}) ⟶ (S₂ : SSet.{u}) := GrothendieckTopology.Subpresheaf.homOfLe h
 
@@ -133,13 +133,13 @@ instance : Mono (homOfLE h) := mono_of_mono_fac (homOfLE_ι h)
 
 end
 
-noncomputable def unionProd : (X ⊗ Y).Subobject := ((⊤ : X.Subobject).prod T) ⊔ (S.prod ⊤)
+noncomputable def unionProd : (X ⊗ Y).Subcomplex := ((⊤ : X.Subcomplex).prod T) ⊔ (S.prod ⊤)
 
-lemma top_prod_le_unionProd : (⊤ : X.Subobject).prod T ≤ S.unionProd T := le_sup_left
+lemma top_prod_le_unionProd : (⊤ : X.Subcomplex).prod T ≤ S.unionProd T := le_sup_left
 
 lemma prod_top_le_unionProd : (S.prod ⊤) ≤ S.unionProd T := le_sup_right
 
-lemma prod_le_top_prod : S.prod T ≤ (⊤ : X.Subobject).prod T :=
+lemma prod_le_top_prod : S.prod T ≤ (⊤ : X.Subcomplex).prod T :=
   prod_monotone le_top (by rfl)
 
 lemma prod_le_prod_top : S.prod T ≤ S.prod ⊤ :=
@@ -148,32 +148,32 @@ lemma prod_le_prod_top : S.prod T ≤ S.prod ⊤ :=
 lemma prod_le_unionProd : S.prod T ≤ S.unionProd T :=
   (prod_le_prod_top S T).trans (prod_top_le_unionProd S T)
 
-end Subobject
+end Subcomplex
 
-def subobjectBoundary (n : ℕ) : (Δ[n] : SSet.{u}).Subobject where
+def subcomplexBoundary (n : ℕ) : (Δ[n] : SSet.{u}).Subcomplex where
   obj _ s := ¬Function.Surjective (asOrderHom s)
   map φ s hs := ((boundary n).map φ ⟨s, hs⟩).2
 
-lemma subobjectBoundary_toSSet (n : ℕ) : subobjectBoundary.{u} n = ∂Δ[n] := rfl
+lemma subcomplexBoundary_toSSet (n : ℕ) : subcomplexBoundary.{u} n = ∂Δ[n] := rfl
 
-lemma subobjectBoundary_ι (n : ℕ) :
-    (subobjectBoundary.{u} n).ι = boundaryInclusion n := rfl
+lemma subcomplexBoundary_ι (n : ℕ) :
+    (subcomplexBoundary.{u} n).ι = boundaryInclusion n := rfl
 
-def subobjectHorn (n : ℕ) (i : Fin (n + 1)) : (Δ[n] : SSet.{u}).Subobject where
+def subcomplexHorn (n : ℕ) (i : Fin (n + 1)) : (Δ[n] : SSet.{u}).Subcomplex where
   obj _ s := Set.range (asOrderHom s) ∪ {i} ≠ Set.univ
   map φ s hs := ((horn n i).map φ ⟨s, hs⟩).2
 
-lemma subobjectHorn_toSSet (n : ℕ) (i : Fin (n + 1)) :
-    subobjectHorn.{u} n i = Λ[n, i] := rfl
+lemma subcomplexHorn_toSSet (n : ℕ) (i : Fin (n + 1)) :
+    subcomplexHorn.{u} n i = Λ[n, i] := rfl
 
-lemma subobjectHorn_ι (n : ℕ) (i : Fin (n + 1)) :
-    (subobjectHorn.{u} n i).ι = hornInclusion n i := rfl
+lemma subcomplexHorn_ι (n : ℕ) (i : Fin (n + 1)) :
+    (subcomplexHorn.{u} n i).ι = hornInclusion n i := rfl
 
 instance mono_boundaryInclusion (n : ℕ) : Mono (boundaryInclusion.{u} n) :=
-  (subobjectBoundary n).mono_ι
+  (subcomplexBoundary n).mono_ι
 
 instance mono_hornInclusion (n : ℕ) (i : Fin (n + 1)): Mono (hornInclusion.{u} n i) :=
-  (subobjectHorn n i).mono_ι
+  (subcomplexHorn n i).mono_ι
 
 section
 
@@ -183,21 +183,21 @@ variable (f : X ⟶ Y)
 attribute [local simp] FunctorToTypes.naturality
 
 @[simps]
-def Subobject.image : Y.Subobject where
+def Subcomplex.image : Y.Subcomplex where
   obj Δ := Set.range (f.app Δ)
   map := by
     rintro Δ Δ' φ _ ⟨x, rfl⟩
     exact ⟨X.map φ x, by simp⟩
 
-def toImageSubobject : X ⟶ Subobject.image f where
+def toImageSubcomplex : X ⟶ Subcomplex.image f where
   app Δ x := ⟨f.app Δ x, ⟨x, rfl⟩⟩
 
 @[simp]
-lemma toImageSubobject_apply_val {Δ : SimplexCategoryᵒᵖ} (x : X.obj Δ) :
-    ((toImageSubobject f).app Δ x).val = f.app Δ x := rfl
+lemma toImageSubcomplex_apply_val {Δ : SimplexCategoryᵒᵖ} (x : X.obj Δ) :
+    ((toImageSubcomplex f).app Δ x).val = f.app Δ x := rfl
 
 @[reassoc (attr := simp)]
-lemma toImageSubobject_ι : toImageSubobject f ≫ (Subobject.image f).ι = f := rfl
+lemma toImageSubcomplex_ι : toImageSubcomplex f ≫ (Subcomplex.image f).ι = f := rfl
 
 end
 

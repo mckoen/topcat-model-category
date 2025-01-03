@@ -17,7 +17,7 @@ import TopCatModelCategory.PseudoFunctor.LaxNatTrans
 import TopCatModelCategory.PseudoFunctor.MorphismProperty
 import TopCatModelCategory.PseudoFunctor.Pseudofunctor
 import TopCatModelCategory.SSet.Boundary
-import TopCatModelCategory.SSet.Subobject
+import TopCatModelCategory.SSet.Subcomplex
 import TopCatModelCategory.TopCatIsColimit
 import TopCatModelCategory.TopPackage
 import TopCatModelCategory.TopologyLemmas.IsQuotientMap

@@ -1,4 +1,4 @@
-import TopCatModelCategory.SSet.Subobject
+import TopCatModelCategory.SSet.Subcomplex
 import Mathlib.Data.Finite.Card
 
 universe u
@@ -17,7 +17,7 @@ lemma ext {j : SimplexCategoryᵒᵖ} {x y : (Δ[n] : SSet.{u}).obj j}
   (objEquiv _ _).injective h
 
 @[simps]
-def face (S : Set (Fin (n + 1))) : (Δ[n] : SSet.{u}).Subobject where
+def face (S : Set (Fin (n + 1))) : (Δ[n] : SSet.{u}).Subcomplex where
   obj U := setOf (fun f ↦ Set.range ((objEquiv _ _) f).toOrderHom ⊆ S)
   map := by
     rintro _ _ _ _ hx _ ⟨j, rfl⟩
@@ -50,10 +50,10 @@ def faceRepresentableBy (S : Set (Fin (n + 1)))
 
 end standardSimplex
 
-lemma subobjectBoundary_eq_iSup :
-    subobjectBoundary.{u} n = ⨆ (i : Fin (n + 1)), standardSimplex.face {i}ᶜ := by
+lemma subcomplexBoundary_eq_iSup :
+    subcomplexBoundary.{u} n = ⨆ (i : Fin (n + 1)), standardSimplex.face {i}ᶜ := by
   ext
-  simp [standardSimplex.face, subobjectBoundary, Function.Surjective]
+  simp [standardSimplex.face, subcomplexBoundary, Function.Surjective]
   tauto
 
 end SSet

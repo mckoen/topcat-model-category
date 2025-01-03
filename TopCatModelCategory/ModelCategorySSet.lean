@@ -1,5 +1,5 @@
 import TopCatModelCategory.ModelCategoryTopCat
-import TopCatModelCategory.SSet.Subobject
+import TopCatModelCategory.SSet.Subcomplex
 
 open HomotopicalAlgebra CategoryTheory
 
