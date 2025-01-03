@@ -5,6 +5,7 @@ Authors: Joël Riou
 -/
 import Mathlib.AlgebraicTopology.SimplicialSet.Monoidal
 import Mathlib.CategoryTheory.Sites.Subsheaf
+import TopCatModelCategory.ColimitsType
 
 
 /-!
@@ -207,6 +208,7 @@ namespace Subcomplex
 
 variable {X}
 
+-- redefine this in terms of `Lattice.BicartSq`
 -- "bicartesian squares" involving subcomplexes of `X : SSet`
 structure Sq (A₁ A₂ A₃ A₄ : X.Subcomplex) where
   max_eq : A₂ ⊔ A₃ = A₄
@@ -238,7 +240,6 @@ lemma isPushout : IsPushout (homOfLE sq.le₁₂) (homOfLE sq.le₁₃)
     sorry⟩
 
 end Sq
-
 
 end Subcomplex
 
