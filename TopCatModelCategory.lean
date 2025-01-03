@@ -16,6 +16,7 @@ import TopCatModelCategory.MorphismProperty
 import TopCatModelCategory.PseudoFunctor.LaxNatTrans
 import TopCatModelCategory.PseudoFunctor.MorphismProperty
 import TopCatModelCategory.PseudoFunctor.Pseudofunctor
+import TopCatModelCategory.SSet.AnodyneExtensions
 import TopCatModelCategory.SSet.Boundary
 import TopCatModelCategory.SSet.Subcomplex
 import TopCatModelCategory.TopCatIsColimit
