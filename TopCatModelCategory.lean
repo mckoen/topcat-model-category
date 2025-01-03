@@ -6,6 +6,7 @@ import TopCatModelCategory.CellComplex
 import TopCatModelCategory.ClosedEmbeddings
 import TopCatModelCategory.Factorization
 import TopCatModelCategory.Homotopy.Basic
+import TopCatModelCategory.IsFibrant
 import TopCatModelCategory.Iso
 import TopCatModelCategory.JoyalTrickDual
 import TopCatModelCategory.ModelCategoryCopy
