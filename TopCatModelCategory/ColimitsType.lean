@@ -41,6 +41,70 @@ namespace CategoryTheory.Limits.Types
 
 section Pushouts
 
+section
+
+variable {X X' : Type u} (f : X' → X) (A B : Set X) (A' B' : Set X')
+  (hA' : A' = f ⁻¹' A ⊓ B') (hB : B = A ⊔ f '' B')
+
+def pushoutCoconeOfPullbackSets :
+    PushoutCocone
+      (fun ⟨a', ha'⟩ ↦ ⟨f a', by
+        rw [hA'] at ha'
+        exact ha'.1⟩ : _ ⟶ (A : Type u) )
+      (Set.toTypes.map (homOfLE (by rw [hA']; exact inf_le_right)) : (A' : Type u) ⟶ B') :=
+  PushoutCocone.mk (W := (B : Type u))
+    (Set.toTypes.map (homOfLE (by rw [hB]; exact le_sup_left)) : (A : Type u) ⟶ B)
+    (fun ⟨b', hb'⟩ ↦ ⟨f b', by rw [hB]; exact Or.inr (by aesop)⟩) rfl
+
+open Classical in
+noncomputable def isColimitPushoutCoconeOfPullbackSets (hf : Function.Injective f) :
+    IsColimit (pushoutCoconeOfPullbackSets f A B A' B' hA' hB) := by
+  let g₁ : (A' : Type u) ⟶ A := fun ⟨a', ha'⟩ ↦ ⟨f a', by
+        rw [hA'] at ha'
+        exact ha'.1⟩
+  let g₂ : (A' : Type u) ⟶ B' :=
+    (Set.toTypes.map (homOfLE (by rw [hA']; exact inf_le_right)) : (A' : Type u) ⟶ B')
+  have imp {b : X} (hb : b ∈ B) (hb' : b ∉ A) : b ∈ f '' B' := by
+    simp only [hB, Set.sup_eq_union, Set.mem_union] at hb
+    tauto
+  let desc (s : PushoutCocone g₁ g₂) : (B : Type u) ⟶ s.pt := fun ⟨b, hb⟩ ↦
+    if hb' : b ∈ A then
+      s.inl ⟨b, hb'⟩
+    else
+      s.inr ⟨(imp hb hb').choose, (imp hb hb').choose_spec.1⟩
+  have inl_desc_apply (s) (a : A) : desc s ⟨a, by
+    rw [hB]
+    exact Or.inl a.2⟩ = s.inl a := dif_pos a.2
+  have inr_desc_apply (s) (b' : B') : desc s ⟨f b', by
+      rw [hB]
+      exact Or.inr ⟨b'.1, b'.2, rfl⟩⟩ = s.inr b' := by
+    obtain ⟨b', hb'⟩ := b'
+    dsimp [desc]
+    split_ifs with hb''
+    · exact congr_fun s.condition ⟨b', by rw [hA']; exact ⟨hb'', hb'⟩⟩
+    · apply congr_arg
+      ext
+      refine hf (imp ?_ hb'').choose_spec.2
+      rw [hB]
+      exact Or.inr ⟨b', hb', rfl⟩
+  refine PushoutCocone.IsColimit.mk _ desc
+    (fun s ↦ by ext; apply inl_desc_apply)
+    (fun s ↦ by ext; apply inr_desc_apply)
+    (fun s m h₁ h₂ ↦ ?_)
+  ext ⟨b, hb⟩
+  dsimp
+  by_cases hb' : b ∈ f '' B'
+  · obtain ⟨b', hb', rfl⟩ := hb'
+    exact (congr_fun h₂ ⟨b', hb'⟩).trans (inr_desc_apply s ⟨b', hb'⟩ ).symm
+  · have hb : b ∈ A := by
+      simp only [hB, Set.sup_eq_union, Set.mem_union] at hb
+      tauto
+    exact (congr_fun h₁ ⟨b, hb⟩).trans (inl_desc_apply s ⟨b, hb⟩).symm
+
+end
+
+section
+
 variable {X : Type u} {A₁ A₂ A₃ A₄ : Set X} (sq : Lattice.BicartSq A₁ A₂ A₃ A₄)
 
 def pushoutCoconeOfBicartSqOfSets :
@@ -48,51 +112,12 @@ def pushoutCoconeOfBicartSqOfSets :
       (Set.toTypes.map (homOfLE sq.le₁₃)) :=
   PushoutCocone.mk _ _ (sq.commSq.map Set.toTypes).w
 
-namespace isColimitPushoutCoconeOfBicartSqOfSets
-
-variable (s : PushoutCocone (Set.toTypes.map (homOfLE sq.le₁₂))
-    (Set.toTypes.map (homOfLE sq.le₁₃)))
-
-open Classical in
-noncomputable def desc :
-    (A₄ : Type u) ⟶ s.pt := fun ⟨x, hx⟩ ↦
-  if h : x ∈ A₂ then s.inl ⟨x, h⟩ else s.inr ⟨x, by
-    simp [← sq.max_eq] at hx
-    tauto⟩
-
-@[simp]
-lemma inl_desc_apply (x : A₂) : desc sq s ⟨x, by simp [← sq.max_eq]⟩ = s.inl x := by
-  dsimp only [desc]
-  rw [dif_pos]
-
-@[simp]
-lemma inr_desc_apply (x : A₃) : desc sq s ⟨x, by simp [← sq.max_eq]⟩ = s.inr x := by
-  dsimp only [desc]
-  by_cases h : x.1 ∈ A₂
-  · rw [dif_pos h]
-    exact congr_fun s.condition ⟨x, by simp [← sq.min_eq]; tauto⟩
-  · rw [dif_neg h]
-
-end isColimitPushoutCoconeOfBicartSqOfSets
-
-open isColimitPushoutCoconeOfBicartSqOfSets in
 noncomputable def isColimitPushoutCoconeOfBicartSqOfSets :
-    IsColimit (pushoutCoconeOfBicartSqOfSets sq) := by
-  refine PushoutCocone.IsColimit.mk _
-    (fun s ↦ desc sq s) (fun s ↦ ?_) (fun s ↦ ?_) (fun s m h₁ h₂ ↦ ?_)
-  · ext (x : A₂)
-    simp
-  · ext (x : A₃)
-    simp
-  · ext ⟨x, hx⟩
-    rw [← sq.max_eq] at hx
-    obtain h₃ | h₄ := hx
-    · dsimp
-      rw [inl_desc_apply sq s ⟨x, h₃⟩]
-      exact congr_fun h₁ ⟨x, h₃⟩
-    · dsimp
-      rw [inr_desc_apply sq s ⟨x, h₄⟩]
-      exact congr_fun h₂ ⟨x, h₄⟩
+    IsColimit (pushoutCoconeOfBicartSqOfSets sq) :=
+  isColimitPushoutCoconeOfPullbackSets id A₂ A₄ A₁ A₃
+    sq.min_eq.symm (by simpa using sq.max_eq.symm) (fun _ _ h ↦ h)
+
+end
 
 end Pushouts
 

@@ -264,7 +264,7 @@ lemma unionProd_sq : Sq (S.prod T) ((⊤ : X.Subcomplex).prod T) (S.prod ⊤) (u
     simp [prod, Set.prod, Membership.mem, Set.Mem, setOf]
     tauto
 
-def pullback (A : X.Subcomplex) (p : Y ⟶ X) : Y.Subcomplex where
+def preimage (A : X.Subcomplex) (p : Y ⟶ X) : Y.Subcomplex where
   obj n := p.app n ⁻¹' (A.obj n)
   map f := (Set.preimage_mono (A.map f)).trans (by
     simp only [Set.preimage_preimage, FunctorToTypes.naturality _ _ p f]
