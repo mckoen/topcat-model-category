@@ -56,8 +56,11 @@ def pushoutCoconeOfPullbackSets :
     (Set.toTypes.map (homOfLE (by rw [hB]; exact le_sup_left)) : (A : Type u) ⟶ B)
     (fun ⟨b', hb'⟩ ↦ ⟨f b', by rw [hB]; exact Or.inr (by aesop)⟩) rfl
 
+variable (T : Set X)
+
 open Classical in
-noncomputable def isColimitPushoutCoconeOfPullbackSets (hf : Function.Injective f) :
+noncomputable def isColimitPushoutCoconeOfPullbackSets
+    (hf : Function.Injective (fun (b : (A'ᶜ : Set _)) ↦ f b)) :
     IsColimit (pushoutCoconeOfPullbackSets f A B A' B' hA' hB) := by
   let g₁ : (A' : Type u) ⟶ A := fun ⟨a', ha'⟩ ↦ ⟨f a', by
         rw [hA'] at ha'
@@ -84,9 +87,19 @@ noncomputable def isColimitPushoutCoconeOfPullbackSets (hf : Function.Injective 
     · exact congr_fun s.condition ⟨b', by rw [hA']; exact ⟨hb'', hb'⟩⟩
     · apply congr_arg
       ext
-      refine hf (imp ?_ hb'').choose_spec.2
-      rw [hB]
-      exact Or.inr ⟨b', hb', rfl⟩
+      have hb''' : f b' ∈ B := by
+        rw [hB]
+        exact Or.inr ⟨b', hb', rfl⟩
+      dsimp
+      subst hA'
+      refine congr_arg Subtype.val (@hf ⟨(imp hb''' hb'').choose, ?_⟩ ⟨b', ?_⟩
+        (imp hb''' hb'').choose_spec.2)
+      · simp only [Set.inf_eq_inter, Set.mem_compl_iff, Set.mem_inter_iff, not_and]
+        refine fun h _ ↦ hb'' ?_
+        rw [← (imp hb''' hb'').choose_spec.2]
+        exact h
+      · simp only [Set.inf_eq_inter, Set.mem_compl_iff, Set.mem_inter_iff, not_and]
+        exact fun h ↦ (hb'' h).elim
   refine PushoutCocone.IsColimit.mk _ desc
     (fun s ↦ by ext; apply inl_desc_apply)
     (fun s ↦ by ext; apply inr_desc_apply)
@@ -115,7 +128,8 @@ def pushoutCoconeOfBicartSqOfSets :
 noncomputable def isColimitPushoutCoconeOfBicartSqOfSets :
     IsColimit (pushoutCoconeOfBicartSqOfSets sq) :=
   isColimitPushoutCoconeOfPullbackSets id A₂ A₄ A₁ A₃
-    sq.min_eq.symm (by simpa using sq.max_eq.symm) (fun _ _ h ↦ h)
+    sq.min_eq.symm (by simpa using sq.max_eq.symm)
+      (by rintro ⟨a, _⟩ ⟨b, _⟩ rfl; rfl)
 
 end
 
