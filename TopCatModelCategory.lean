@@ -4,6 +4,7 @@ import TopCatModelCategory.CWComplex
 import TopCatModelCategory.CatCommSq
 import TopCatModelCategory.CellComplex
 import TopCatModelCategory.ClosedEmbeddings
+import TopCatModelCategory.ColimitsType
 import TopCatModelCategory.Factorization
 import TopCatModelCategory.Homotopy.Basic
 import TopCatModelCategory.IsFibrant

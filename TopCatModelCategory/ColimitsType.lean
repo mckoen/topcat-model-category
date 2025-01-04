@@ -43,7 +43,6 @@ section Pushouts
 
 variable {X : Type u} {A₁ A₂ A₃ A₄ : Set X} (sq : Lattice.BicartSq A₁ A₂ A₃ A₄)
 
-#check sq.commSq.map Set.toTypes
 def pushoutCoconeOfBicartSqOfSets :
     PushoutCocone (Set.toTypes.map (homOfLE sq.le₁₂))
       (Set.toTypes.map (homOfLE sq.le₁₃)) :=

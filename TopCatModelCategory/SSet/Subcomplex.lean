@@ -208,11 +208,9 @@ namespace Subcomplex
 
 variable {X}
 
--- redefine this in terms of `Lattice.BicartSq`
--- "bicartesian squares" involving subcomplexes of `X : SSet`
-structure Sq (A₁ A₂ A₃ A₄ : X.Subcomplex) where
-  max_eq : A₂ ⊔ A₃ = A₄
-  min_eq : A₂ ⊓ A₃ = A₁
+variable (A₁ A₂ A₃ A₄ : X.Subcomplex)
+
+def Sq (A₁ A₂ A₃ A₄ : X.Subcomplex) := Lattice.BicartSq A₁ A₂ A₃ A₄
 
 namespace Sq
 
@@ -229,17 +227,34 @@ lemma le₃₄ : A₃ ≤ A₄ := by rw [← sq.max_eq]; exact le_sup_right
 lemma commSq : CommSq (homOfLE sq.le₁₂) (homOfLE sq.le₁₃)
     (homOfLE sq.le₂₄) (homOfLE sq.le₃₄) := ⟨rfl⟩
 
+lemma obj (n : SimplexCategoryᵒᵖ) :
+    Lattice.BicartSq (A₁.obj n) (A₂.obj n) (A₃.obj n) (A₄.obj n) where
+  max_eq := by
+    rw [← sq.max_eq]
+    rfl
+  min_eq := by
+    rw [← sq.min_eq]
+    rfl
+
 lemma isPushout : IsPushout (homOfLE sq.le₁₂) (homOfLE sq.le₁₃)
     (homOfLE sq.le₂₄) (homOfLE sq.le₃₄) where
   w := rfl
   isColimit' := ⟨by
-    apply evaluationJointlyReflectsColimits
-    intro k
-    dsimp
-    -- need some little developments in Limits.Shapes.Types
-    sorry⟩
+    refine evaluationJointlyReflectsColimits _ (fun n ↦ ?_)
+    exact (PushoutCocone.isColimitMapCoconeEquiv _ _).2
+      (Types.isColimitPushoutCoconeOfBicartSqOfSets (sq.obj n))⟩
 
 end Sq
+
+variable {Y} (S : X.Subcomplex) (T : Y.Subcomplex)
+
+lemma unionProd_sq : Sq (S.prod T) ((⊤ : X.Subcomplex).prod T) (S.prod ⊤) (unionProd S T) where
+  max_eq := rfl
+  min_eq := by
+    ext n ⟨x, y⟩
+    change _ ∧ _ ↔ _
+    simp [prod, Set.prod, Membership.mem, Set.Mem, setOf]
+    tauto
 
 end Subcomplex
 
