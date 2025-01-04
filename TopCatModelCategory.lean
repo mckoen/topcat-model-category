@@ -19,6 +19,7 @@ import TopCatModelCategory.PseudoFunctor.MorphismProperty
 import TopCatModelCategory.PseudoFunctor.Pseudofunctor
 import TopCatModelCategory.SSet.AnodyneExtensions
 import TopCatModelCategory.SSet.Boundary
+import TopCatModelCategory.SSet.CategoryWithFibrations
 import TopCatModelCategory.SSet.Subcomplex
 import TopCatModelCategory.TopCatIsColimit
 import TopCatModelCategory.TopPackage

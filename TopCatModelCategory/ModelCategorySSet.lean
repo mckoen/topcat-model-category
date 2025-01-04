@@ -1,5 +1,5 @@
 import TopCatModelCategory.ModelCategoryTopCat
-import TopCatModelCategory.SSet.Subcomplex
+import TopCatModelCategory.SSet.CategoryWithFibrations
 
 open HomotopicalAlgebra CategoryTheory
 
@@ -13,21 +13,6 @@ instance (K : Type u) [Preorder K] : HasIterationOfShape SSet.{u} K where
 
 attribute [local instance] Cardinal.aleph0_isRegular
   Cardinal.orderbot_aleph0_ord_to_type
-
-def I : MorphismProperty SSet.{u} := ofHoms (fun n ↦ SSet.boundaryInclusion.{u} n)
-def J : MorphismProperty SSet.{u} := ⨆ n, ofHoms (fun i ↦ SSet.hornInclusion.{u} n i)
-
-lemma I_le_monomorphisms : I.{u} ≤ monomorphisms _ := by
-  rintro _ _ _ ⟨n⟩
-  simp only [monomorphisms.iff]
-  infer_instance
-
-lemma J_le_monomorphisms : J.{u} ≤ monomorphisms _ := by
-  rintro _ _ _ h
-  simp only [J, iSup_iff] at h
-  obtain ⟨n, ⟨i⟩⟩ := h
-  simp only [monomorphisms.iff]
-  infer_instance
 
 instance isCardinalForSmallObjectArgument_I :
     I.{u}.IsCardinalForSmallObjectArgument Cardinal.aleph0.{u} where
@@ -51,41 +36,18 @@ instance : HasSmallObjectArgument.{u} I.{u} where
 instance : HasSmallObjectArgument.{u} J.{u} where
   exists_cardinal := ⟨Cardinal.aleph0.{u}, inferInstance, inferInstance, inferInstance⟩
 
-instance : CategoryWithCofibrations SSet.{0} where
-  cofibrations := monomorphisms _
-
 instance : CategoryWithWeakEquivalences SSet.{0} where
   weakEquivalences :=
     (weakEquivalences TopCat).inverseImage SSet.toTop
-
-instance : CategoryWithFibrations SSet.{0} where
-  fibrations := J.rlp
-
-lemma cofibrations_eq : cofibrations SSet.{0} = monomorphisms _ := rfl
-
-lemma fibrations_eq : fibrations SSet.{0} = J.rlp := rfl
 
 lemma weakEquivalences_eq :
     weakEquivalences SSet.{0} =
       (weakEquivalences TopCat).inverseImage SSet.toTop := rfl
 
-section
-
-variable {X Y : SSet.{0}} (f : X ⟶ Y)
-
-lemma cofibration_iff : Cofibration f ↔ Mono f := by
-  rw [HomotopicalAlgebra.cofibration_iff]
-  rfl
-
-lemma fibration_iff : Fibration f ↔ J.rlp f := by
-  rw [HomotopicalAlgebra.fibration_iff]
-  rfl
-
-lemma weakEquivalence_iff : WeakEquivalence f ↔ WeakEquivalence (toTop.map f) := by
+lemma weakEquivalence_iff {X Y : SSet.{0}} (f : X ⟶ Y) :
+    WeakEquivalence f ↔ WeakEquivalence (toTop.map f) := by
   simp only [HomotopicalAlgebra.weakEquivalence_iff]
   rfl
-
-end
 
 instance : (weakEquivalences SSet).HasTwoOutOfThreeProperty := by
   rw [weakEquivalences_eq]

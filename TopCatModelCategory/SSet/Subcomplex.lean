@@ -81,6 +81,9 @@ protected abbrev Subcomplex := GrothendieckTopology.Subpresheaf X
 
 namespace Subcomplex
 
+instance : CompleteLattice X.Subcomplex :=
+  inferInstanceAs (CompleteLattice (GrothendieckTopology.Subpresheaf X))
+
 variable {X Y}
 
 variable (S : X.Subcomplex) (T : Y.Subcomplex)
@@ -93,10 +96,20 @@ variable {S} in
 lemma coe_ext {Δ : SimplexCategoryᵒᵖ} {x y : S.obj Δ} (h : x.val = y.val) : x = y :=
   Subtype.ext h
 
-def ι : (S : SSet.{u}) ⟶ X := GrothendieckTopology.Subpresheaf.ι S
+lemma sSup_obj (S : Set X.Subcomplex) (n : SimplexCategoryᵒᵖ) :
+    (sSup S).obj n = sSup (Set.image (fun T ↦ T.obj n) S) := rfl
 
-instance mono_ι : Mono S.ι := by dsimp [ι]; infer_instance
+@[simp]
+lemma iSup_obj {ι : Type*} (S : ι → X.Subcomplex) (n : SimplexCategoryᵒᵖ) :
+    (iSup S).obj n = iSup (fun i ↦ (S i).obj n) := by
+  simp [iSup, sSup_obj]
 
+instance :
+    letI src : SSet := S
+    letI f : src ⟶ _ := S.ι
+    Mono f := by
+  change Mono S.ι
+  infer_instance
 
 @[simp]
 lemma ι_app {Δ : SimplexCategoryᵒᵖ} (x : S.obj Δ) :
@@ -161,6 +174,8 @@ lemma subcomplexBoundary_toSSet (n : ℕ) : subcomplexBoundary.{u} n = ∂Δ[n] 
 lemma subcomplexBoundary_ι (n : ℕ) :
     (subcomplexBoundary.{u} n).ι = boundaryInclusion n := rfl
 
+--instance (n : ℕ): Mono (subcomplexBoundary.{u} n).ι := inferInstance
+
 def subcomplexHorn (n : ℕ) (i : Fin (n + 1)) : (Δ[n] : SSet.{u}).Subcomplex where
   obj _ s := Set.range (asOrderHom s) ∪ {i} ≠ Set.univ
   map φ s hs := ((horn n i).map φ ⟨s, hs⟩).2
@@ -170,12 +185,6 @@ lemma subcomplexHorn_toSSet (n : ℕ) (i : Fin (n + 1)) :
 
 lemma subcomplexHorn_ι (n : ℕ) (i : Fin (n + 1)) :
     (subcomplexHorn.{u} n i).ι = hornInclusion n i := rfl
-
-instance mono_boundaryInclusion (n : ℕ) : Mono (boundaryInclusion.{u} n) :=
-  (subcomplexBoundary n).mono_ι
-
-instance mono_hornInclusion (n : ℕ) (i : Fin (n + 1)): Mono (hornInclusion.{u} n i) :=
-  (subcomplexHorn n i).mono_ι
 
 section
 
@@ -202,7 +211,6 @@ lemma toImageSubcomplex_apply_val {Δ : SimplexCategoryᵒᵖ} (x : X.obj Δ) :
 lemma toImageSubcomplex_ι : toImageSubcomplex f ≫ (Subcomplex.image f).ι = f := rfl
 
 end
-
 
 namespace Subcomplex
 
