@@ -5,6 +5,7 @@ Authors: Joël Riou
 -/
 import Mathlib.AlgebraicTopology.SimplicialSet.Monoidal
 import Mathlib.CategoryTheory.Sites.Subsheaf
+import Mathlib.CategoryTheory.MorphismProperty.Limits
 import TopCatModelCategory.ColimitsType
 
 
@@ -324,6 +325,8 @@ lemma image_le_iff (Z : Y.Subcomplex) :
     S.image f ≤ Z ↔ S ≤ Z.preimage f := by
   simp [GrothendieckTopology.Subpresheaf.le_def]
 
+lemma image_top : (⊤ : X.Subcomplex).image f = range f := by aesop
+
 end
 
 
@@ -349,6 +352,7 @@ end pushoutCoconeOfPullback
 
 open pushoutCoconeOfPullback
 
+@[simps!]
 def pushoutCoconeOfPullback : PushoutCocone (g₁ hA') (g₂ hA') :=
   PushoutCocone.mk (W := (B : SSet)) (homOfLE (by simpa only [hB] using le_sup_left))
     (homOfLE (by simpa only [← image_le_iff, hB] using le_sup_right) ≫ B.fromPreimage f) rfl

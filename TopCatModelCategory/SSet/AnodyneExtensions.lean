@@ -63,6 +63,10 @@ instance : anodyneExtensions.{u}.RespectsIso := by
   dsimp [anodyneExtensions]
   infer_instance
 
+instance : anodyneExtensions.{u}.IsStableUnderCobaseChange := by
+  dsimp [anodyneExtensions]
+  infer_instance
+
 def standardSimplex.objMk₁ {n : ℕ} (i : Fin (n + 2)) : Δ[1] _[n] :=
   objMk
     { toFun j := if j.castSucc < i then 0 else 1
@@ -88,13 +92,18 @@ namespace subcomplex_unionProd_face_ι_mem
 
 variable {n : ℕ}
 
-def simplex (i : Fin (n + 3)) :
-    (standardSimplex.obj (.mk 1) ⊗ (standardSimplex.obj.{u} (.mk n))).obj (op (.mk (n + 1))) :=
-  ⟨standardSimplex.objMk₁ i,
+def simplex (i : Fin (n + 1)) :
+    (Δ[1] ⊗ Δ[n] : SSet.{u}) _[n + 1] :=
+  ⟨standardSimplex.objMk₁ ⟨i + 1, by omega⟩,
     (standardSimplex.objEquiv _ _).symm (SimplexCategory.σ i)⟩
 
+noncomputable abbrev ιSimplex (i : Fin (n + 1)) : (Δ[n + 1] : SSet.{u}) ⟶ Δ[1] ⊗ Δ[n] :=
+  (SSet.yonedaEquiv _ _ ).symm (simplex i)
+
+instance (i : Fin (n + 1)) : Mono (ιSimplex.{u} i) := sorry
+
 noncomputable def filtration₁ (i : Fin (n + 2)) :
-    (standardSimplex.obj (.mk 1) ⊗ (standardSimplex.obj.{u} (.mk n))).Subcomplex :=
+    (Δ[1] ⊗ Δ[n] : SSet.{u}).Subcomplex :=
   Subcomplex.unionProd (standardSimplex.face {1}) (subcomplexBoundary n) ⊔
     (⨆ (j : Fin i.1), Subcomplex.ofSimplex (simplex ⟨j.1, by omega⟩))
 
@@ -114,16 +123,16 @@ lemma filtration₁_succ (i : Fin (n + 1)) :
     obtain hj | rfl := (Nat.le_of_lt_succ hj).lt_or_eq
     · refine le_trans (le_trans ?_ le_sup_right) le_sup_left
       exact le_iSup (fun (k : Fin i.1) ↦
-        Subcomplex.ofSimplex.{u} (simplex (⟨k.1, by omega⟩ : Fin (n + 3)))) ⟨j, hj⟩
+        Subcomplex.ofSimplex.{u} (simplex (⟨k.1, by omega⟩ : Fin (n + 1)))) ⟨j, hj⟩
     · exact le_sup_right
   · simp only [Fin.isValue, sup_le_iff, le_sup_left, iSup_le_iff, true_and]
     refine ⟨fun ⟨j, hj⟩ ↦ ?_, ?_⟩
     · refine le_trans ?_ le_sup_right
       exact le_iSup (fun (k : Fin (i.1 + 1)) ↦
-        Subcomplex.ofSimplex.{u} (simplex (⟨k.1, by omega⟩ : Fin (n + 3)))) ⟨j, by omega⟩
+        Subcomplex.ofSimplex.{u} (simplex (⟨k.1, by omega⟩ : Fin (n + 1)))) ⟨j, by omega⟩
     · refine le_trans ?_ le_sup_right
       exact le_iSup (fun (k : Fin (i.1 + 1)) ↦
-        Subcomplex.ofSimplex.{u} (simplex (⟨k.1, by omega⟩ : Fin (n + 3)))) ⟨i, by omega⟩
+        Subcomplex.ofSimplex.{u} (simplex (⟨k.1, by omega⟩ : Fin (n + 1)))) ⟨i, by omega⟩
 
 lemma monotone_filtration₁ : Monotone (filtration₁.{u} (n := n)) := by
   rw [Fin.monotone_iff]
@@ -136,9 +145,21 @@ lemma filtration₁_last :
     filtration₁.{u} (Fin.last (n + 1)) = ⊤ := by
   sorry
 
+lemma preimage_ιSimplex (i : Fin (n + 1)) :
+    (filtration₁ i.castSucc).preimage (ιSimplex i) =
+      subcomplexHorn.{u} (n + 1) i.succ := by
+  sorry
+
 lemma filtration₁_to_succ_mem (i : Fin (n + 1)) :
     anodyneExtensions (Subcomplex.homOfLE (monotone_filtration₁.{u} i.castSucc_le_succ)) := by
-  sorry
+  have := IsPushout.of_isColimit
+    (Subcomplex.isColimitPushoutCoconeOfPullback (ιSimplex i) (filtration₁.{u} i.castSucc)
+      (filtration₁.{u} i.succ) (subcomplexHorn.{u} (n + 1) i.succ) ⊤
+      (by simpa using (preimage_ιSimplex i).symm)
+      (by simp only [Subcomplex.image_top, filtration₁_succ, Subcomplex.ofSimplex]))
+  exact MorphismProperty.of_isPushout (P := anodyneExtensions) this
+    (anodyneExtensions.{u}.comp_mem _ _
+      (subcomplexHorn_ι_mem (n + 1) i.succ) (of_isIso ((Subcomplex.topIso _).inv)))
 
 lemma filtation₁_map_mem {i j : Fin (n + 2)} (h : i ≤ j) :
     anodyneExtensions (Subcomplex.homOfLE (monotone_filtration₁.{u} h)) :=
