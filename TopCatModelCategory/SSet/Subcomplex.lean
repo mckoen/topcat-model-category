@@ -71,6 +71,8 @@ lemma iSup_obj {ι : Type*} (S : ι → Subpresheaf P) (U : Cᵒᵖ) :
     (iSup S).obj U = iSup (fun i ↦ (S i).obj U) := by
   simp [iSup, sSup_obj]
 
+lemma Subpresheaf.le_def (S T : Subpresheaf P) : S ≤ T ↔ ∀ U, S.obj U ≤ T.obj U := Iff.rfl
+
 end CategoryTheory.GrothendieckTopology
 
 namespace SSet
@@ -216,30 +218,27 @@ variable (f : X ⟶ Y)
 attribute [local simp] FunctorToTypes.naturality
 
 @[simps]
-def Subcomplex.image : Y.Subcomplex where
+def Subcomplex.range : Y.Subcomplex where
   obj Δ := Set.range (f.app Δ)
   map := by
     rintro Δ Δ' φ _ ⟨x, rfl⟩
     exact ⟨X.map φ x, by simp⟩
 
-def toImageSubcomplex : X ⟶ Subcomplex.image f where
+def toRangeSubcomplex : X ⟶ Subcomplex.range f where
   app Δ x := ⟨f.app Δ x, ⟨x, rfl⟩⟩
 
 @[simp]
-lemma toImageSubcomplex_apply_val {Δ : SimplexCategoryᵒᵖ} (x : X.obj Δ) :
-    ((toImageSubcomplex f).app Δ x).val = f.app Δ x := rfl
+lemma toRangeSubcomplex_apply_val {Δ : SimplexCategoryᵒᵖ} (x : X.obj Δ) :
+    ((toRangeSubcomplex f).app Δ x).val = f.app Δ x := rfl
 
 @[reassoc (attr := simp)]
-lemma toImageSubcomplex_ι : toImageSubcomplex f ≫ (Subcomplex.image f).ι = f := rfl
+lemma toRangeSubcomplex_ι : toRangeSubcomplex f ≫ (Subcomplex.range f).ι = f := rfl
 
 end
 
 namespace Subcomplex
 
 variable {X}
-
-variable (A₁ A₂ A₃ A₄ : X.Subcomplex)
-
 def Sq (A₁ A₂ A₃ A₄ : X.Subcomplex) := Lattice.BicartSq A₁ A₂ A₃ A₄
 
 namespace Sq
@@ -276,6 +275,8 @@ lemma isPushout : IsPushout (homOfLE sq.le₁₂) (homOfLE sq.le₁₃)
 
 end Sq
 
+section
+
 variable {Y} (S : X.Subcomplex) (T : Y.Subcomplex)
 
 lemma unionProd_sq : Sq (S.prod T) ((⊤ : X.Subcomplex).prod T) (S.prod ⊤) (unionProd S T) where
@@ -286,14 +287,85 @@ lemma unionProd_sq : Sq (S.prod T) ((⊤ : X.Subcomplex).prod T) (S.prod ⊤) (u
     simp [prod, Set.prod, Membership.mem, Set.Mem, setOf]
     tauto
 
+@[simps]
 def preimage (A : X.Subcomplex) (p : Y ⟶ X) : Y.Subcomplex where
   obj n := p.app n ⁻¹' (A.obj n)
   map f := (Set.preimage_mono (A.map f)).trans (by
     simp only [Set.preimage_preimage, FunctorToTypes.naturality _ _ p f]
     rfl)
 
+@[simps]
+def fromPreimage (A : X.Subcomplex) (p : Y ⟶ X) :
+    (A.preimage p : SSet) ⟶ (A : SSet) where
+  app Δ y := ⟨p.app _ y.1, y.2⟩
+  naturality _ _ f := by
+    ext ⟨y, hy⟩
+    dsimp
+    ext
+    exact FunctorToTypes.naturality _ _ p f y
+
 def ofSimplex {n : ℕ} (x : X _[n]) : X.Subcomplex :=
-  image ((X.yonedaEquiv (.mk n)).symm x)
+  range ((X.yonedaEquiv (.mk n)).symm x)
+
+end
+
+section
+
+variable {Y} (S : X.Subcomplex) (f : X ⟶ Y)
+
+@[simps]
+def image : Y.Subcomplex where
+  obj Δ := (f.app Δ) '' (S.obj Δ)
+  map := by
+    rintro Δ Δ' φ _ ⟨x, hx, rfl⟩
+    exact ⟨X.map φ x, S.map φ hx, by apply FunctorToTypes.naturality⟩
+
+lemma image_le_iff (Z : Y.Subcomplex) :
+    S.image f ≤ Z ↔ S ≤ Z.preimage f := by
+  simp [GrothendieckTopology.Subpresheaf.le_def]
+
+end
+
+
+section
+
+variable {Y} (f : Y ⟶ X) (A B : X.Subcomplex) (A' B' : Y.Subcomplex)
+    (hA' : A' = A.preimage f ⊓ B')
+    (hB : B = A ⊔ B'.image f)
+
+namespace pushoutCoconeOfPullback
+
+variable {f A A' B'}
+
+@[simps!]
+def g₁ : (A' : SSet) ⟶ (A : SSet) :=
+  homOfLE (by simpa only [hA'] using inf_le_left) ≫ A.fromPreimage f
+
+@[simps!]
+def g₂ : (A' : SSet) ⟶ (B' : SSet) :=
+  homOfLE (by simpa only [hA'] using inf_le_right)
+
+end pushoutCoconeOfPullback
+
+open pushoutCoconeOfPullback
+
+def pushoutCoconeOfPullback : PushoutCocone (g₁ hA') (g₂ hA') :=
+  PushoutCocone.mk (W := (B : SSet)) (homOfLE (by simpa only [hB] using le_sup_left))
+    (homOfLE (by simpa only [← image_le_iff, hB] using le_sup_right) ≫ B.fromPreimage f) rfl
+
+noncomputable def isColimitPushoutCoconeOfPullback [hf : Mono f] :
+    IsColimit (pushoutCoconeOfPullback f A B A' B' hA' hB) :=
+  evaluationJointlyReflectsColimits _ (fun n ↦
+    (PushoutCocone.isColimitMapCoconeEquiv _ _).2
+      (Types.isColimitPushoutCoconeOfPullbackSets (f := f.app n)
+      (A.obj n) (B.obj n) (A'.obj n) (B'.obj n) (by rw [hA']; rfl) (by rw [hB]; rfl)
+        (by
+          rw [NatTrans.mono_iff_mono_app] at hf
+          simp only [mono_iff_injective] at hf
+          rintro ⟨x₁, _⟩ ⟨x₂, _⟩ h
+          simpa only [Subtype.mk.injEq] using hf n h)))
+
+end
 
 end Subcomplex
 

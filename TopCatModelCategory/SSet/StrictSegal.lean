@@ -1,3 +1,4 @@
+import TopCatModelCategory.Fin
 import Mathlib.AlgebraicTopology.SimplicialSet.StrictSegal
 import Mathlib.CategoryTheory.Limits.FunctorCategory.EpiMono
 
@@ -66,14 +67,41 @@ def obj₀Equiv {n : ℕ} : Δ[n] _[0] ≃ Fin (n + 1) where
   left_inv x := by ext i : 1; fin_cases i; rfl
   right_inv _ := rfl
 
+@[simp]
+lemma map_objMk {n : SimplexCategory} {m m' : SimplexCategoryᵒᵖ}
+    (f : Fin (m.unop.len + 1) →o Fin (n.len + 1)) (g : m ⟶ m') :
+    (standardSimplex.{u}.obj n).map g (objMk f) =
+      objMk (f.comp g.unop.toOrderHom) := rfl
+
+@[simp]
+lemma objMk_apply {n m : ℕ}
+    (f : Fin (m + 1) →o Fin (n + 1)) (i : Fin (m + 1)) :
+    objMk.{u} (n := .mk n) (m := op (.mk m)) f i = f i :=
+  rfl
+
 instance (n : SimplexCategory) : (standardSimplex.{u}.obj n).StrictSegal where
   spineToSimplex {j v} := objMk
     { toFun i := obj₀Equiv (v.vertex i)
-      monotone' j₁ j₂ h := by
-        dsimp [obj₀Equiv]
-        sorry }
-  spine_spineToSimplex := sorry
-  spineToSimplex_spine := sorry
+      monotone' := by
+        induction' n using SimplexCategory.rec with n
+        rw [Fin.monotone_iff]
+        intro i
+        rw [← v.arrow_src i, ← v.arrow_tgt i]
+        exact (monotone_apply (v.arrow i) (Fin.zero_le (1 : Fin 2))) }
+
+  spine_spineToSimplex {i} p := by
+    induction' n using SimplexCategory.rec with n
+    dsimp
+    ext j k : 3
+    · fin_cases k
+      rfl
+    · fin_cases k
+      · exact (DFunLike.congr_fun (p.arrow_src j) 0).symm
+      · exact (DFunLike.congr_fun (p.arrow_tgt j) 0).symm
+  spineToSimplex_spine x := by
+    induction' n using SimplexCategory.rec with n
+    ext
+    rfl
 
 @[ext]
 lemma path_ext {n i : ℕ} {x y : Path Δ[n] i} (h : x.vertex = y.vertex) : x = y := by

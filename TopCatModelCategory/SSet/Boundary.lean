@@ -12,7 +12,7 @@ namespace standardSimplex
 variable {n : ℕ}
 
 @[ext]
-lemma ext {j : SimplexCategoryᵒᵖ} {x y : (Δ[n] : SSet.{u}).obj j}
+lemma ext' {j : SimplexCategoryᵒᵖ} {x y : (Δ[n] : SSet.{u}).obj j} -- duplicate
     (h : objEquiv _ _ x = objEquiv _ _ y) : x = y :=
   (objEquiv _ _).injective h
 

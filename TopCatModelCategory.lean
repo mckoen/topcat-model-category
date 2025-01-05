@@ -6,6 +6,7 @@ import TopCatModelCategory.CellComplex
 import TopCatModelCategory.ClosedEmbeddings
 import TopCatModelCategory.ColimitsType
 import TopCatModelCategory.Factorization
+import TopCatModelCategory.Fin
 import TopCatModelCategory.Homotopy.Basic
 import TopCatModelCategory.IsFibrant
 import TopCatModelCategory.Iso
