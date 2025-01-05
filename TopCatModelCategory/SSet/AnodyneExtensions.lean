@@ -179,6 +179,12 @@ lemma mem₁ :
     (anodyneExtensions.comp_mem _ _ ?_ ?_))
   all_goals apply of_isIso
 
+variable (n) in
+lemma mem₀ :
+    anodyneExtensions (Subcomplex.unionProd.{u} (standardSimplex.face {(0 : Fin 2)})
+      (subcomplexBoundary n)).ι := by
+  sorry -- same as `mem₁`, but inserting the simplices in reverse order
+
 end subcomplex_unionProd_face_ι_mem
 
 open subcomplex_unionProd_face_ι_mem in
@@ -186,12 +192,12 @@ lemma subcomplex_unionProd_face_boundary_ι_mem (n : ℕ) (i : Fin 2) :
     anodyneExtensions (Subcomplex.unionProd.{u} (standardSimplex.face {i})
       (subcomplexBoundary n)).ι := by
   fin_cases i
-  · sorry
+  · exact mem₀.{u} n
   · exact mem₁.{u} n
 
 lemma subcomplex_unionProd_face_ι_mem {X : SSet.{u}} (Y : X.Subcomplex) (i : Fin 2) :
     anodyneExtensions (Subcomplex.unionProd.{u} (standardSimplex.face {i})
       (subcomplexBoundary n)).ι := by
-  sorry -- `subcomplex_unionProd_face_ι_mem` and the skeleton filtration
+  sorry -- use `subcomplex_unionProd_face_ι_mem` and the skeleton filtration
 
 end anodyneExtensions
