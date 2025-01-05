@@ -91,6 +91,11 @@ variable (S : X.Subcomplex) (T : Y.Subcomplex)
 instance : CoeOut X.Subcomplex SSet.{u} where
   coe := fun S ↦ S.toPresheaf
 
+variable (X) in
+@[simps!]
+def topIso : ((⊤ : X.Subcomplex) : SSet) ≅ X :=
+  NatIso.ofComponents (fun n ↦  (Equiv.Set.univ (X.obj n)).toIso)
+
 variable {S} in
 @[ext]
 lemma coe_ext {Δ : SimplexCategoryᵒᵖ} {x y : S.obj Δ} (h : x.val = y.val) : x = y :=
@@ -147,6 +152,23 @@ lemma homOfLE_ι : homOfLE h ≫ S₂.ι = S₁.ι := rfl
 instance : Mono (homOfLE h) := mono_of_mono_fac (homOfLE_ι h)
 
 end
+
+section
+
+variable {S₁ S₂ : X.Subcomplex} (h : S₁ = S₂)
+
+@[simps]
+def isoOfEq : (S₁ : SSet.{u}) ≅ (S₂ : SSet.{u}) where
+  hom := homOfLE (by rw [h])
+  inv := homOfLE (by rw [h])
+
+end
+
+variable (X) in
+@[simps]
+def forget : X.Subcomplex ⥤ SSet.{u} where
+  obj S := S
+  map f := homOfLE (leOfHom f)
 
 noncomputable def unionProd : (X ⊗ Y).Subcomplex := ((⊤ : X.Subcomplex).prod T) ⊔ (S.prod ⊤)
 
@@ -269,6 +291,9 @@ def preimage (A : X.Subcomplex) (p : Y ⟶ X) : Y.Subcomplex where
   map f := (Set.preimage_mono (A.map f)).trans (by
     simp only [Set.preimage_preimage, FunctorToTypes.naturality _ _ p f]
     rfl)
+
+def ofSimplex {n : ℕ} (x : X _[n]) : X.Subcomplex :=
+  image ((X.yonedaEquiv (.mk n)).symm x)
 
 end Subcomplex
 
