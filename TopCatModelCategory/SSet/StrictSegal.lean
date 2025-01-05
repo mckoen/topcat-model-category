@@ -88,7 +88,6 @@ instance (n : SimplexCategory) : (standardSimplex.{u}.obj n).StrictSegal where
         intro i
         rw [← v.arrow_src i, ← v.arrow_tgt i]
         exact (monotone_apply (v.arrow i) (Fin.zero_le (1 : Fin 2))) }
-
   spine_spineToSimplex {i} p := by
     induction' n using SimplexCategory.rec with n
     dsimp

@@ -1,5 +1,7 @@
 import TopCatModelCategory.SSet.StrictSegal
 import TopCatModelCategory.SSet.CategoryWithFibrations
+import TopCatModelCategory.SSet.ChosenFiniteProducts
+import TopCatModelCategory.SSet.SimplexCategory
 import Mathlib.CategoryTheory.MorphismProperty.Limits
 import Mathlib.CategoryTheory.MorphismProperty.Retract
 import Mathlib.CategoryTheory.MorphismProperty.TransfiniteComposition
@@ -100,7 +102,13 @@ def simplex (i : Fin (n + 1)) :
 noncomputable abbrev ιSimplex (i : Fin (n + 1)) : (Δ[n + 1] : SSet.{u}) ⟶ Δ[1] ⊗ Δ[n] :=
   (SSet.yonedaEquiv _ _ ).symm (simplex i)
 
-instance (i : Fin (n + 1)) : Mono (ιSimplex.{u} i) := sorry
+lemma injective_ιSimplex_app_zero (i : Fin (n + 1)) :
+    Function.Injective ((ιSimplex.{u} i).app (op [0])) := by
+  sorry
+
+instance (i : Fin (n + 1)) : Mono (ιSimplex.{u} i) := by
+  rw [standardSimplex.mono_iff]
+  apply injective_ιSimplex_app_zero
 
 noncomputable def filtration₁ (i : Fin (n + 2)) :
     (Δ[1] ⊗ Δ[n] : SSet.{u}).Subcomplex :=
