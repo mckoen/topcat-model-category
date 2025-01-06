@@ -105,23 +105,17 @@ def simplex₀ (i : Fin (n + 1)) (j : Fin (n + 2)) : Fin 2 × Fin (n + 1) :=
 lemma injective_simplex₀ (i : Fin (n + 1)) :
     Function.Injective (simplex₀ i) := by
   intro j₁ j₂ h₁
-  have h₃ := congr_arg Prod.fst h₁
-  have h₄ := congr_arg Prod.snd h₁
-  dsimp [simplex₀] at h₃ h₄
-  by_cases h₅ : j₂.castSucc < ⟨i + 1, by omega⟩
-  · rw [if_pos h₅] at h₃
-    split_ifs at h₃ with h₆
-    · rw [Fin.predAbove_of_lt_succ _ _ h₆,
-        Fin.predAbove_of_lt_succ _ _ h₅] at h₄
-      rwa [Fin.ext_iff] at h₄ ⊢
-    · simp at h₃
-  · rw [if_neg h₅] at h₃
-    split_ifs at h₃ with h₆
-    · simp at h₃
-    · simp only [not_lt] at h₅ h₆
-      rw [Fin.predAbove_of_succ_le _ _ h₆,
-        Fin.predAbove_of_succ_le _ _ h₅] at h₄
-      rwa [Fin.pred_inj] at h₄
+  have h₂ := congr_arg Prod.fst h₁
+  have h₃ := congr_arg Prod.snd h₁
+  dsimp [simplex₀] at h₂ h₃
+  split_ifs at h₂ with h₄ h₅ h₅
+  · rw [Fin.predAbove_of_lt_succ _ _ h₄, Fin.predAbove_of_lt_succ _ _ h₅] at h₃
+    rwa [Fin.ext_iff] at h₃ ⊢
+  · simp at h₂
+  · simp at h₂
+  · simp only [not_lt] at h₄ h₅
+    rwa [Fin.predAbove_of_succ_le _ _ h₄,
+      Fin.predAbove_of_succ_le _ _ h₅, Fin.pred_inj] at h₃
 
 noncomputable abbrev ιSimplex (i : Fin (n + 1)) : (Δ[n + 1] : SSet.{u}) ⟶ Δ[1] ⊗ Δ[n] :=
   (SSet.yonedaEquiv _ _ ).symm (simplex i)
