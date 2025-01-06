@@ -1,4 +1,4 @@
-import Mathlib.AlgebraicTopology.SimplicialSet.Basic
+import TopCatModelCategory.SSet.Subcomplex
 
 universe u
 
@@ -215,5 +215,27 @@ lemma unique_non_degenerate₃ (x : X _[n])
     by simp [α]⟩
 
 end
+
+namespace Subcomplex
+
+variable {X} (A : X.Subcomplex) {n : ℕ} (x : A.obj (op (.mk n)))
+
+lemma mem_degenerate_iff : x ∈ Degenerate A n ↔ x.1 ∈ X.Degenerate n := by
+  rw [SSet.mem_degenerate_iff, SSet.mem_degenerate_iff]
+  constructor
+  · rintro ⟨m, hm, f, _, ⟨y, rfl⟩⟩
+    exact ⟨m, hm, f, inferInstance, ⟨y.1, rfl⟩⟩
+  · obtain ⟨x, hx⟩ := x
+    rintro ⟨m, hm, f, _, ⟨y, rfl⟩⟩
+    refine ⟨m, hm, f, inferInstance, ⟨⟨y, ?_⟩, rfl⟩⟩
+    have := isSplitEpi_of_epi f
+    simpa only [Set.mem_preimage, ← op_comp, ← FunctorToTypes.map_comp_apply,
+      IsSplitEpi.id, op_id, FunctorToTypes.map_id_apply] using A.map (section_ f).op hx
+
+lemma nondegenerate_iff : x ∈ NonDegenerate A n ↔ x.1 ∈ X.NonDegenerate n := by
+  rw [mem_nondegenerate_iff_not_mem_degenerate,
+    mem_nondegenerate_iff_not_mem_degenerate, mem_degenerate_iff]
+
+end Subcomplex
 
 end SSet
