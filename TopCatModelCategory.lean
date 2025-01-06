@@ -22,6 +22,7 @@ import TopCatModelCategory.SSet.AnodyneExtensions
 import TopCatModelCategory.SSet.Boundary
 import TopCatModelCategory.SSet.CategoryWithFibrations
 import TopCatModelCategory.SSet.ChosenFiniteProducts
+import TopCatModelCategory.SSet.Degenerate
 import TopCatModelCategory.SSet.Paths
 import TopCatModelCategory.SSet.SimplexCategory
 import TopCatModelCategory.SSet.StrictSegal
