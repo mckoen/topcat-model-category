@@ -16,7 +16,7 @@ import TopCatModelCategory.ColimitsType
 
 universe u
 
-open CategoryTheory MonoidalCategory Simplicial Limits
+open CategoryTheory MonoidalCategory Simplicial Limits Opposite
 
 namespace CategoryTheory.GrothendieckTopology
 -- GrothendieckTopology.Subpresheaf should be moved...
@@ -307,6 +307,12 @@ def fromPreimage (A : X.Subcomplex) (p : Y ⟶ X) :
 
 def ofSimplex {n : ℕ} (x : X _[n]) : X.Subcomplex :=
   range ((X.yonedaEquiv (.mk n)).symm x)
+
+lemma mem_ofSimplex_obj {n : ℕ} (x : X _[n]) : x ∈ (ofSimplex x).obj _ := by
+  refine ⟨standardSimplex.objMk .id, ?_⟩
+  obtain ⟨x, rfl⟩ := (X.yonedaEquiv _).surjective x
+  rw [Equiv.symm_apply_apply]
+  rfl
 
 end
 
