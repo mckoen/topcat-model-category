@@ -2,7 +2,10 @@ import Mathlib.AlgebraicTopology.SimplicialSet.Basic
 
 universe u
 
-open CategoryTheory Simplicial Limits Opposite
+open CategoryTheory Category Simplicial Limits Opposite
+
+lemma SimplexCategory.congr_toOrderHom_apply {m n : SimplexCategory} {f g : m ⟶ n} (h : f = g)
+    (x : Fin (m.len + 1)) : f.toOrderHom x = g.toOrderHom x := by rw [h]
 
 namespace SSet
 
@@ -109,40 +112,108 @@ lemma isIso_of_non_degenerate (x : X.NonDegenerate n)
   obtain rfl := SimplexCategory.eq_id_of_epi f
   exact this inferInstance
 
-lemma unique_dimension_non_degenerate_aux (x : X _[n])
-    {m₁ m₂ : ℕ} (f₁ : ([n] : SimplexCategory) ⟶ [m₁]) [Epi f₁]
-    (y₁ : X.NonDegenerate m₁) (hy₁ : x = X.map f₁.op y₁)
-    (f₂ : ([n] : SimplexCategory) ⟶ [m₂]) [Epi f₂]
-    (y₂ : X _[m₂]) (hy₂ : x = X.map f₂.op y₂) : m₁ ≤ m₂ := by
-  have := isSplitEpi_of_epi f₁
-  let g := section_ f₁ ≫ f₂
-  have h : X.map g.op y₂ = y₁ := by
-    dsimp [g]
-    rw [FunctorToTypes.map_comp_apply, ← hy₂, hy₁, ← FunctorToTypes.map_comp_apply, ← op_comp,
-      IsSplitEpi.id, op_id, FunctorToTypes.map_id_apply]
-  rw [← image.fac g, op_comp, FunctorToTypes.map_comp_apply] at h
-  have := X.isIso_of_non_degenerate y₁ (factorThruImage g) _ h
-  exact SimplexCategory.len_le_of_mono (f := factorThruImage g ≫ image.ι g) inferInstance
+namespace unique_non_degenerate
 
+section
+
+variable {X} {x : X _[n]}
+  {m₁ m₂ : ℕ} {f₁ : ([n] : SimplexCategory) ⟶ [m₁]} (hf₁ : SplitEpi f₁)
+  (y₁ : X.NonDegenerate m₁) (hy₁ : x = X.map f₁.op y₁)
+  (f₂ : ([n] : SimplexCategory) ⟶ [m₂])
+  (y₂ : X _[m₂]) (hy₂ : x = X.map f₂.op y₂)
+
+def g := hf₁.section_ ≫ f₂
+
+variable {f₂ y₁ y₂}
+
+include hf₁ hy₁ hy₂
+
+lemma map_g_op_y₂ : X.map (g hf₁ f₂).op y₂ = y₁ := by
+  dsimp [g]
+  rw [FunctorToTypes.map_comp_apply, ← hy₂, hy₁, ← FunctorToTypes.map_comp_apply, ← op_comp,
+    SplitEpi.id, op_id, FunctorToTypes.map_id_apply]
+
+lemma isIso_factorThruImage_g :
+    IsIso (factorThruImage (g hf₁ f₂)) := by
+  have := map_g_op_y₂ hf₁ hy₁ hy₂
+  rw [← image.fac (g hf₁ f₂), op_comp, FunctorToTypes.map_comp_apply] at this
+  exact X.isIso_of_non_degenerate y₁ (factorThruImage (g hf₁ f₂)) _ this
+
+lemma mono_g : Mono (g hf₁ f₂) := by
+  have := isIso_factorThruImage_g hf₁ hy₁ hy₂
+  rw [← image.fac (g hf₁ f₂)]
+  infer_instance
+
+lemma le : m₁ ≤ m₂ := by
+  have := isIso_factorThruImage_g hf₁ hy₁ hy₂
+  exact SimplexCategory.len_le_of_mono
+    (f := factorThruImage (g hf₁ f₂) ≫ image.ι _) inferInstance
+
+end
+
+section
+
+variable {X} {x : X _[n]} {m : ℕ} {f₁ : ([n] : SimplexCategory) ⟶ [m]}
+  {y₁ : X.NonDegenerate m} (hy₁ : x = X.map f₁.op y₁)
+  {f₂ : ([n] : SimplexCategory) ⟶ [m]} {y₂ : X _[m]} (hy₂ : x = X.map f₂.op y₂)
+
+include hy₁ hy₂
+
+lemma g_eq_id (hf₁ : SplitEpi f₁) : g hf₁ f₂ = 𝟙 _ := by
+  have := mono_g hf₁ hy₁ hy₂
+  apply SimplexCategory.eq_id_of_mono
+
+end
+
+end unique_non_degenerate
+section
+
+open unique_non_degenerate
 lemma unique_non_degenerate₁ (x : X _[n])
     {m₁ m₂ : ℕ} (f₁ : ([n] : SimplexCategory) ⟶ [m₁]) [Epi f₁]
     (y₁ : X.NonDegenerate m₁) (hy₁ : x = X.map f₁.op y₁)
     (f₂ : ([n] : SimplexCategory) ⟶ [m₂]) [Epi f₂]
-    (y₂ : X.NonDegenerate m₂) (hy₂ : x = X.map f₂.op y₂) : m₁ = m₂ :=
-  le_antisymm (X.unique_dimension_non_degenerate_aux x f₁ y₁ hy₁ f₂ y₂ hy₂)
-    (X.unique_dimension_non_degenerate_aux x f₂ y₂ hy₂ f₁ y₁ hy₁)
+    (y₂ : X.NonDegenerate m₂) (hy₂ : x = X.map f₂.op y₂) : m₁ = m₂ := by
+  obtain ⟨⟨hf₁⟩⟩ := isSplitEpi_of_epi f₁
+  obtain ⟨⟨hf₂⟩⟩ := isSplitEpi_of_epi f₂
+  exact le_antisymm (le hf₁ hy₁ hy₂) (le hf₂ hy₂ hy₁)
 
 lemma unique_non_degenerate₂ (x : X _[n])
     {m : ℕ} (f₁ : ([n] : SimplexCategory) ⟶ [m]) [Epi f₁]
     (y₁ : X.NonDegenerate m) (hy₁ : x = X.map f₁.op y₁)
-    (f₂ : ([n] : SimplexCategory) ⟶ [m]) [Epi f₂]
-    (y₂ : X.NonDegenerate m) (hy₂ : x = X.map f₂.op y₂) : y₁ = y₂ := sorry
+    (f₂ : ([n] : SimplexCategory) ⟶ [m])
+    (y₂ : X.NonDegenerate m) (hy₂ : x = X.map f₂.op y₂) : y₁ = y₂ := by
+  obtain ⟨⟨hf₁⟩⟩ := isSplitEpi_of_epi f₁
+  ext
+  simpa [g_eq_id hy₁ hy₂ hf₁] using (map_g_op_y₂ hf₁ hy₁ hy₂).symm
 
 lemma unique_non_degenerate₃ (x : X _[n])
     {m : ℕ} (f₁ : ([n] : SimplexCategory) ⟶ [m]) [Epi f₁]
-    (f₂ : ([n] : SimplexCategory) ⟶ [m]) [Epi f₂]
-    (y : X.NonDegenerate m) (hy₁ : x = X.map f₁.op y)
-    (hy₂ : x = X.map f₂.op y) : f₁ = f₂ := sorry
+    (y₁ : X.NonDegenerate m) (hy₁ : x = X.map f₁.op y₁)
+    (f₂ : ([n] : SimplexCategory) ⟶ [m])-- [Epi f₂]
+    (y₂ : X.NonDegenerate m) (hy₂ : x = X.map f₂.op y₂) : f₁ = f₂ := by
+  ext x : 3
+  suffices ∃ (hf₁ : SplitEpi f₁), hf₁.section_.toOrderHom (f₁.toOrderHom x) = x by
+    obtain ⟨hf₁, hf₁'⟩ := this
+    dsimp at hf₁'
+    simpa [g, hf₁'] using (SimplexCategory.congr_toOrderHom_apply (g_eq_id hy₁ hy₂ hf₁)
+      (f₁.toOrderHom x)).symm
+  obtain ⟨⟨hf⟩⟩ := isSplitEpi_of_epi f₁
+  let α (y : Fin (m + 1)) : Fin (n + 1) :=
+    if y = f₁.toOrderHom x then x else hf.section_.toOrderHom y
+  have hα₁ (y : Fin (m + 1)) : f₁.toOrderHom (α y) = y := by
+    dsimp [α]
+    split_ifs with hy
+    · rw [hy]
+    · apply SimplexCategory.congr_toOrderHom_apply hf.id
+  have hα₂ : Monotone α := by
+    rintro y₁ y₂ h
+    by_contra! h'
+    suffices y₂ ≤ y₁ by simp [show y₁ = y₂ by omega] at h'
+    simpa only [hα₁, hα₁] using f₁.toOrderHom.monotone h'.le
+  exact ⟨{ section_ := SimplexCategory.Hom.mk ⟨α, hα₂⟩, id := by ext : 3; apply hα₁ },
+    by simp [α]⟩
 
+end
 
 end SSet
