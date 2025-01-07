@@ -218,9 +218,10 @@ end
 
 namespace Subcomplex
 
-variable {X} (A : X.Subcomplex) {n : ℕ} (x : A.obj (op (.mk n)))
+variable {X} (A : X.Subcomplex)
 
-lemma mem_degenerate_iff : x ∈ Degenerate A n ↔ x.1 ∈ X.Degenerate n := by
+lemma mem_degenerate_iff {n : ℕ} (x : A.obj (op (.mk n))) :
+    x ∈ Degenerate A n ↔ x.1 ∈ X.Degenerate n := by
   rw [SSet.mem_degenerate_iff, SSet.mem_degenerate_iff]
   constructor
   · rintro ⟨m, hm, f, _, ⟨y, rfl⟩⟩
@@ -232,9 +233,21 @@ lemma mem_degenerate_iff : x ∈ Degenerate A n ↔ x.1 ∈ X.Degenerate n := by
     simpa only [Set.mem_preimage, ← op_comp, ← FunctorToTypes.map_comp_apply,
       IsSplitEpi.id, op_id, FunctorToTypes.map_id_apply] using A.map (section_ f).op hx
 
-lemma nondegenerate_iff : x ∈ NonDegenerate A n ↔ x.1 ∈ X.NonDegenerate n := by
+lemma mem_non_degenerate_iff {n : ℕ} (x : A.obj (op (.mk n))) :
+    x ∈ NonDegenerate A n ↔ x.1 ∈ X.NonDegenerate n := by
   rw [mem_nondegenerate_iff_not_mem_degenerate,
     mem_nondegenerate_iff_not_mem_degenerate, mem_degenerate_iff]
+
+lemma eq_top_iff_contains_nonDegenerate :
+    A = ⊤ ↔ ∀ (n : ℕ), X.NonDegenerate n ⊆ A.obj _ := by
+  constructor
+  · rintro rfl
+    simp
+  · intro hA
+    ext ⟨n⟩ x
+    induction' n using SimplexCategory.rec with n
+    obtain ⟨m, f, _, ⟨x, hx⟩, rfl⟩ := X.exists_non_degenerate x
+    simpa [Set.mem_univ, iff_true] using A.map f.op (hA _ hx)
 
 end Subcomplex
 

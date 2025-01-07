@@ -21,7 +21,7 @@ lemma nondegenerate_eq_bot_of_hasDimensionLT (hn : d ≤ n) : X.NonDegenerate n 
 
 end
 
-namespace SubComplex
+namespace Subcomplex
 
 variable {X : SSet.{u}} (A : X.Subcomplex)
 
@@ -30,7 +30,19 @@ instance (d : ℕ) [X.HasDimensionLT d] : HasDimensionLT A d where
     ext x
     simp [A.mem_degenerate_iff, X.degenerate_eq_top_of_hasDimensionLT d n hd]
 
-end SubComplex
+lemma eq_top_iff_of_hasDimensionLT (d : ℕ) [X.HasDimensionLT d] :
+    A = ⊤ ↔ ∀ (i : ℕ) (_ : i < d), X.NonDegenerate i ⊆ A.obj _ := by
+  constructor
+  · rintro rfl
+    simp
+  · intro h
+    rw [eq_top_iff_contains_nonDegenerate]
+    intro i
+    by_cases hi : i < d
+    · exact h i hi
+    · simp [X.nondegenerate_eq_bot_of_hasDimensionLT d i (by simpa using hi)]
+
+end Subcomplex
 
 lemma hasDimensionLT_of_mono {X Y : SSet.{u}} (f : X ⟶ Y) [Mono f] (d : ℕ)
     [Y.HasDimensionLT d] : X.HasDimensionLT d where

@@ -41,9 +41,14 @@ lemma sInf_iff (S : Set (MorphismProperty C)) {X Y : C} (f : X ⟶ Y) :
 lemma max_iff (W₁ W₂ : MorphismProperty C) {X Y : C} (f : X ⟶ Y) :
     (W₁ ⊔ W₂) f ↔ W₁ f ∨ W₂ f := Iff.rfl
 
-instance isSmall_sup {ι : Type w'} (W : ι → MorphismProperty C) [∀ i, IsSmall.{w} (W i)]
+instance isSmall_iSup {ι : Type w'} (W : ι → MorphismProperty C) [∀ i, IsSmall.{w} (W i)]
     [Small.{w} ι] :
-    IsSmall.{w} (⨆ i, W i) := sorry
+    IsSmall.{w} (⨆ i, W i) := by
+  have : ⨆ i, W i = .ofHoms (fun (j : Σ (i : ι), (W i).toSet) ↦ j.2.1.hom) := by
+    ext
+    simp [ofHoms_iff]
+  rw [this]
+  infer_instance
 
 section
 
