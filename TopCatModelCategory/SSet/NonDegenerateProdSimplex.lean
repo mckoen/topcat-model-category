@@ -46,7 +46,10 @@ lemma subsimplex_le_subsimplex_iff {n m : ℕ}
     (g : Fin (m + 1) →o Fin (p + 1) × Fin (q + 1)) :
     subsimplex.{u} f ≤ subsimplex.{u} g ↔
       Set.range f ⊆ Set.range g := by
-  sorry
+  constructor
+  · intro h
+    simpa [subsimplex_obj_zero] using h (op [0])
+  · sorry
 
 lemma objEquiv_non_degenerate_iff (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) :
     z ∈ (Δ[p] ⊗ Δ[q]).NonDegenerate n ↔ Function.Injective (objEquiv z) := by
