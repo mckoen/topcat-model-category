@@ -25,6 +25,7 @@ import TopCatModelCategory.SSet.ChosenFiniteProducts
 import TopCatModelCategory.SSet.Degenerate
 import TopCatModelCategory.SSet.HasDimensionLT
 import TopCatModelCategory.SSet.Homotopy
+import TopCatModelCategory.SSet.NonDegenerateProdSimplex
 import TopCatModelCategory.SSet.Paths
 import TopCatModelCategory.SSet.SimplexCategory
 import TopCatModelCategory.SSet.StrictSegal
