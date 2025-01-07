@@ -238,4 +238,46 @@ lemma nondegenerate_iff : x ∈ NonDegenerate A n ↔ x.1 ∈ X.NonDegenerate n 
 
 end Subcomplex
 
+section
+
+variable {X} {Y : SSet.{u}}
+
+lemma degenerate_map {n : ℕ} {x : X _[n]} (hx : x ∈ X.Degenerate n) (f : X ⟶ Y) :
+    f.app _ x ∈ Y.Degenerate n := by
+  obtain ⟨m, hm, g, y, rfl⟩ := hx
+  exact ⟨m, hm, g, f.app _ y, by rw [FunctorToTypes.naturality]⟩
+
+lemma degenerate_le_preimage (f : X ⟶ Y) (n : ℕ) :
+    X.Degenerate n ≤ Set.preimage (f.app _) (Y.Degenerate n) :=
+  fun _ hx ↦ degenerate_map hx f
+
+lemma image_degenerate_le (f : X ⟶ Y) (n : ℕ) :
+    Set.image (f.app _) (X.Degenerate n) ⊆ Y.Degenerate n := by
+  simpa using degenerate_le_preimage f n
+
+lemma degenerate_iff_of_isIso (f : X ⟶ Y) [IsIso f] {n : ℕ} (x : X _[n]) :
+    f.app _ x ∈ Y.Degenerate n ↔ x ∈ X.Degenerate n := by
+  constructor
+  · intro hy
+    have h₁ := congr_fun ((congr_app (IsIso.hom_inv_id f)) (op [n])) x
+    dsimp at h₁
+    simpa [h₁] using degenerate_map hy (inv f)
+  · exact fun hx ↦ degenerate_map hx f
+
+lemma non_degenerate_iff_of_isIso (f : X ⟶ Y) [IsIso f] {n : ℕ} (x : X _[n]) :
+    f.app _ x ∈ Y.NonDegenerate n ↔ x ∈ X.NonDegenerate n := by
+  simp only [mem_nondegenerate_iff_not_mem_degenerate,
+    degenerate_iff_of_isIso]
+
+attribute [local simp] non_degenerate_iff_of_isIso in
+@[simps]
+def nonDegenerateEquivOfIso (e : X ≅ Y) (n : ℕ) :
+    X.NonDegenerate n ≃ Y.NonDegenerate n where
+  toFun := fun ⟨x, hx⟩ ↦ ⟨e.hom.app _ x, by aesop⟩
+  invFun := fun ⟨y, hy⟩ ↦ ⟨e.inv.app _ y, by aesop⟩
+  left_inv _ := by aesop
+  right_inv _ := by aesop
+
+end
+
 end SSet

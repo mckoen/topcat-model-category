@@ -2,6 +2,8 @@ import TopCatModelCategory.SSet.Degenerate
 
 universe u
 
+open CategoryTheory
+
 namespace SSet
 
 class HasDimensionLT (X : SSet.{u}) (d : ℕ) : Prop where
@@ -29,5 +31,13 @@ instance (d : ℕ) [X.HasDimensionLT d] : HasDimensionLT A d where
     simp [A.mem_degenerate_iff, X.degenerate_eq_top_of_hasDimensionLT d n hd]
 
 end SubComplex
+
+lemma hasDimensionLT_of_mono {X Y : SSet.{u}} (f : X ⟶ Y) [Mono f] (d : ℕ)
+    [Y.HasDimensionLT d] : X.HasDimensionLT d where
+  degenerate_eq_top n hn := by
+    ext x
+    rw [← degenerate_iff_of_isIso (toRangeSubcomplex f),
+      Subcomplex.mem_degenerate_iff, Y.degenerate_eq_top_of_hasDimensionLT d n hn]
+    simp
 
 end SSet

@@ -235,6 +235,20 @@ lemma toRangeSubcomplex_apply_val {Δ : SimplexCategoryᵒᵖ} (x : X.obj Δ) :
 @[reassoc (attr := simp)]
 lemma toRangeSubcomplex_ι : toRangeSubcomplex f ≫ (Subcomplex.range f).ι = f := rfl
 
+instance : Epi (toRangeSubcomplex f) := by
+  have (n) : Epi ((toRangeSubcomplex f).app n) := by
+    rw [epi_iff_surjective]
+    rintro ⟨_, x, rfl⟩
+    exact ⟨x, rfl⟩
+  apply NatTrans.epi_of_epi_app
+
+instance : Balanced SSet.{u} :=
+  inferInstanceAs (Balanced (SimplexCategoryᵒᵖ ⥤ Type u))
+
+instance {X Y : SSet.{u}} (f : X ⟶ Y) [Mono f] : IsIso (toRangeSubcomplex f) := by
+  have := mono_of_mono_fac (toRangeSubcomplex_ι f)
+  apply isIso_of_mono_of_epi
+
 end
 
 namespace Subcomplex
