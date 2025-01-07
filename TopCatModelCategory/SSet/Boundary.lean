@@ -41,12 +41,24 @@ lemma subcomplexBoundary_obj_eq_top (m n : ℕ) (h : m < n) :
     rintro _ ⟨x, rfl⟩
     apply Fin.succAbove_ne
 
-instance : HasDimensionLT (subcomplexBoundary.{u} n) n := by
-  sorry
-
 namespace standardSimplex
 
 variable {n : ℕ} (A : (Δ[n] : SSet.{u}).Subcomplex)
+
+lemma subcomplex_hasDimensionLT_of_neq_top (h : A ≠ ⊤) :
+    HasDimensionLT A n where
+  degenerate_eq_top i hi := by
+    ext ⟨a, ha⟩
+    rw [A.mem_degenerate_iff]
+    simp
+    obtain hi | rfl := hi.lt_or_eq
+    · simp [Δ[n].degenerate_eq_top_of_hasDimensionLT (n + 1) i (by omega)]
+    · rw [mem_degenerate_iff_non_mem_nondegenerate, non_degenerate_top_dim]
+      rintro rfl
+      apply h
+      ext ⟨m⟩ x
+      obtain ⟨f, rfl⟩ := (objEquiv _ _).symm.surjective x
+      simpa using A.map f.op ha
 
 lemma subcomplex_le_boundary_iff :
     A ≤ subcomplexBoundary n ↔ A ≠ ⊤ := by
@@ -54,13 +66,21 @@ lemma subcomplex_le_boundary_iff :
   · rintro h rfl
     exact non_mem_subcomplexBoundary.{u} n (h _ (by simp))
   · intro h
-    -- * show A is of dimension < n because it does not contain the "𝟙 [n]"` simplex
-    -- * generalize `Subcomplex.eq_top_iff_of_hasDimensionLT`
-    --   to an inclusion between two subcomplexes
-    -- * use `subcomplexBoundary_obj_eq_top`
-    -- note: generalize also `eq_top_iff_contains_nonDegenerate` as a
-    -- `le_iff_contains_nonDegenerate` lemma
-    sorry
+    have := subcomplex_hasDimensionLT_of_neq_top _ h
+    rw [Subcomplex.le_iff_contains_nonDegenerate]
+    rintro m ⟨x, h₁⟩ h₂
+    dsimp at h₂ ⊢
+    by_cases h₃ : m < n
+    · simp [subcomplexBoundary_obj_eq_top m n (by simpa using h₃)]
+    · simp only [not_lt] at h₃
+      replace h₁ := (A.mem_non_degenerate_iff ⟨x, h₂⟩).2 h₁
+      rw [nondegenerate_eq_bot_of_hasDimensionLT _ _ _ h₃] at h₁
+      simp at h₁
+
+instance : HasDimensionLT (subcomplexBoundary.{u} n) n := by
+  apply subcomplex_hasDimensionLT_of_neq_top
+  intro h
+  simpa [h] using non_mem_subcomplexBoundary.{u} n
 
 end standardSimplex
 

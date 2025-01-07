@@ -238,16 +238,22 @@ lemma mem_non_degenerate_iff {n : ℕ} (x : A.obj (op (.mk n))) :
   rw [mem_nondegenerate_iff_not_mem_degenerate,
     mem_nondegenerate_iff_not_mem_degenerate, mem_degenerate_iff]
 
+lemma le_iff_contains_nonDegenerate (B : X.Subcomplex) :
+    A ≤ B ↔ ∀ (n : ℕ) (x : X.NonDegenerate n), x.1 ∈ A.obj _ → x.1 ∈ B.obj _ := by
+  constructor
+  · aesop
+  · rintro h ⟨n⟩ x hx
+    induction' n using SimplexCategory.rec with n
+    obtain ⟨m, f, _, ⟨a, ha⟩, ha'⟩ := exists_non_degenerate A ⟨x, hx⟩
+    simp only [GrothendieckTopology.Subpresheaf.toPresheaf_obj, Subtype.ext_iff,
+      GrothendieckTopology.Subpresheaf.toPresheaf_map_coe] at ha'
+    subst ha'
+    rw [mem_non_degenerate_iff] at ha
+    exact B.map f.op (h _ ⟨_, ha⟩ a.2)
+
 lemma eq_top_iff_contains_nonDegenerate :
     A = ⊤ ↔ ∀ (n : ℕ), X.NonDegenerate n ⊆ A.obj _ := by
-  constructor
-  · rintro rfl
-    simp
-  · intro hA
-    ext ⟨n⟩ x
-    induction' n using SimplexCategory.rec with n
-    obtain ⟨m, f, _, ⟨x, hx⟩, rfl⟩ := X.exists_non_degenerate x
-    simpa [Set.mem_univ, iff_true] using A.map f.op (hA _ hx)
+  simpa using le_iff_contains_nonDegenerate ⊤ A
 
 end Subcomplex
 
