@@ -1,33 +1,10 @@
 import TopCatModelCategory.SSet.Degenerate
+import TopCatModelCategory.Fin
 
 open CategoryTheory Simplicial MonoidalCategory Opposite
 
 universe u
 
-namespace Fin
-
-lemma orderHom_injective_iff {α : Type*} [PartialOrder α] {n : ℕ} (f : Fin (n + 1) →o α) :
-    Function.Injective f ↔ ∀ (i : Fin n), f i.castSucc ≠ f i.succ := by
-  constructor
-  · intro hf i h
-    simpa [Fin.ext_iff] using hf h
-  · intro hf i j h
-    wlog hij : i ≤ j generalizing i j h
-    · exact (this h.symm (by omega)).symm
-    obtain ⟨k, hk⟩ := Nat.le.dest hij
-    cases k with
-    | zero => ext; omega
-    | succ k =>
-        let l : Fin n := ⟨i.1, by omega⟩
-        have h₁ : f i < f l.succ := by
-          rw [lt_iff_le_and_ne]
-          exact ⟨f.monotone l.castSucc_le_succ, hf l⟩
-        have h₂ : f i < f j := lt_of_lt_of_le h₁ (f.monotone (by
-          simp only [Fin.le_def, val_succ]
-          omega))
-        exact (h₂.ne h).elim
-
-end Fin
 
 namespace SSet
 
@@ -54,7 +31,7 @@ lemma objEquiv_naturality {m n : ℕ} (f : ([m] : SimplexCategory) ⟶ [n])
   rfl
 
 def objEquiv₀ : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[0] ≃ Fin (p + 1) × Fin (q + 1) :=
-  objEquiv.trans sorry
+  objEquiv.trans Fin.oneOrderHomEquiv
 
 noncomputable abbrev subsimplex {n : ℕ} (f : Fin (n + 1) →o Fin (p + 1) × Fin (q + 1)) :
     (Δ[p] ⊗ Δ[q] : SSet.{u}).Subcomplex :=

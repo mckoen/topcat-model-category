@@ -1,4 +1,4 @@
-import TopCatModelCategory.SSet.StrictSegal
+import TopCatModelCategory.SSet.StandardSimplex
 import TopCatModelCategory.SSet.CategoryWithFibrations
 import TopCatModelCategory.SSet.ChosenFiniteProducts
 import TopCatModelCategory.SSet.SimplexCategory

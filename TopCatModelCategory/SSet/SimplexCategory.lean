@@ -11,4 +11,26 @@ lemma surjective_const {n : ℕ} (f : mk 0 ⟶ mk n) :
     fin_cases j
     rfl⟩
 
+instance : Balanced SimplexCategory where
+  isIso_of_mono_of_epi f h₁ h₂ := by
+    rw [mono_iff_injective] at h₁
+    rw [epi_iff_surjective] at h₂
+    exact SimplexCategory.isIso_of_bijective ⟨h₁, h₂⟩
+
+instance (n : SimplexCategory) (f : mk 0 ⟶ n) : IsSplitMono f where
+  exists_splitMono := ⟨{ retraction := const _ _ 0 }⟩
+
+instance {α β : Type*} [Preorder α] [Preorder β]
+    [Finite α] [Finite β] : Finite (α →o β) :=
+  Finite.of_injective (β := α → β) (fun f ↦ f) (fun f g h ↦ by
+    ext x
+    exact congr_fun h x)
+
+instance (a b : SimplexCategory) : Finite (a ⟶ b) :=
+  Finite.of_injective (β := Fin (a.len + 1) →o Fin (b.len + 1))
+    (fun f ↦ f.toOrderHom) (fun f g h ↦ by
+      ext x
+      dsimp at h
+      rw [h])
+
 end SimplexCategory

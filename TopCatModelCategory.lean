@@ -23,11 +23,14 @@ import TopCatModelCategory.SSet.Boundary
 import TopCatModelCategory.SSet.CategoryWithFibrations
 import TopCatModelCategory.SSet.ChosenFiniteProducts
 import TopCatModelCategory.SSet.Degenerate
+import TopCatModelCategory.SSet.Finite
 import TopCatModelCategory.SSet.HasDimensionLT
 import TopCatModelCategory.SSet.Homotopy
+import TopCatModelCategory.SSet.Horn
 import TopCatModelCategory.SSet.NonDegenerateProdSimplex
 import TopCatModelCategory.SSet.Paths
 import TopCatModelCategory.SSet.SimplexCategory
+import TopCatModelCategory.SSet.StandardSimplex
 import TopCatModelCategory.SSet.StrictSegal
 import TopCatModelCategory.SSet.Subcomplex
 import TopCatModelCategory.TopCatIsColimit
