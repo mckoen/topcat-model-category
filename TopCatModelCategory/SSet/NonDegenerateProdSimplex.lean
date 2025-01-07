@@ -1,12 +1,12 @@
 import TopCatModelCategory.SSet.Degenerate
 
-open CategoryTheory Simplicial MonoidalCategory
+open CategoryTheory Simplicial MonoidalCategory Opposite
 
 universe u
 
 namespace Fin
 
-def orderHom_injective_iff {α : Type*} [PartialOrder α] {n : ℕ} (f : Fin (n + 1) →o α) :
+lemma orderHom_injective_iff {α : Type*} [PartialOrder α] {n : ℕ} (f : Fin (n + 1) →o α) :
     Function.Injective f ↔ ∀ (i : Fin n), f i.castSucc ≠ f i.succ := by
   constructor
   · intro hf i h
@@ -19,7 +19,6 @@ def orderHom_injective_iff {α : Type*} [PartialOrder α] {n : ℕ} (f : Fin (n 
     | zero => ext; omega
     | succ k =>
         let l : Fin n := ⟨i.1, by omega⟩
-        have pif := hf l
         have h₁ : f i < f l.succ := by
           rw [lt_iff_le_and_ne]
           exact ⟨f.monotone l.castSucc_le_succ, hf l⟩
@@ -53,6 +52,24 @@ lemma objEquiv_naturality {m n : ℕ} (f : ([m] : SimplexCategory) ⟶ [n])
     (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) :
     (objEquiv z).comp f.toOrderHom = objEquiv ((Δ[p] ⊗ Δ[q]).map f.op z) :=
   rfl
+
+def objEquiv₀ : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[0] ≃ Fin (p + 1) × Fin (q + 1) :=
+  objEquiv.trans sorry
+
+noncomputable abbrev subsimplex {n : ℕ} (f : Fin (n + 1) →o Fin (p + 1) × Fin (q + 1)) :
+    (Δ[p] ⊗ Δ[q] : SSet.{u}).Subcomplex :=
+  Subcomplex.ofSimplex (objEquiv.symm f)
+
+lemma subsimplex_obj_zero {n : ℕ} (f : Fin (n + 1) →o Fin (p + 1) × Fin (q + 1)) :
+  (subsimplex f).obj (op [0]) =
+    Set.image (objEquiv₀.{u}).symm (Set.range f) := sorry
+
+lemma subsimplex_le_subsimplex_iff {n m : ℕ}
+    (f : Fin (n + 1) →o Fin (p + 1) × Fin (q + 1))
+    (g : Fin (m + 1) →o Fin (p + 1) × Fin (q + 1)) :
+    subsimplex.{u} f ≤ subsimplex.{u} g ↔
+      Set.range f ⊆ Set.range g := by
+  sorry
 
 lemma objEquiv_non_degenerate_iff (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) :
     z ∈ (Δ[p] ⊗ Δ[q]).NonDegenerate n ↔ Function.Injective (objEquiv z) := by
