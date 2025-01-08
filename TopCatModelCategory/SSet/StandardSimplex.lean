@@ -212,12 +212,26 @@ lemma mem_non_degenerate_iff_mono {d : ℕ} (x : (Δ[n] : SSet.{u}) _[d]) :
     have := SimplexCategory.le_of_mono (mono_of_mono_fac hg)
     omega
 
-/-def nonDegenerateEquiv {m : ℕ} : (Δ[n] : SSet.{u}).NonDegenerate m ≃
-    { S : Finset (Fin (n + 1)) | S.card = m + 1 } where
-  toFun := sorry
-  invFun := sorry
-  left_inv := sorry
-  right_inv := sorry-/
+variable (n) in
+lemma bijective_image_objEquiv_toOrderHom_top (m : ℕ) :
+    Function.Bijective (fun (⟨x, hx⟩ : (Δ[n] : SSet.{u}).NonDegenerate m) ↦
+      (⟨Finset.image (objEquiv _ _ x).toOrderHom ⊤, by
+        rw [mem_non_degenerate_iff_mono, SimplexCategory.mono_iff_injective] at hx
+        dsimp
+        rw [Finset.card_image_of_injective _ (by exact hx), Finset.card_univ,
+          Fintype.card_fin]⟩ : { S : Finset (Fin (n + 1)) | S.card = m + 1 })) := by
+  constructor
+  · rintro ⟨x₁, h₁⟩ ⟨x₂, h₂⟩ h₃
+    obtain ⟨f₁, rfl⟩ := (objEquiv _ _ ).symm.surjective x₁
+    obtain ⟨f₂, rfl⟩ := (objEquiv _ _ ).symm.surjective x₂
+    simp [mem_non_degenerate_iff_mono] at h₁ h₂
+    simp at h₃ ⊢
+    sorry
+  · sorry
+
+noncomputable def nonDegenerateEquiv {m : ℕ} : (Δ[n] : SSet.{u}).NonDegenerate m ≃
+    { S : Finset (Fin (n + 1)) | S.card = m + 1 } :=
+  Equiv.ofBijective _ (bijective_image_objEquiv_toOrderHom_top n m)
 
 lemma non_degenerate_top_dim :
     (Δ[n] : SSet.{u}).NonDegenerate n = {objMk .id} := by
