@@ -21,10 +21,9 @@ lemma face_le_subcomplexBoundary (i : Fin (n + 1)) :
 
 lemma non_mem_subcomplexBoundary (n : ℕ):
     standardSimplex.objMk .id ∉ (subcomplexBoundary.{u} n).obj (op [n]) := by
-  simp only [subcomplexBoundary_eq_iSup, CategoryTheory.GrothendieckTopology.iSup_obj,
-    Set.iSup_eq_iUnion, Set.mem_iUnion, not_exists]
+  simp [subcomplexBoundary_eq_iSup]
   intro i hi
-  simpa using @hi i ⟨i, rfl⟩
+  simpa using @hi i (by aesop)
 
 lemma subcomplexBoundary_obj_eq_top (m n : ℕ) (h : m < n) :
     (subcomplexBoundary.{u} n).obj (op [m]) = ⊤ := by
@@ -38,7 +37,8 @@ lemma subcomplexBoundary_obj_eq_top (m n : ℕ) (h : m < n) :
       have := SimplexCategory.le_of_epi (f := f) inferInstance
       omega)
     apply face_le_subcomplexBoundary i
-    rintro _ ⟨x, rfl⟩
+    simp
+    intro i
     apply Fin.succAbove_ne
 
 namespace standardSimplex

@@ -113,32 +113,39 @@ lemma ext' {j : SimplexCategoryᵒᵖ} {x y : (Δ[n] : SSet.{u}).obj j} -- dupli
     (h : objEquiv _ _ x = objEquiv _ _ y) : x = y :=
   (objEquiv _ _).injective h
 
+attribute [local simp] Finset.image_subset_iff
+
 @[simps (config := .lemmasOnly)]
-def face (S : Set (Fin (n + 1))) : (Δ[n] : SSet.{u}).Subcomplex where
-  obj U := setOf (fun f ↦ Set.range ((objEquiv _ _) f).toOrderHom ⊆ S)
-  map := by
-    rintro _ _ _ _ hx _ ⟨j, rfl⟩
-    exact hx (by aesop)
+def face (S : Finset (Fin (n + 1))) : (Δ[n] : SSet.{u}).Subcomplex where
+  obj U := setOf (fun f ↦ Finset.image ((objEquiv _ _) f).toOrderHom ⊤ ≤ S)
+  map {U V} i := by
+    simp
+    intro x hx y
+    apply hx
 
 @[simp]
-lemma mem_face_iff (S : Set (Fin (n + 1))) {d : ℕ} (x : (Δ[n] : SSet.{u}) _[d]) :
+lemma mem_face_iff (S : Finset (Fin (n + 1))) {d : ℕ} (x : (Δ[n] : SSet.{u}) _[d]) :
     x ∈ (face S).obj _ ↔ ∀ (i : Fin (d + 1)), x i ∈ S := by
-  simp [face, Set.range_subset_iff]
+  simp [face]
   rfl
 
-lemma face_inter_face (S₁ S₂ : Set (Fin (n + 1))) :
+@[simp]
+lemma Subcomplex.inter_obj {X : SSet.{u}} (A B : X.Subcomplex) (n : SimplexCategoryᵒᵖ) :
+    (A ⊓ B).obj n = A.obj n ⊓ B.obj n := rfl
+
+lemma face_inter_face (S₁ S₂ : Finset (Fin (n + 1))) :
     face S₁ ⊓ face S₂ = face (S₁ ⊓ S₂) := by
   dsimp [face]
   aesop
 
-def faceRepresentableBy (S : Set (Fin (n + 1)))
+def faceRepresentableBy (S : Finset (Fin (n + 1)))
     (m : ℕ) (e : Fin (m + 1) ≃o S) :
     (face S : SSet.{u}).RepresentableBy (.mk m) where
   homEquiv {j} :=
-    { toFun f := ⟨objMk ((OrderHom.Subtype.val S).comp
+    { toFun f := ⟨objMk ((OrderHom.Subtype.val S.toSet).comp
           (e.toOrderEmbedding.toOrderHom.comp f.toOrderHom)), fun _ ↦ by aesop⟩
       invFun := fun ⟨x, hx⟩ ↦ SimplexCategory.Hom.mk
-        { toFun i := e.symm ⟨(objEquiv _ _ x).toOrderHom i, hx (Set.mem_range_self i)⟩
+        { toFun i := e.symm ⟨(objEquiv _ _ x).toOrderHom i, hx (by aesop)⟩
           monotone' i₁ i₂ h := e.symm.monotone (by
             simp only [Subtype.mk_le_mk]
             exact OrderHom.monotone _ h) }
@@ -152,15 +159,15 @@ def faceRepresentableBy (S : Set (Fin (n + 1)))
           (e.apply_symm_apply ⟨(objEquiv _ _ x).toOrderHom i, _⟩) }
   homEquiv_comp f g := by aesop
 
-lemma obj₀Equiv_symm_mem_face_iff (S : Set (Fin (n + 1))) (i : Fin (n + 1)) :
+lemma obj₀Equiv_symm_mem_face_iff (S : Finset (Fin (n + 1))) (i : Fin (n + 1)) :
     (obj₀Equiv.symm i) ∈ (face S).obj (op (.mk 0)) ↔ i ∈ S := by
   constructor
   · intro h
-    exact h ⟨0, rfl⟩
-  · rintro h _ ⟨_, rfl⟩
-    exact h
+    simp at h
+    exact h 0
+  · aesop
 
-lemma face_le_face_iff (S₁ S₂ : Set (Fin (n + 1))) :
+lemma face_le_face_iff (S₁ S₂ : Finset (Fin (n + 1))) :
     face.{u} S₁ ≤ face S₂ ↔ S₁ ≤ S₂ := by
   constructor
   · intro h i hi
@@ -204,6 +211,13 @@ lemma mem_non_degenerate_iff_mono {d : ℕ} (x : (Δ[n] : SSet.{u}) _[d]) :
       EmbeddingLike.apply_eq_iff_eq] at hg
     have := SimplexCategory.le_of_mono (mono_of_mono_fac hg)
     omega
+
+/-def nonDegenerateEquiv {m : ℕ} : (Δ[n] : SSet.{u}).NonDegenerate m ≃
+    { S : Finset (Fin (n + 1)) | S.card = m + 1 } where
+  toFun := sorry
+  invFun := sorry
+  left_inv := sorry
+  right_inv := sorry-/
 
 lemma non_degenerate_top_dim :
     (Δ[n] : SSet.{u}).NonDegenerate n = {objMk .id} := by
