@@ -152,7 +152,7 @@ lemma homOfLE_app_val (Δ : SimplexCategoryᵒᵖ) (x : S₁.obj Δ) :
 @[reassoc (attr := simp)]
 lemma homOfLE_ι : homOfLE h ≫ S₂.ι = S₁.ι := rfl
 
-instance : Mono (homOfLE h) := mono_of_mono_fac (homOfLE_ι h)
+instance mono_homOfLE : Mono (homOfLE h) := mono_of_mono_fac (homOfLE_ι h)
 
 end
 

@@ -52,4 +52,9 @@ lemma hasDimensionLT_of_mono {X Y : SSet.{u}} (f : X ⟶ Y) [Mono f] (d : ℕ)
       Subcomplex.mem_degenerate_iff, Y.degenerate_eq_top_of_hasDimensionLT d n hn]
     simp
 
+lemma Subcomplex.hasDimensionLT_of_le {X : SSet.{u}} {A B : X.Subcomplex} (h : A ≤ B)
+    (d : ℕ) [HasDimensionLT B d] : HasDimensionLT A d := by
+  have := mono_homOfLE h
+  exact hasDimensionLT_of_mono (Subcomplex.homOfLE h) d
+
 end SSet
