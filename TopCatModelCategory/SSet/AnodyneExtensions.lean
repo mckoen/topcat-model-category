@@ -84,8 +84,8 @@ lemma of_isIso {X Y : SSet.{u}} (f : X ⟶ Y) [IsIso f] :
     anodyneExtensions f :=
   MorphismProperty.of_isIso _ _
 
-lemma subcomplexHorn_ι_mem (n : ℕ) (i : Fin (n + 1)) :
-    anodyneExtensions (subcomplexHorn.{u} n i).ι := by
+lemma subcomplexHorn_ι_mem (n : ℕ) (i : Fin (n + 2)) :
+    anodyneExtensions (subcomplexHorn.{u} (n + 1) i).ι := by
   apply MorphismProperty.le_rlp_llp
   simp only [J, MorphismProperty.iSup_iff]
   exact ⟨n, ⟨i⟩⟩
@@ -190,7 +190,7 @@ lemma filtration₁_to_succ_mem (i : Fin (n + 1)) :
       (by simp only [Subcomplex.image_top, filtration₁_succ, Subcomplex.ofSimplex]))
   exact MorphismProperty.of_isPushout (P := anodyneExtensions) this
     (anodyneExtensions.{u}.comp_mem _ _
-      (subcomplexHorn_ι_mem (n + 1) i.succ) (of_isIso ((Subcomplex.topIso _).inv)))
+      (subcomplexHorn_ι_mem n i.succ) (of_isIso ((Subcomplex.topIso _).inv)))
 
 lemma filtation₁_map_mem {i j : Fin (n + 2)} (h : i ≤ j) :
     anodyneExtensions (Subcomplex.homOfLE (monotone_filtration₁.{u} h)) :=

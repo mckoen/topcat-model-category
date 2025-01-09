@@ -93,4 +93,9 @@ lemma orderHom_ext_of_injective {α : Type*} [PartialOrder α] [DecidableEq α]
     · exact orderHom_ext_of_injective_aux hf h.symm _
         (fun k hk ↦ (hi k hk (by omega)).symm)
 
+@[simp]
+lemma range_succAboveOrderEmb {n : ℕ} (i : Fin (n + 1)) :
+    Set.range (Fin.succAboveOrderEmb i).toOrderHom = {i}ᶜ := by aesop
+
+
 end Fin

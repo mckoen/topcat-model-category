@@ -14,7 +14,7 @@ def I : MorphismProperty SSet.{u} :=
   .ofHoms (fun (n : ℕ) ↦ (subcomplexBoundary.{u} n).ι)
 
 def J : MorphismProperty SSet.{u} :=
-  ⨆ n, .ofHoms (fun i ↦ (subcomplexHorn.{u} n i).ι)
+  ⨆ n, .ofHoms (fun i ↦ (subcomplexHorn.{u} (n + 1) i).ι)
 
 lemma I_le_monomorphisms : I.{u} ≤ monomorphisms _ := by
   rintro _ _ _ ⟨n⟩

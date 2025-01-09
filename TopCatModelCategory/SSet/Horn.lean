@@ -54,8 +54,17 @@ lemma subcomplexHorn_obj_eq_top (i : Fin (n + 1)) (m : ℕ) (h : m + 1 < n) :
   exact ⟨j, hij, fun k hk ↦ hj ⟨k, hk⟩⟩
 
 lemma standardSimplex.subcomplex_le_horn_iff
-    (A : (Δ[n] : SSet.{u}).Subcomplex) (i : Fin (n + 1)) :
-    A ≤ subcomplexHorn n i ↔ ¬ (face {i}ᶜ ≤ A) := by
-  sorry
+    (A : (Δ[n + 1] : SSet.{u}).Subcomplex) (i : Fin (n + 2)) :
+    A ≤ subcomplexHorn (n + 1) i ↔ ¬ (face {i}ᶜ ≤ A) := by
+  constructor
+  · intro hA h
+    replace h := h.trans hA
+    rw [face_singleton_compl, Subcomplex.ofSimplex_le_iff,
+      mem_subcomplexHorn_iff] at h
+    apply h
+    change Set.range (Fin.succAboveOrderEmb i).toOrderHom ∪ _ = _
+    rw [Fin.range_succAboveOrderEmb]
+    exact Set.compl_union_self {i}
+  · sorry
 
 end SSet

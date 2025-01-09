@@ -199,11 +199,14 @@ lemma subcomplexBoundary_toSSet (n : ℕ) : subcomplexBoundary.{u} n = ∂Δ[n] 
 lemma subcomplexBoundary_ι (n : ℕ) :
     (subcomplexBoundary.{u} n).ι = boundaryInclusion n := rfl
 
---instance (n : ℕ): Mono (subcomplexBoundary.{u} n).ι := inferInstance
-
+@[simps]
 def subcomplexHorn (n : ℕ) (i : Fin (n + 1)) : (Δ[n] : SSet.{u}).Subcomplex where
   obj _ s := Set.range (asOrderHom s) ∪ {i} ≠ Set.univ
   map φ s hs := ((horn n i).map φ ⟨s, hs⟩).2
+
+lemma mem_subcomplexHorn_iff {n : ℕ} (i : Fin (n + 1)) {m : SimplexCategoryᵒᵖ}
+    (x : (Δ[n] : SSet.{u}).obj m) :
+    x ∈ (subcomplexHorn n i).obj m ↔ Set.range (asOrderHom x) ∪ {i} ≠ Set.univ := Iff.rfl
 
 lemma subcomplexHorn_toSSet (n : ℕ) (i : Fin (n + 1)) :
     subcomplexHorn.{u} n i = Λ[n, i] := rfl
@@ -327,6 +330,10 @@ lemma mem_ofSimplex_obj {n : ℕ} (x : X _[n]) : x ∈ (ofSimplex x).obj _ := by
   obtain ⟨x, rfl⟩ := (X.yonedaEquiv _).surjective x
   rw [Equiv.symm_apply_apply]
   rfl
+
+@[simp]
+lemma ofSimplex_le_iff {n : ℕ} (x : X _[n]) (A : X.Subcomplex) :
+    ofSimplex x ≤ A ↔ x ∈ A.obj _ := sorry
 
 end
 

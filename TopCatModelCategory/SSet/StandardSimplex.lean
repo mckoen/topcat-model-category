@@ -181,6 +181,16 @@ lemma face_le_face_iff (S₁ S₂ : Finset (Fin (n + 1))) :
     dsimp [face] at ha ⊢
     exact ha.trans h
 
+lemma face_eq_ofSimplex (S : Finset (Fin (n + 1))) (m : ℕ) (e : Fin (m + 1) ≃o S) :
+    face.{u} S = Subcomplex.ofSimplex (n := m)
+        (by exact objMk ((OrderHom.Subtype.val S.toSet).comp e.toOrderEmbedding.toOrderHom)) := by
+  sorry
+
+lemma face_singleton_compl (i : Fin (n + 2)) :
+    face.{u} {i}ᶜ =
+      Subcomplex.ofSimplex (n := n) (objMk (SimplexCategory.δ i).toOrderHom) := by
+  sorry
+
 lemma mem_non_degenerate_iff_mono {d : ℕ} (x : (Δ[n] : SSet.{u}) _[d]) :
     x ∈ Δ[n].NonDegenerate d ↔ Mono (objEquiv _ _ x) := by
   obtain ⟨f, rfl⟩ := (objEquiv _ _).symm.surjective x
