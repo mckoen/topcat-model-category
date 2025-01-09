@@ -1,5 +1,6 @@
 import Mathlib.Algebra.Group.Nat.Basic
 import Mathlib.Order.Fin.Basic
+import Mathlib.Data.Fintype.Card
 
 namespace Fin
 
@@ -52,5 +53,44 @@ def oneOrderHomEquiv {α : Type*} [Preorder α] :
     obtain rfl := Subsingleton.elim 0 i
     rfl
   right_inv _ := rfl
+
+lemma orderHom_ext_of_injective_aux {α : Type*} [PartialOrder α] [DecidableEq α]
+    {n : ℕ} {f g : Fin n →o α}
+    (hg : Function.Injective g)
+    (h : Finset.image f ⊤ = Finset.image g ⊤) (i : Fin n)
+    (h' : ∀ (j : Fin n), j < i → f j = g j) :
+    f i ≤ g i := by
+  have : g i ∈ Finset.image f ⊤ := by rw [h]; simp
+  simp only [Finset.top_eq_univ, Finset.mem_image, Finset.mem_univ, true_and] at this
+  obtain ⟨j, hj⟩ := this
+  rw [← hj]
+  apply f.monotone
+  by_contra!
+  rw [h' j this] at hj
+  obtain rfl := hg hj
+  simp at this
+
+lemma orderHom_ext_of_injective {α : Type*} [PartialOrder α] [DecidableEq α]
+    {n : ℕ} {f g : Fin n →o α}
+    (hf : Function.Injective f) (hg : Function.Injective g)
+    (h : Finset.image f ⊤ = Finset.image g ⊤) :
+    f = g := by
+  let P (i : ℕ) := ∀ (j : ℕ) (hij : j < i) (hj : j < n), f ⟨j, by omega⟩ = g ⟨j, by omega⟩
+  suffices ∀ i, P i by ext i; exact this (i.1 + 1) i.1 (by omega) (by omega)
+  suffices ∀ i, P i → P (i + 1) by
+    intro i
+    induction i with
+    | zero =>
+        intro _ _
+        omega
+    | succ i hi => exact fun j hij hj ↦ this _ hi j hij hj
+  intro i hi j hij hj
+  obtain hij | rfl := (Nat.le_of_lt_succ hij).lt_or_eq
+  · exact hi j hij hj
+  · apply le_antisymm
+    · exact orderHom_ext_of_injective_aux hg h _
+        (fun k hk ↦ hi k hk (by omega))
+    · exact orderHom_ext_of_injective_aux hf h.symm _
+        (fun k hk ↦ (hi k hk (by omega)).symm)
 
 end Fin

@@ -7,6 +7,10 @@ universe u
 
 open CategoryTheory Opposite Simplicial
 
+theorem Finset.image_comp (f : β → γ) (g : α → β) [DecidableEq β] [DecidableEq γ]
+    (a : Finset α) :
+    Finset.image (f ∘ g) a = Finset.image f (Finset.image g a) := by aesop
+
 namespace SSet
 
 namespace standardSimplex
@@ -224,10 +228,20 @@ lemma bijective_image_objEquiv_toOrderHom_top (m : ℕ) :
   · rintro ⟨x₁, h₁⟩ ⟨x₂, h₂⟩ h₃
     obtain ⟨f₁, rfl⟩ := (objEquiv _ _ ).symm.surjective x₁
     obtain ⟨f₂, rfl⟩ := (objEquiv _ _ ).symm.surjective x₂
-    simp [mem_non_degenerate_iff_mono] at h₁ h₂
+    simp [mem_non_degenerate_iff_mono, SimplexCategory.mono_iff_injective] at h₁ h₂
     simp at h₃ ⊢
-    sorry
-  · sorry
+    apply SimplexCategory.Hom.ext
+    apply Fin.orderHom_ext_of_injective h₁ h₂ h₃
+  · intro ⟨S, hS⟩
+    dsimp at hS
+    let e := monoEquivOfFin S (k := m + 1) (by simpa using hS)
+    refine ⟨⟨objMk ((OrderHom.Subtype.val _).comp (e.toOrderEmbedding.toOrderHom)), ?_⟩, ?_⟩
+    · rw [mem_non_degenerate_iff_mono, SimplexCategory.mono_iff_injective]
+      intro a b h
+      apply e.injective
+      ext : 1
+      exact h
+    · simp [e, Finset.image_comp, Finset.image_univ_of_surjective e.surjective]
 
 noncomputable def nonDegenerateEquiv {m : ℕ} : (Δ[n] : SSet.{u}).NonDegenerate m ≃
     { S : Finset (Fin (n + 1)) | S.card = m + 1 } :=
