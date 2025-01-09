@@ -9,7 +9,7 @@ namespace HomotopicalAlgebra
 def packageTopCat : TopPackage.{0} TopCat.{0} where
   W := sorry
   I' := ofHoms (fun n ↦ SSet.toTop.map (SSet.boundaryInclusion.{0} n))
-  J' := ⨆ n, ofHoms (fun i ↦ SSet.toTop.map (SSet.hornInclusion.{0} n i))
+  J' := ⨆ n, ofHoms (fun i ↦ SSet.toTop.map (SSet.hornInclusion.{0} (n + 1) i))
   S' := sorry
   fibration_is_trivial_iff' := sorry
   src_I_le_S' := sorry
