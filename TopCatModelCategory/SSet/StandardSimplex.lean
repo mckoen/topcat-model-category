@@ -189,7 +189,16 @@ lemma face_eq_ofSimplex (S : Finset (Fin (n + 1))) (m : ℕ) (e : Fin (m + 1) �
 lemma face_singleton_compl (i : Fin (n + 2)) :
     face.{u} {i}ᶜ =
       Subcomplex.ofSimplex (n := n) (objMk (SimplexCategory.δ i).toOrderHom) := by
-  sorry
+  let φ : Fin (n + 1) → ({i}ᶜ : Finset _) := fun j ↦ ⟨Fin.succAboveOrderEmb i j, by
+    simpa using Fin.succAbove_ne i j⟩
+  have hφ : Function.Bijective φ :=
+    ⟨fun _ _ h ↦ (Fin.succAboveOrderEmb i).injective
+        (by simpa [Subtype.ext_iff] using h), by
+      sorry⟩
+  let e : Fin (n + 1) ≃o ({i}ᶜ : Finset _) :=
+    { toEquiv := Equiv.ofBijective _ hφ
+      map_rel_iff' := (Fin.succAboveOrderEmb i).map_rel_iff }
+  exact face_eq_ofSimplex _ _ e
 
 lemma mem_non_degenerate_iff_mono {d : ℕ} (x : (Δ[n] : SSet.{u}) _[d]) :
     x ∈ Δ[n].NonDegenerate d ↔ Mono (objEquiv _ _ x) := by

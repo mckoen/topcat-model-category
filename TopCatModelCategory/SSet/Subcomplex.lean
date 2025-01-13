@@ -333,7 +333,14 @@ lemma mem_ofSimplex_obj {n : ℕ} (x : X _[n]) : x ∈ (ofSimplex x).obj _ := by
 
 @[simp]
 lemma ofSimplex_le_iff {n : ℕ} (x : X _[n]) (A : X.Subcomplex) :
-    ofSimplex x ≤ A ↔ x ∈ A.obj _ := sorry
+    ofSimplex x ≤ A ↔ x ∈ A.obj _ := by
+  constructor
+  · intro h
+    apply h
+    apply mem_ofSimplex_obj
+  · rintro h m _ ⟨y, rfl⟩
+    obtain ⟨f, rfl⟩ := (standardSimplex.objEquiv _ _).symm.surjective y
+    exact A.map f.op h
 
 end
 
