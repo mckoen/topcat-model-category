@@ -257,6 +257,12 @@ noncomputable def nonDegenerateEquiv {m : ℕ} : (Δ[n] : SSet.{u}).NonDegenerat
     { S : Finset (Fin (n + 1)) | S.card = m + 1 } :=
   Equiv.ofBijective _ (bijective_image_objEquiv_toOrderHom_top n m)
 
+lemma nonDegenerateEquiv_symm_mem_iff_face_le {m : ℕ}
+    (S : { S : Finset (Fin (n + 1)) | S.card = m + 1 })
+    (A : (Δ[n] : SSet.{u}).Subcomplex) :
+    (nonDegenerateEquiv.symm S).1 ∈ A.obj _ ↔ face S ≤ A :=
+  sorry
+
 lemma non_degenerate_top_dim :
     (Δ[n] : SSet.{u}).NonDegenerate n = {objMk .id} := by
   ext x

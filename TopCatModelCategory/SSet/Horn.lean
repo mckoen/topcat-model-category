@@ -65,6 +65,35 @@ lemma standardSimplex.subcomplex_le_horn_iff
     change Set.range (Fin.succAboveOrderEmb i).toOrderHom ∪ _ = _
     rw [Fin.range_succAboveOrderEmb]
     exact Set.compl_union_self {i}
-  · sorry
+  · intro h
+    rw [Subcomplex.le_iff_contains_nonDegenerate]
+    intro d x hx
+    by_cases hd : d < n
+    · simp [subcomplexHorn_obj_eq_top i d (by omega)]
+    · simp only [not_lt] at hd
+      obtain ⟨⟨S, hS⟩, rfl⟩ := standardSimplex.nonDegenerateEquiv.symm.surjective x
+      dsimp at hS
+      simp only [standardSimplex.nonDegenerateEquiv_symm_mem_iff_face_le] at hx ⊢
+      obtain hd | rfl := hd.lt_or_eq
+      · obtain rfl : S = Finset.univ := by
+          rw [← Finset.card_eq_iff_eq_univ, Fintype.card_fin]
+          exact le_antisymm (S.card_le_univ.trans (by simp)) (by omega)
+        exfalso
+        exact h (le_trans (by simp [face_le_face_iff]) hx)
+      · replace hS : Sᶜ.card = 1 := by
+          have := S.card_compl_add_card
+          rw [Fintype.card_fin] at this
+          omega
+        obtain ⟨j, rfl⟩ : ∃ j, S = {j}ᶜ := by
+          obtain ⟨j, hj⟩ | h :=
+            Finset.Nonempty.exists_eq_singleton_or_nontrivial (s := Sᶜ) (by
+              rw [← Finset.card_pos]
+              omega)
+          · exact ⟨j, by simp [← hj]⟩
+          · rw [← Finset.one_lt_card_iff_nontrivial] at h
+            omega
+        apply face_le_subcomplexHorn
+        rintro rfl
+        exact h hx
 
 end SSet
