@@ -184,19 +184,30 @@ lemma face_le_face_iff (S₁ S₂ : Finset (Fin (n + 1))) :
 lemma face_eq_ofSimplex (S : Finset (Fin (n + 1))) (m : ℕ) (e : Fin (m + 1) ≃o S) :
     face.{u} S = Subcomplex.ofSimplex (n := m)
         (by exact objMk ((OrderHom.Subtype.val S.toSet).comp e.toOrderEmbedding.toOrderHom)) := by
-  sorry
+  apply le_antisymm
+  · rintro ⟨k⟩ x hx
+    induction' k using SimplexCategory.rec with k
+    rw [mem_face_iff] at hx
+    let φ : Fin (k + 1) →o S :=
+      { toFun i := ⟨x i, hx i⟩
+        monotone' := (objEquiv _ _ x).toOrderHom.monotone }
+    refine ⟨standardSimplex.objMk
+      (e.symm.toOrderEmbedding.toOrderHom.comp φ), ?_⟩
+    obtain ⟨f, rfl⟩ := (objEquiv _ _).symm.surjective x
+    ext j : 1
+    dsimp [φ]
+    sorry
+  · simp
 
 lemma face_singleton_compl (i : Fin (n + 2)) :
     face.{u} {i}ᶜ =
       Subcomplex.ofSimplex (n := n) (objMk (SimplexCategory.δ i).toOrderHom) := by
-  let φ : Fin (n + 1) → ({i}ᶜ : Finset _) := fun j ↦ ⟨Fin.succAboveOrderEmb i j, by
-    simpa using Fin.succAbove_ne i j⟩
-  have hφ : Function.Bijective φ :=
-    ⟨fun _ _ h ↦ (Fin.succAboveOrderEmb i).injective
-        (by simpa [Subtype.ext_iff] using h), by
-      sorry⟩
   let e : Fin (n + 1) ≃o ({i}ᶜ : Finset _) :=
-    { toEquiv := Equiv.ofBijective _ hφ
+    { toEquiv := (finSuccAboveEquiv (p := i)).trans
+        { toFun := fun ⟨x, hx⟩ ↦ ⟨x, by simpa using hx⟩
+          invFun := fun ⟨x, hx⟩ ↦ ⟨x, by simpa using hx⟩
+          left_inv _ := rfl
+          right_inv _ := rfl }
       map_rel_iff' := (Fin.succAboveOrderEmb i).map_rel_iff }
   exact face_eq_ofSimplex _ _ e
 
@@ -269,7 +280,7 @@ noncomputable def nonDegenerateEquiv {m : ℕ} : (Δ[n] : SSet.{u}).NonDegenerat
 lemma nonDegenerateEquiv_symm_mem_iff_face_le {m : ℕ}
     (S : { S : Finset (Fin (n + 1)) | S.card = m + 1 })
     (A : (Δ[n] : SSet.{u}).Subcomplex) :
-    (nonDegenerateEquiv.symm S).1 ∈ A.obj _ ↔ face S ≤ A :=
+    (nonDegenerateEquiv.symm S).1 ∈ A.obj _ ↔ face S ≤ A := by
   sorry
 
 lemma non_degenerate_top_dim :
