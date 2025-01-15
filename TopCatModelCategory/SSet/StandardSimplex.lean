@@ -195,8 +195,7 @@ lemma face_eq_ofSimplex (S : Finset (Fin (n + 1))) (m : ℕ) (e : Fin (m + 1) �
       (e.symm.toOrderEmbedding.toOrderHom.comp φ), ?_⟩
     obtain ⟨f, rfl⟩ := (objEquiv _ _).symm.surjective x
     ext j : 1
-    dsimp [φ]
-    sorry
+    simpa only [Subtype.ext_iff] using e.apply_symm_apply ⟨_, hx j⟩
   · simp
 
 lemma face_singleton_compl (i : Fin (n + 2)) :
@@ -277,11 +276,25 @@ noncomputable def nonDegenerateEquiv {m : ℕ} : (Δ[n] : SSet.{u}).NonDegenerat
     { S : Finset (Fin (n + 1)) | S.card = m + 1 } :=
   Equiv.ofBijective _ (bijective_image_objEquiv_toOrderHom_top n m)
 
+lemma face_nonDegenerateEquiv {m : ℕ} (x : (Δ[n] : SSet.{u}).NonDegenerate m) :
+    face (nonDegenerateEquiv x).1 = Subcomplex.ofSimplex x.1 := by
+  have := @face_eq_ofSimplex.{u}
+  sorry
+
+lemma nonDegenerateEquiv_symm_apply_mem {m : ℕ}
+    (S : { S : Finset (Fin (n + 1)) | S.card = m + 1 }) (i : Fin (m + 1)) :
+      (nonDegenerateEquiv.{u}.symm S).1 i ∈ S.1 := by
+  obtain ⟨f, rfl⟩ := nonDegenerateEquiv.{u}.surjective S
+  dsimp [nonDegenerateEquiv]
+  simp only [Equiv.ofBijective_symm_apply_apply, Finset.mem_image, Finset.mem_univ, true_and]
+  exact ⟨i, rfl⟩
+
 lemma nonDegenerateEquiv_symm_mem_iff_face_le {m : ℕ}
     (S : { S : Finset (Fin (n + 1)) | S.card = m + 1 })
     (A : (Δ[n] : SSet.{u}).Subcomplex) :
     (nonDegenerateEquiv.symm S).1 ∈ A.obj _ ↔ face S ≤ A := by
-  sorry
+  obtain ⟨x, rfl⟩ := nonDegenerateEquiv.{u}.surjective S
+  rw [face_nonDegenerateEquiv x, Equiv.symm_apply_apply, Subcomplex.ofSimplex_le_iff]
 
 lemma non_degenerate_top_dim :
     (Δ[n] : SSet.{u}).NonDegenerate n = {objMk .id} := by
