@@ -276,10 +276,41 @@ noncomputable def nonDegenerateEquiv {m : ℕ} : (Δ[n] : SSet.{u}).NonDegenerat
     { S : Finset (Fin (n + 1)) | S.card = m + 1 } :=
   Equiv.ofBijective _ (bijective_image_objEquiv_toOrderHom_top n m)
 
+@[simp]
+lemma nonDegenerateEquiv_iff {m : ℕ} (x : (Δ[n] : SSet.{u}).NonDegenerate m) (j : Fin (n + 1)):
+    j ∈ (nonDegenerateEquiv x).1 ↔ ∃ (i : Fin (m + 1)), x.1 i = j := by
+  dsimp [nonDegenerateEquiv]
+  aesop
+
+noncomputable def orderIsoOfNonDegenerate {m : ℕ} (x : (Δ[n] : SSet.{u}).NonDegenerate m) :
+    Fin (m + 1) ≃o (nonDegenerateEquiv x).1 where
+  toEquiv := Equiv.ofBijective (fun i ↦ ⟨x.1 i, Finset.mem_image_of_mem _ (by simp)⟩) (by
+    constructor
+    · have := (mem_non_degenerate_iff_mono x.1).1 x.2
+      rw [SimplexCategory.mono_iff_injective] at this
+      exact fun _ _ h ↦ this (by simpa using h)
+    · rintro ⟨j, hj⟩
+      rw [nonDegenerateEquiv_iff] at hj
+      aesop)
+  map_rel_iff' := by
+    have := (mem_non_degenerate_iff_mono x.1).1 x.2
+    rw [SimplexCategory.mono_iff_injective] at this
+    intro a b
+    dsimp
+    simp only [Subtype.mk_le_mk]
+    constructor
+    · rw [← not_lt, ← not_lt]
+      intro h h'
+      apply h
+      obtain h'' | h'' := (monotone_apply x.1 h'.le).lt_or_eq
+      · assumption
+      · simp only [this h'', lt_self_iff_false] at h'
+    · intro h
+      exact monotone_apply _ h
+
 lemma face_nonDegenerateEquiv {m : ℕ} (x : (Δ[n] : SSet.{u}).NonDegenerate m) :
-    face (nonDegenerateEquiv x).1 = Subcomplex.ofSimplex x.1 := by
-  have := @face_eq_ofSimplex.{u}
-  sorry
+    face (nonDegenerateEquiv x).1 = Subcomplex.ofSimplex x.1 :=
+  face_eq_ofSimplex.{u} _ _ (orderIsoOfNonDegenerate x)
 
 lemma nonDegenerateEquiv_symm_apply_mem {m : ℕ}
     (S : { S : Finset (Fin (n + 1)) | S.card = m + 1 }) (i : Fin (m + 1)) :

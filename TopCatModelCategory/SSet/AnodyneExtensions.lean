@@ -2,6 +2,7 @@ import TopCatModelCategory.SSet.StandardSimplex
 import TopCatModelCategory.SSet.CategoryWithFibrations
 import TopCatModelCategory.SSet.ChosenFiniteProducts
 import TopCatModelCategory.SSet.SimplexCategory
+import TopCatModelCategory.SSet.NonDegenerateProdSimplex
 import Mathlib.CategoryTheory.MorphismProperty.Limits
 import Mathlib.CategoryTheory.MorphismProperty.Retract
 import Mathlib.CategoryTheory.MorphismProperty.TransfiniteComposition
