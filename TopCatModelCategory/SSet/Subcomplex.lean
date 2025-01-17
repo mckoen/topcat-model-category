@@ -362,6 +362,39 @@ lemma image_top : (⊤ : X.Subcomplex).image f = range f := by aesop
 
 end
 
+section
+
+lemma _root_.Set.preimage_eq_iff {X Y : Type*} (f : X → Y)
+    (hf : Function.Injective f) (A : Set X) (B : Set Y) :
+    B.preimage f = A ↔ B ⊓ Set.range f = A.image f := by
+  constructor
+  · aesop
+  · intro h
+    ext x
+    constructor
+    · intro hx
+      obtain ⟨y, hy, hx⟩ : f x ∈ f '' A := by
+        rw [← h]
+        exact ⟨hx, by aesop⟩
+      simpa only [← hf hx] using hy
+    · intro hx
+      have : f '' A ≤ B := by
+        rw [← h]
+        exact inf_le_left
+      apply this
+      aesop
+
+lemma preimage_eq_iff {X Y : SSet.{u}}
+    (f : X ⟶ Y) (A : X.Subcomplex) (B : Y.Subcomplex) [Mono f] :
+    B.preimage f = A ↔ B ⊓ Subcomplex.range f = A.image f := by
+  simp only [Subpresheaf.ext_iff, funext_iff]
+  apply forall_congr'
+  intro i
+  apply Set.preimage_eq_iff
+  rw [← mono_iff_injective]
+  infer_instance
+
+end
 
 section
 
