@@ -8,6 +8,15 @@ universe u
 
 namespace SSet
 
+def standardSimplex.objMk₁ {n : ℕ} (i : Fin (n + 2)) : Δ[1] _[n] :=
+  objMk
+    { toFun j := if j.castSucc < i then 0 else 1
+      monotone' j₁ j₂ h := by
+        dsimp
+        by_cases hi : j₁.castSucc < i
+        · simp [if_pos hi]
+        · rw [if_neg hi, if_neg (fun hj' ↦ hi (lt_of_le_of_lt (by simpa using h) hj'))] }
+
 namespace prodStandardSimplex
 
 variable {p q : ℕ}
@@ -115,6 +124,35 @@ lemma objEquiv_non_degenerate_iff (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) :
       by_cases h₂ : j = i.castSucc
       · simpa [h₂] using h₁.symm
       · rw [Fin.succAbove_predAbove h₂]
+
+noncomputable def nonDegenerateEquiv₁ :
+    Fin (q + 1) ≃ (Δ[1] ⊗ Δ[q]).NonDegenerate (q + 1) :=
+  Equiv.ofBijective (fun i ↦ ⟨⟨standardSimplex.objMk₁ i.succ.castSucc,
+    (standardSimplex.objEquiv _ _).symm (SimplexCategory.σ i)⟩, by
+      rw [objEquiv_non_degenerate_iff, Fin.orderHom_injective_iff]
+      intro j h
+      have h₁ := congr_arg Prod.fst h
+      have h₂ := congr_arg Prod.snd h
+      have h₂' := congr_arg Fin.val h₂
+      simp [objEquiv, standardSimplex.objMk₁, SimplexCategory.σ] at h₁ h₂ h₂'
+      by_cases h₃ : j ≤ i
+      · rw [Fin.predAbove_of_le_castSucc _ _  h₃] at h₂'
+        obtain h₃ | rfl := h₃.lt_or_eq
+        · rw [Fin.predAbove_of_le_castSucc] at h₂'; swap
+          · rw [Fin.lt_iff_val_lt_val, Fin.val_fin_lt] at h₃
+            rw [Fin.le_iff_val_le_val, Fin.val_succ, Fin.coe_castSucc]
+            omega
+          · simp [Fin.castPred, Fin.castLT] at h₂'
+        · simp at h₁
+      · simp at h₃
+        rw [Fin.lt_iff_val_lt_val] at h₃
+        rw [Fin.predAbove_of_castSucc_lt] at h₂; swap
+        · simpa only [Fin.lt_iff_val_lt_val, Fin.coe_castSucc] using h₃
+        have := i.predAbove_of_castSucc_lt j.succ (by
+          rw [Fin.lt_iff_val_lt_val, Fin.coe_castSucc, Fin.val_succ]
+          apply h₃.trans (lt_add_one _))
+        -- bug in Lean ?? rw [this] at h₂
+        sorry⟩) sorry
 
 end prodStandardSimplex
 
