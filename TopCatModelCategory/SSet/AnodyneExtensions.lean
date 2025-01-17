@@ -70,15 +70,6 @@ instance : anodyneExtensions.{u}.IsStableUnderCobaseChange := by
   dsimp [anodyneExtensions]
   infer_instance
 
-def standardSimplex.objMk₁ {n : ℕ} (i : Fin (n + 2)) : Δ[1] _[n] :=
-  objMk
-    { toFun j := if j.castSucc < i then 0 else 1
-      monotone' j₁ j₂ h := by
-        dsimp
-        by_cases hi : j₁.castSucc < i
-        · simp [if_pos hi]
-        · rw [if_neg hi, if_neg (fun hj' ↦ hi (lt_of_le_of_lt (by simpa using h) hj'))] }
-
 namespace anodyneExtensions
 
 lemma of_isIso {X Y : SSet.{u}} (f : X ⟶ Y) [IsIso f] :
