@@ -125,6 +125,21 @@ lemma objEquiv_non_degenerate_iff (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) :
       · simpa [h₂] using h₁.symm
       · rw [Fin.succAbove_predAbove h₂]
 
+lemma objEquiv_non_degenerate_iff' (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) :
+    z ∈ (Δ[p] ⊗ Δ[q]).NonDegenerate n ↔
+      Function.Injective (((SSet.yonedaEquiv _ _ ).symm z).app (op [0])) := by
+  have this : ((((Δ[p] ⊗ Δ[q]).yonedaEquiv [n]).symm z).app (op [0])) =
+      obj₀Equiv.{u}.invFun.comp ((objEquiv z).toFun.comp
+        standardSimplex.obj₀Equiv.{u}.toFun) := by
+    ext i
+    exact obj₀Equiv.injective (by rfl)
+  simp [objEquiv_non_degenerate_iff, this]
+
+lemma subcomplex_eq_top_iff (A : (Δ[p] ⊗ Δ[q] : SSet.{u}).Subcomplex)
+    {n : ℕ} (hn : p + q = n) :
+    A = ⊤ ↔ (Δ[p] ⊗ Δ[q]).NonDegenerate n ⊆ A.obj (op [n]) := by
+  sorry
+
 noncomputable def nonDegenerateEquiv₁ :
     Fin (q + 1) ≃ (Δ[1] ⊗ Δ[q]).NonDegenerate (q + 1) :=
   Equiv.ofBijective (fun i ↦ ⟨⟨standardSimplex.objMk₁ i.succ.castSucc,
@@ -133,10 +148,10 @@ noncomputable def nonDegenerateEquiv₁ :
       intro j h
       have h₁ := congr_arg Prod.fst h
       have h₂ := congr_arg Prod.snd h
-      have h₂' := congr_arg Fin.val h₂
-      simp [objEquiv, standardSimplex.objMk₁, SimplexCategory.σ] at h₁ h₂ h₂'
+      simp [objEquiv, standardSimplex.objMk₁, SimplexCategory.σ] at h₁ h₂
       by_cases h₃ : j ≤ i
-      · rw [Fin.predAbove_of_le_castSucc _ _  h₃] at h₂'
+      · have h₂' := congr_arg Fin.val h₂
+        rw [Fin.predAbove_of_le_castSucc _ _  h₃] at h₂'
         obtain h₃ | rfl := h₃.lt_or_eq
         · rw [Fin.predAbove_of_le_castSucc] at h₂'; swap
           · rw [Fin.lt_iff_val_lt_val, Fin.val_fin_lt] at h₃
@@ -148,11 +163,17 @@ noncomputable def nonDegenerateEquiv₁ :
         rw [Fin.lt_iff_val_lt_val] at h₃
         rw [Fin.predAbove_of_castSucc_lt] at h₂; swap
         · simpa only [Fin.lt_iff_val_lt_val, Fin.coe_castSucc] using h₃
+        have hj : j.castSucc ≠ 0 := fun hj ↦ by
+          simp only [Fin.ext_iff, Fin.coe_castSucc, Fin.val_zero] at hj
+          simp [hj] at h₃
         have := i.predAbove_of_castSucc_lt j.succ (by
           rw [Fin.lt_iff_val_lt_val, Fin.coe_castSucc, Fin.val_succ]
           apply h₃.trans (lt_add_one _))
-        -- bug in Lean ?? rw [this] at h₂
-        sorry⟩) sorry
+        change j.castSucc.pred hj = i.predAbove j.succ at h₂
+        rw [this] at h₂
+        replace h₂ := congr_arg Fin.val h₂
+        dsimp at h₂
+        omega⟩) sorry
 
 end prodStandardSimplex
 

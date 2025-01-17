@@ -245,8 +245,8 @@ lemma le_iff_contains_nonDegenerate (B : X.Subcomplex) :
   · rintro h ⟨n⟩ x hx
     induction' n using SimplexCategory.rec with n
     obtain ⟨m, f, _, ⟨a, ha⟩, ha'⟩ := exists_non_degenerate A ⟨x, hx⟩
-    simp only [GrothendieckTopology.Subpresheaf.toPresheaf_obj, Subtype.ext_iff,
-      GrothendieckTopology.Subpresheaf.toPresheaf_map_coe] at ha'
+    simp only [Subpresheaf.toPresheaf_obj, Subtype.ext_iff,
+      Subpresheaf.toPresheaf_map_coe] at ha'
     subst ha'
     rw [mem_non_degenerate_iff] at ha
     exact B.map f.op (h _ ⟨_, ha⟩ a.2)

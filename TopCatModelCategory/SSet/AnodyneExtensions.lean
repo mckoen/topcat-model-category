@@ -84,6 +84,114 @@ lemma subcomplexHorn_ι_mem (n : ℕ) (i : Fin (n + 2)) :
 
 namespace subcomplex_unionProd_face_ι_mem
 
+noncomputable abbrev simplex (i : Fin (n + 1)) :=
+  prodStandardSimplex.nonDegenerateEquiv₁ i
+
+noncomputable abbrev ιSimplex (i : Fin (n + 1)) :
+    (Δ[n + 1] : SSet.{u}) ⟶ Δ[1] ⊗ Δ[n] :=
+  (SSet.yonedaEquiv _ _ ).symm (simplex i)
+
+instance (i : Fin (n + 1)) : Mono (ιSimplex.{u} i) := by
+  rw [standardSimplex.mono_iff]
+  exact (prodStandardSimplex.objEquiv_non_degenerate_iff' _).1
+    (prodStandardSimplex.nonDegenerateEquiv₁.{u} i).2
+
+noncomputable def filtration₁ (i : Fin (n + 2)) :
+    (Δ[1] ⊗ Δ[n] : SSet.{u}).Subcomplex :=
+  Subcomplex.unionProd (standardSimplex.face {1}) (subcomplexBoundary n) ⊔
+    (⨆ (j : Fin i.1), Subcomplex.ofSimplex (simplex ⟨j, by omega⟩).1)
+
+variable (n) in
+lemma filtration₁_zero :
+    filtration₁.{u} (0 : Fin (n + 2)) =
+      Subcomplex.unionProd (standardSimplex.face {1}) (subcomplexBoundary n) := by
+  simp [filtration₁]
+
+lemma filtration₁_succ (i : Fin (n + 1)) :
+    filtration₁.{u} i.succ = filtration₁ i.castSucc ⊔
+      Subcomplex.ofSimplex (simplex i).1 := by
+  dsimp [filtration₁]
+  apply le_antisymm
+  · simp only [Fin.isValue, sup_le_iff, iSup_le_iff]
+    refine ⟨le_sup_left.trans le_sup_left, fun ⟨j, hj⟩ ↦ ?_⟩
+    obtain hj | rfl := (Nat.le_of_lt_succ hj).lt_or_eq
+    · refine le_trans (le_trans ?_ le_sup_right) le_sup_left
+      dsimp
+      exact le_iSup (fun (j : Fin i.1) ↦
+        Subcomplex.ofSimplex (simplex ⟨j, by omega⟩).1) ⟨j, hj⟩
+    · exact le_sup_right
+  · simp only [Fin.isValue, sup_le_iff, le_sup_left, iSup_le_iff, true_and]
+    refine ⟨fun ⟨j, hj⟩ ↦ ?_, ?_⟩
+    · refine le_trans ?_ le_sup_right
+      exact le_iSup (fun (k : Fin (i.1 + 1)) ↦
+        Subcomplex.ofSimplex (simplex ⟨k, by omega⟩).1) ⟨j, by omega⟩
+    · refine le_trans ?_ le_sup_right
+      exact le_iSup (fun (k : Fin (i.1 + 1)) ↦
+        Subcomplex.ofSimplex (simplex ⟨k, by omega⟩).1) ⟨i, by omega⟩
+
+lemma monotone_filtration₁ : Monotone (filtration₁.{u} (n := n)) := by
+  rw [Fin.monotone_iff]
+  rintro i
+  rw [filtration₁_succ]
+  exact le_sup_left
+
+variable (n) in
+lemma filtration₁_last :
+    filtration₁.{u} (Fin.last (n + 1)) = ⊤ := by
+  rw [prodStandardSimplex.subcomplex_eq_top_iff _ (add_comm 1 n)]
+  intro x hx
+  obtain ⟨i, hi⟩ := prodStandardSimplex.nonDegenerateEquiv₁.surjective ⟨x, hx⟩
+  obtain rfl : simplex i = x := by simp [simplex, hi]
+  rw [filtration₁, ← Subcomplex.ofSimplex_le_iff]
+  exact (le_iSup (fun (j : Fin (Fin.last (n + 1)).1) ↦
+    Subcomplex.ofSimplex (simplex ⟨j, by omega⟩).1) i).trans le_sup_right
+
+lemma preimage_ιSimplex (i : Fin (n + 1)) :
+    (filtration₁ i.castSucc).preimage (ιSimplex i) =
+      subcomplexHorn.{u} (n + 1) i.succ := by
+  sorry
+
+lemma filtration₁_to_succ_mem (i : Fin (n + 1)) :
+    anodyneExtensions (Subcomplex.homOfLE (monotone_filtration₁.{u} i.castSucc_le_succ)) := by
+  have := IsPushout.of_isColimit
+    (Subcomplex.isColimitPushoutCoconeOfPullback (ιSimplex i) (filtration₁.{u} i.castSucc)
+      (filtration₁.{u} i.succ) (subcomplexHorn.{u} (n + 1) i.succ) ⊤
+      (by simpa using (preimage_ιSimplex i).symm)
+      (by simp only [Subcomplex.image_top, filtration₁_succ, Subcomplex.ofSimplex]))
+  exact MorphismProperty.of_isPushout (P := anodyneExtensions) this
+    (anodyneExtensions.{u}.comp_mem _ _
+      (subcomplexHorn_ι_mem n i.succ) (of_isIso ((Subcomplex.topIso _).inv)))
+
+lemma filtation₁_map_mem {i j : Fin (n + 2)} (h : i ≤ j) :
+    anodyneExtensions (Subcomplex.homOfLE (monotone_filtration₁.{u} h)) :=
+  anodyneExtensions.map_mem_of_fin
+    ((monotone_filtration₁.{u} (n := n)).functor ⋙ Subcomplex.forget _) filtration₁_to_succ_mem
+      (homOfLE h)
+
+variable (n) in
+lemma mem₁ :
+    anodyneExtensions (Subcomplex.unionProd.{u} (standardSimplex.face {(1 : Fin 2)})
+      (subcomplexBoundary n)).ι := by
+  change anodyneExtensions
+    ((Subcomplex.isoOfEq (filtration₁_zero.{u} n)).inv ≫
+          (Subcomplex.homOfLE (monotone_filtration₁.{u} (by simp))) ≫
+          (Subcomplex.isoOfEq (filtration₁_last.{u} n)).hom ≫
+          (Subcomplex.topIso _).hom)
+  refine anodyneExtensions.comp_mem _ _ ?_
+    (anodyneExtensions.comp_mem _ _ (filtation₁_map_mem (by simp))
+    (anodyneExtensions.comp_mem _ _ ?_ ?_))
+  all_goals apply of_isIso
+
+variable (n) in
+lemma mem₀ :
+    anodyneExtensions (Subcomplex.unionProd.{u} (standardSimplex.face {(0 : Fin 2)})
+      (subcomplexBoundary n)).ι := by
+  sorry -- same as `mem₁`, but inserting the simplices in reverse order
+
+end subcomplex_unionProd_face_ι_mem
+
+/-namespace subcomplex_unionProd_face_ι_mem_old
+
 variable {n : ℕ}
 
 def simplex (i : Fin (n + 1)) :
@@ -210,7 +318,7 @@ lemma mem₀ :
       (subcomplexBoundary n)).ι := by
   sorry -- same as `mem₁`, but inserting the simplices in reverse order
 
-end subcomplex_unionProd_face_ι_mem
+end subcomplex_unionProd_face_ι_mem_old-/
 
 open subcomplex_unionProd_face_ι_mem in
 lemma subcomplex_unionProd_face_boundary_ι_mem (n : ℕ) (i : Fin 2) :

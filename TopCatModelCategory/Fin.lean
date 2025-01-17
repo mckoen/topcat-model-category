@@ -1,4 +1,4 @@
-import Mathlib.Algebra.Group.Nat.Basic
+import Mathlib.Algebra.Group.Nat.Defs
 import Mathlib.Order.Fin.Basic
 import Mathlib.Data.Fintype.Card
 
@@ -37,7 +37,7 @@ lemma orderHom_injective_iff {α : Type*} [PartialOrder α] {n : ℕ} (f : Fin (
           rw [lt_iff_le_and_ne]
           exact ⟨f.monotone l.castSucc_le_succ, hf l⟩
         have h₂ : f i < f j := lt_of_lt_of_le h₁ (f.monotone (by
-          simp only [Fin.le_def, val_succ]
+          simp only [Fin.le_def, val_succ, l]
           omega))
         exact (h₂.ne h).elim
 

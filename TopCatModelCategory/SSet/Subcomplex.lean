@@ -18,7 +18,7 @@ universe u
 
 open CategoryTheory MonoidalCategory Simplicial Limits Opposite
 
-namespace CategoryTheory.GrothendieckTopology
+namespace CategoryTheory
 -- GrothendieckTopology.Subpresheaf should be moved...
 
 variable {C : Type*} [Category C] (P : Cᵒᵖ ⥤ Type*)
@@ -74,18 +74,18 @@ lemma iSup_obj {ι : Type*} (S : ι → Subpresheaf P) (U : Cᵒᵖ) :
 
 lemma Subpresheaf.le_def (S T : Subpresheaf P) : S ≤ T ↔ ∀ U, S.obj U ≤ T.obj U := Iff.rfl
 
-end CategoryTheory.GrothendieckTopology
+end CategoryTheory
 
 namespace SSet
 
 variable (X Y : SSet.{u})
 
-protected abbrev Subcomplex := GrothendieckTopology.Subpresheaf X
+protected abbrev Subcomplex := Subpresheaf X
 
 namespace Subcomplex
 
 instance : CompleteLattice X.Subcomplex :=
-  inferInstanceAs (CompleteLattice (GrothendieckTopology.Subpresheaf X))
+  inferInstance
 
 variable {X Y}
 
@@ -124,7 +124,6 @@ lemma ι_app {Δ : SimplexCategoryᵒᵖ} (x : S.obj Δ) :
     S.ι.app Δ x = x.val := rfl
 
 instance : Mono S.ι := by
-  change Mono (GrothendieckTopology.Subpresheaf.ι S)
   infer_instance
 
 @[simps]
@@ -143,7 +142,7 @@ section
 
 variable {S₁ S₂ : X.Subcomplex} (h : S₁ ≤ S₂)
 
-def homOfLE : (S₁ : SSet.{u}) ⟶ (S₂ : SSet.{u}) := GrothendieckTopology.Subpresheaf.homOfLe h
+def homOfLE : (S₁ : SSet.{u}) ⟶ (S₂ : SSet.{u}) := Subpresheaf.homOfLe h
 
 @[simp]
 lemma homOfLE_app_val (Δ : SimplexCategoryᵒᵖ) (x : S₁.obj Δ) :
@@ -357,7 +356,7 @@ def image : Y.Subcomplex where
 
 lemma image_le_iff (Z : Y.Subcomplex) :
     S.image f ≤ Z ↔ S ≤ Z.preimage f := by
-  simp [GrothendieckTopology.Subpresheaf.le_def]
+  simp [Subpresheaf.le_def]
 
 lemma image_top : (⊤ : X.Subcomplex).image f = range f := by aesop
 
