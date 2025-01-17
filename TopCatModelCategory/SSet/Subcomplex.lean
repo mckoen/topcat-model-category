@@ -64,6 +64,8 @@ instance : CompleteLattice (Subpresheaf P) where
   le_top _ _ := le_top
   bot_le _ _ := bot_le
 
+namespace Subpresheaf
+
 lemma sSup_obj (S : Set (Subpresheaf P)) (U : Cᵒᵖ) :
     (sSup S).obj U = sSup (Set.image (fun T ↦ T.obj U) S) := rfl
 
@@ -72,7 +74,25 @@ lemma iSup_obj {ι : Type*} (S : ι → Subpresheaf P) (U : Cᵒᵖ) :
     (iSup S).obj U = iSup (fun i ↦ (S i).obj U) := by
   simp [iSup, sSup_obj]
 
-lemma Subpresheaf.le_def (S T : Subpresheaf P) : S ≤ T ↔ ∀ U, S.obj U ≤ T.obj U := Iff.rfl
+lemma le_def (S T : Subpresheaf P) : S ≤ T ↔ ∀ U, S.obj U ≤ T.obj U := Iff.rfl
+
+@[simp]
+lemma max_obj (S T : Subpresheaf P) (i : Cᵒᵖ) :
+    (S ⊔ T).obj i = S.obj i ∪ T.obj i := rfl
+
+@[simp]
+lemma min_obj (S T : Subpresheaf P) (i : Cᵒᵖ) :
+    (S ⊓ T).obj i = S.obj i ∩ T.obj i := rfl
+
+lemma max_min (S₁ S₂ T : Subpresheaf P) :
+    (S₁ ⊔ S₂) ⊓ T = (S₁ ⊓ T) ⊔ (S₂ ⊓ T) := by
+  aesop
+
+lemma iSup_min {ι : Type*} (S : ι → Subpresheaf P) (T : Subpresheaf P) :
+    iSup S ⊓ T = ⨆ i, S i ⊓ T := by
+  aesop
+
+end Subpresheaf
 
 end CategoryTheory
 
