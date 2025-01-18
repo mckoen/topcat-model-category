@@ -97,5 +97,14 @@ lemma orderHom_ext_of_injective {α : Type*} [PartialOrder α] [DecidableEq α]
 lemma range_succAboveOrderEmb {n : ℕ} (i : Fin (n + 1)) :
     Set.range (Fin.succAboveOrderEmb i).toOrderHom = {i}ᶜ := by aesop
 
+lemma eq_id_of_strictMono (f : Fin (n + 1) →o Fin (n + 1)) (hf : StrictMono f) :
+    f = .id := by
+  apply orderHom_ext_of_injective
+  · exact hf.injective
+  · exact fun _ _ h ↦ h
+  · simp only [Finset.top_eq_univ, OrderHom.id_coe, Finset.image_id]
+    apply Finset.image_univ_of_surjective
+    apply Finite.surjective_of_injective
+    exact hf.injective
 
 end Fin
