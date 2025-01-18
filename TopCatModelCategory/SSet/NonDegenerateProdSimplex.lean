@@ -224,6 +224,20 @@ lemma objEquiv_non_degenerate_iff'' {n : ℕ} (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) 
     change ((objEquiv z a).1 : ℕ) + (objEquiv z a).2 = (objEquiv z b).1 + (objEquiv z b).2
     simp only [hab]
 
+lemma nonDegenerate_ext {n : ℕ} {z₁ z₂ : (Δ[p] ⊗ Δ[q]).NonDegenerate n} (hn : p + q = n)
+    (h : z₁.1.1 = z₂.1.1) :
+    z₁ = z₂ := by
+  ext
+  apply objEquiv.injective
+  dsimp
+  ext i : 3
+  · exact DFunLike.congr_fun h i
+  · have h₁ := z₁.2
+    have h₂ := z₂.2
+    rw [objEquiv_non_degenerate_iff'' _ hn] at h₁ h₂
+    simpa only [orderHomOfSimplex_coe, h, Fin.ext_iff, add_right_inj]
+      using DFunLike.congr_fun (h₁.trans h₂.symm) i
+
 lemma subcomplex_eq_top_iff (A : (Δ[p] ⊗ Δ[q] : SSet.{u}).Subcomplex)
     {n : ℕ} (hn : p + q = n) :
     A = ⊤ ↔ (Δ[p] ⊗ Δ[q]).NonDegenerate n ⊆ A.obj (op [n]) := by
@@ -268,13 +282,28 @@ def toFun (i : Fin (q + 1)) : (Δ[1] ⊗ Δ[q]).NonDegenerate (q + 1) :=
 end nonDegenerateEquiv₁
 
 noncomputable def nonDegenerateEquiv₁ :
-    Fin (q + 1) ≃ (Δ[1] ⊗ Δ[q]).NonDegenerate (q + 1) :=
+    Fin (q + 1) ≃ (Δ[1] ⊗ Δ[q] : SSet.{u}).NonDegenerate (q + 1) :=
   Equiv.ofBijective nonDegenerateEquiv₁.toFun (by
     constructor
     · intro i j h
       simpa using standardSimplex.objMk₁_injective (congr_arg (Prod.fst ∘ Subtype.val) h)
-    · intro f
-      sorry)
+    · intro x
+      obtain ⟨i, hi⟩ := standardSimplex.objMk₁_surjective x.1.1
+      have hx := (objEquiv_non_degenerate_iff'' _ (add_comm 1 q)).1 x.2
+      obtain ⟨i, rfl⟩ := Fin.eq_succ_of_ne_zero (i := i) (by
+        rintro rfl
+        replace hi : x.1.1 0 = 1 := DFunLike.congr_fun hi.symm 0
+        have := DFunLike.congr_fun hx 0
+        simp [Fin.ext_iff, hi] at this)
+      obtain ⟨i, rfl⟩ | rfl := i.eq_castSucc_or_eq_last
+      · exact ⟨i, nonDegenerate_ext (add_comm _ _) hi⟩
+      · replace hi : x.1.1 (Fin.last _) = 0 := by
+          rw [hi.symm]
+          simp [standardSimplex.objMk₁, Fin.ext_iff]
+        have := DFunLike.congr_fun hx (Fin.last _)
+        dsimp at this
+        simp only [hi, Fin.isValue, Fin.val_zero, zero_add, Fin.ext_iff, Fin.val_last] at this
+        omega)
 
 end prodStandardSimplex
 
