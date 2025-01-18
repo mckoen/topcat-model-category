@@ -4,6 +4,13 @@ import Mathlib.Data.Fintype.Card
 
 namespace Fin
 
+lemma eq_last_or_eq_castSucc {n : ℕ} (i : Fin (n + 1)) :
+    i = Fin.last _ ∨ ∃ (j : Fin n), i = j.castSucc := by
+  by_cases hi : i = Fin.last _
+  · tauto
+  · have := Fin.exists_castSucc_eq.2 hi
+    tauto
+
 lemma monotone_iff {α : Type u} [Preorder α] {n : ℕ} (f : Fin (n + 1) → α) :
     Monotone f ↔ ∀ (i : Fin n), f i.castSucc ≤ f i.succ := by
   refine ⟨fun hf i ↦ hf i.castSucc_le_succ, fun hf ↦ ?_⟩
@@ -40,6 +47,24 @@ lemma orderHom_injective_iff {α : Type*} [PartialOrder α] {n : ℕ} (f : Fin (
           simp only [Fin.le_def, val_succ, l]
           omega))
         exact (h₂.ne h).elim
+
+lemma strictMono_iff {α : Type*} [PartialOrder α] {n : ℕ} (f : Fin (n + 1) → α) :
+    StrictMono f ↔ ∀ (i : Fin n), f i.castSucc < f i.succ := by
+  constructor
+  · intro hf i
+    exact hf (castSucc_lt_succ i)
+  · intro h
+    let φ : Fin (n + 1) →o α :=
+      { toFun := f
+        monotone' := by
+          rw [monotone_iff]
+          intro i
+          exact (h i).le }
+    refine (Monotone.strictMono_iff_injective (f := f) φ.monotone).2
+      ((orderHom_injective_iff φ).2 (fun i hi ↦ ?_))
+    dsimp [φ] at hi
+    replace h := h i
+    simp [hi] at h
 
 @[simps]
 def oneOrderHomEquiv {α : Type*} [Preorder α] :
@@ -106,5 +131,183 @@ lemma eq_id_of_strictMono (f : Fin (n + 1) →o Fin (n + 1)) (hf : StrictMono f)
     apply Finset.image_univ_of_surjective
     apply Finite.surjective_of_injective
     exact hf.injective
+
+section
+
+variable {α : Type*}
+
+section
+
+variable (f : Fin n → α)
+
+def insert (i₀ : Fin (n + 1)) (x : α) (i : Fin (n + 1)) : α :=
+  if h₀ : i = i₀ then x
+    else
+      if hi : i < i₀ then
+          f ⟨i.1, by omega⟩
+        else
+          f (i.pred (by
+            rintro rfl
+            simp only [not_lt, le_zero_iff] at hi
+            tauto))
+
+@[simp]
+lemma insert_self (i₀ : Fin (n + 1)) (x : α) :
+    insert f i₀ x i₀ = x :=
+  dif_pos rfl
+
+@[simp] lemma insert_zero_succ (x : α) (i : Fin n) :
+    insert f 0 x i.succ = f i := rfl
+
+@[simp]
+lemma insert_last_castSucc (x : α) (i : Fin n) :
+    insert f (Fin.last _) x i.castSucc = f i := by
+  dsimp [insert]
+  have : i.castSucc ≠ last n := fun h ↦ by
+    rw [Fin.ext_iff] at h
+    simp only [coe_castSucc, val_last] at h
+    omega
+  rw [dif_neg this, dif_pos (castSucc_lt_last i)]
+
+lemma insert_apply (i : Fin n) (x : α) (j : Fin (n + 1)) (hj : j ≠ i.succ) :
+    insert f i.succ x j = f (i.predAbove j) := by
+  dsimp [insert]
+  rw [dif_neg hj]
+  split_ifs with h <;> congr 1
+  · rw [predAbove_of_lt_succ _ _ h]
+    rfl
+  · rw [predAbove_of_succ_le _ _ (by simpa using h)]
+
+end
+
+section
+
+variable [Preorder α]
+
+lemma monotone_insert_zero (f : Fin (n + 1) →o α) (x : α) (hx : x ≤ f 0) :
+    Monotone (insert f 0 x) := by
+  rw [monotone_iff]
+  intro i
+  obtain rfl | ⟨j, rfl⟩ := i.eq_zero_or_eq_succ
+  · simpa [insert_zero_succ f x 0] using hx
+  · simpa only [← succ_castSucc, insert_zero_succ]
+      using f.monotone (castSucc_le_succ j)
+
+lemma monotone_insert_last (f : Fin (n + 1) →o α) (x : α)
+    (hx : f (Fin.last _) ≤ x) :
+    Monotone (insert f (Fin.last _) x) := by
+  rw [monotone_iff]
+  intro i
+  obtain rfl | ⟨j, rfl⟩ := i.eq_last_or_eq_castSucc
+  · simpa
+  · simpa only [insert_last_castSucc, succ_castSucc]
+      using f.monotone (castSucc_le_succ j)
+
+lemma monotone_insert (f : Fin (n + 1) →o α) (i : Fin n) (x : α)
+    (hx₁ : f i.castSucc ≤ x) (hx₂ : x ≤ f i.succ):
+    Monotone (insert f i.succ.castSucc x) := by
+  rw [monotone_iff]
+  intro j
+  by_cases hj : j.castSucc ≠ i.castSucc.succ ∧
+    j.succ ≠ i.castSucc.succ
+  · rw [← succ_castSucc, insert_apply _ _ _ _ hj.1, insert_apply _ _ _ _ hj.2]
+    apply f.monotone
+    apply predAbove_right_monotone
+    exact castSucc_le_succ j
+  · simp only [Classical.not_and_iff_or_not_not,
+      Decidable.not_not, succ_inj] at hj
+    conv_lhs at hj => rw [succ_castSucc, castSucc_inj]
+    obtain rfl | rfl := hj
+    · rw [insert_self, ← succ_castSucc,
+        insert_apply _ _ _ _ (by simp [Fin.ext_iff]),
+        Fin.predAbove_of_succ_le _ _ (by simpa using castSucc_le_succ i),
+        pred_succ]
+      exact hx₂
+    · simpa [← succ_castSucc, insert_apply f i.castSucc x i.castSucc.castSucc
+        (by simp [Fin.ext_iff])] using hx₁
+
+end
+
+section
+
+variable [PartialOrder α]
+
+lemma strictMono_insert_zero (f : Fin (n + 1) → α) (hf : StrictMono f)
+    (x : α) (hx : x < f 0) :
+    StrictMono (insert f 0 x) := by
+  rw [strictMono_iff]
+  intro i
+  obtain rfl | ⟨j, rfl⟩ := i.eq_zero_or_eq_succ
+  · simpa [insert_zero_succ f x 0] using hx
+  · simpa only [← succ_castSucc, insert_zero_succ]
+      using hf (castSucc_lt_succ j)
+
+lemma strictMono_insert_last (f : Fin (n + 1) → α) (hf : StrictMono f)
+    (x : α) (hx : f (Fin.last _) < x) :
+    StrictMono (insert f (Fin.last _) x) := by
+  rw [strictMono_iff]
+  intro i
+  obtain rfl | ⟨j, rfl⟩ := i.eq_last_or_eq_castSucc
+  · simpa
+  · simpa only [insert_last_castSucc, succ_castSucc]
+      using hf (castSucc_lt_succ j)
+
+lemma predAbove_eq_predAdove_iff_of_lt (i : Fin n) (j k : Fin (n + 1))
+    (hjk : j < k) :
+    i.predAbove j = i.predAbove k ↔ j = i.castSucc ∧ k = i.succ := by
+  constructor
+  · intro h₁
+    by_cases h₂ : i.castSucc < j
+    · rw [predAbove_of_castSucc_lt _ _ h₂,
+        predAbove_of_castSucc_lt _ _ (by omega), pred_inj] at h₁
+      omega
+    · simp only [not_lt] at h₂
+      rw [predAbove_of_le_castSucc _ _ h₂] at h₁
+      by_cases h₃ : i.castSucc < k
+      · obtain rfl | ⟨k, rfl⟩ := k.eq_zero_or_eq_succ
+        · simp at h₃
+        · rw [predAbove_of_castSucc_lt _ _ h₃, ← castSucc_inj,
+            castSucc_castPred, pred_succ] at h₁
+          subst h₁
+          obtain rfl : i = k :=
+            le_antisymm (by simpa using h₃) (by simpa using h₂)
+          tauto
+      · simp only [not_lt] at h₃
+        rw [predAbove_of_le_castSucc _ _ h₃, ← castSucc_inj,
+          castSucc_castPred, castSucc_castPred] at h₁
+        omega
+  · rintro ⟨rfl, rfl⟩
+    simp
+
+lemma strictMono_insert (f : Fin (n + 1) → α) (hf : StrictMono f)
+    (i : Fin n) (x : α)
+    (hx₁ : f i.castSucc < x) (hx₂ : x < f i.succ):
+    StrictMono (insert f i.succ.castSucc x) := by
+  rw [strictMono_iff]
+  intro j
+  by_cases hj : j.castSucc ≠ i.castSucc.succ ∧
+    j.succ ≠ i.castSucc.succ
+  · rw [← succ_castSucc, insert_apply _ _ _ _ hj.1, insert_apply _ _ _ _ hj.2]
+    apply hf
+    obtain h | h := (i.castSucc.predAbove_right_monotone (castSucc_le_succ j)).lt_or_eq
+    · exact h
+    · rw [predAbove_eq_predAdove_iff_of_lt _ _ _ (castSucc_lt_succ j)] at h
+      simp only [castSucc_inj, succ_inj, and_self, ne_eq] at h hj
+      tauto
+  · simp only [Classical.not_and_iff_or_not_not,
+      Decidable.not_not, succ_inj] at hj
+    conv_lhs at hj => rw [succ_castSucc, castSucc_inj]
+    obtain rfl | rfl := hj
+    · rw [insert_self, ← succ_castSucc,
+        insert_apply _ _ _ _ (by simp [Fin.ext_iff]),
+        Fin.predAbove_of_succ_le _ _ (by simpa using castSucc_le_succ i),
+        pred_succ]
+      exact hx₂
+    · simpa [← succ_castSucc, insert_apply f i.castSucc x i.castSucc.castSucc
+        (by simp [Fin.ext_iff])] using hx₁
+
+end
+
+end
 
 end Fin
