@@ -19,6 +19,12 @@ lemma degenerate_eq_top_of_hasDimensionLT (hn : d ≤ n) : X.Degenerate n = ⊤ 
 lemma nondegenerate_eq_bot_of_hasDimensionLT (hn : d ≤ n) : X.NonDegenerate n = ⊥ := by
   simp [NonDegenerate, X.degenerate_eq_top_of_hasDimensionLT d n hn]
 
+lemma dim_lt_of_nondegenerate {n : ℕ} (x : X.NonDegenerate n) (d : ℕ)
+    [X.HasDimensionLT d] : n < d := by
+  by_contra!
+  obtain ⟨x, hx⟩ := x
+  simp [X.nondegenerate_eq_bot_of_hasDimensionLT d n this] at hx
+
 end
 
 namespace Subcomplex

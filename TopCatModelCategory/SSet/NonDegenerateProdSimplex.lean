@@ -153,18 +153,6 @@ lemma subsimplex_le_subsimplex_iff {n m : ℕ}
     intro h'
     exact h'.trans h
 
-@[simps coe]
-def orderHomOfSimplex {n : ℕ} (x : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) {m : ℕ} (hm : p + q = m) :
-    Fin (n + 1) →o Fin (m + 1) where
-  toFun i := ⟨(x.1 i : ℕ) + x.2 i, by omega⟩
-  monotone' i j h := by
-    dsimp
-    simp only [Fin.mk_le_mk]
-    have := (objEquiv x).monotone h
-    have h₁ : x.1 i ≤ x.1 j := this.1
-    have h₂ : x.2 i ≤ x.2 j := this.2
-    omega
-
 lemma objEquiv_non_degenerate_iff {n : ℕ} (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) :
     z ∈ (Δ[p] ⊗ Δ[q]).NonDegenerate n ↔ Function.Injective (objEquiv z) := by
   rw [Fin.orderHom_injective_iff, ← not_iff_not,
@@ -200,32 +188,74 @@ lemma objEquiv_non_degenerate_iff' (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) :
     exact obj₀Equiv.injective (by rfl)
   simp [objEquiv_non_degenerate_iff, this]
 
+lemma strictMono_of_nonDegenerate {n : ℕ} (x : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonDegenerate n) :
+    StrictMono (objEquiv x.1) := by
+  obtain ⟨x, hx⟩ := x
+  simpa only [objEquiv_non_degenerate_iff,
+    (objEquiv x).monotone.strictMono_iff_injective] using hx
+
+@[simps coe]
+def orderHomOfSimplex {n : ℕ} (x : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) {m : ℕ} (hm : p + q = m) :
+    Fin (n + 1) →o Fin (m + 1) where
+  toFun i := ⟨(x.1 i : ℕ) + x.2 i, by omega⟩
+  monotone' i j h := by
+    dsimp
+    simp only [Fin.mk_le_mk]
+    have := (objEquiv x).monotone h
+    have h₁ : x.1 i ≤ x.1 j := this.1
+    have h₂ : x.2 i ≤ x.2 j := this.2
+    omega
+
+lemma strictMono_orderHomOfSimplex {n : ℕ} (x : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonDegenerate n) {m : ℕ}
+    (hm : p + q = m) :
+    StrictMono (orderHomOfSimplex x.1 hm) := by
+  intro i j hij
+  dsimp
+  simp only [Fin.mk_lt_mk]
+  obtain hij | hij := Prod.lt_iff.1 (strictMono_of_nonDegenerate x hij)
+  · have : x.1.1 i < x.1.1 j := hij.1
+    have : x.1.2 i ≤ x.1.2 j := hij.2
+    omega
+  · have : x.1.1 i ≤ x.1.1 j := hij.1
+    have : x.1.2 i < x.1.2 j := hij.2
+    omega
+
+lemma le_orderHomOfSimplex {n : ℕ} (x : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonDegenerate n) {m : ℕ}
+    (hm : p + q = m) (i : Fin (n + 1)) : i.1 ≤ orderHomOfSimplex x.1 hm i := by
+  obtain ⟨i, hi⟩ := i
+  induction i with
+  | zero => simp
+  | succ i hi' =>
+      have h : (⟨i, by omega⟩ : Fin (n + 1)) < ⟨i + 1, hi⟩ := by simp
+      simpa only [Nat.succ_le_iff] using
+        lt_of_le_of_lt (hi' (by omega)) (strictMono_orderHomOfSimplex x hm h)
+
+instance : (Δ[p] ⊗ Δ[q] : SSet.{u}).HasDimensionLT (p + q + 1) where
+  degenerate_eq_top n hn := by
+    ext x
+    simp only [Set.top_eq_univ, Set.mem_univ, iff_true,
+      mem_degenerate_iff_non_mem_nondegenerate]
+    intro hx
+    have := Fintype.card_le_of_injective _
+      ((strictMono_orderHomOfSimplex ⟨x, hx⟩ rfl).injective)
+    simp only [Fintype.card_fin, add_le_add_iff_right] at this
+    omega
+
 lemma objEquiv_non_degenerate_iff'' {n : ℕ} (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) (hn : p + q = n) :
     z ∈ (Δ[p] ⊗ Δ[q]).NonDegenerate n ↔ orderHomOfSimplex z hn = .id := by
-  rw [objEquiv_non_degenerate_iff]
   constructor
   · intro h
-    rw [← (objEquiv z).monotone.strictMono_iff_injective] at h
-    have : StrictMono (orderHomOfSimplex z hn) := by
-      intro i j hij
-      simp
-      obtain hij | hij := Prod.lt_iff.1 (h hij)
-      · have : z.1 i < z.1 j := hij.1
-        have : z.2 i ≤ z.2 j := hij.2
-        omega
-      · have : z.1 i ≤ z.1 j := hij.1
-        have : z.2 i < z.2 j := hij.2
-        omega
-    exact Fin.eq_id_of_strictMono _ this
-  · intro h a b hab
+    exact Fin.eq_id_of_strictMono _ (strictMono_orderHomOfSimplex ⟨z, h⟩ hn)
+  · rw [objEquiv_non_degenerate_iff]
+    intro h a b hab
     simp only [DFunLike.ext_iff, orderHomOfSimplex_coe, OrderHom.id_coe, id_eq] at h
     rw [← h a, ← h b]
     rw [Fin.ext_iff]
     change ((objEquiv z a).1 : ℕ) + (objEquiv z a).2 = (objEquiv z b).1 + (objEquiv z b).2
     simp only [hab]
 
-lemma nonDegenerate_ext {n : ℕ} {z₁ z₂ : (Δ[p] ⊗ Δ[q]).NonDegenerate n} (hn : p + q = n)
-    (h : z₁.1.1 = z₂.1.1) :
+lemma nonDegenerate_ext {n : ℕ} {z₁ z₂ : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonDegenerate n}
+    (hn : p + q = n) (h : z₁.1.1 = z₂.1.1) :
     z₁ = z₂ := by
   ext
   apply objEquiv.injective
@@ -238,10 +268,57 @@ lemma nonDegenerate_ext {n : ℕ} {z₁ z₂ : (Δ[p] ⊗ Δ[q]).NonDegenerate n
     simpa only [orderHomOfSimplex_coe, h, Fin.ext_iff, add_right_inj]
       using DFunLike.congr_fun (h₁.trans h₂.symm) i
 
+lemma nondegenerate_mem_ofSimplex_aux {d : ℕ}
+    (x : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonDegenerate d) (hd : d < p + q) :
+    ∃ (y : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonDegenerate (d + 1)),
+      x.1 ∈ (Subcomplex.ofSimplex y.1).obj _ := by
+  --have := strictMono_of_nonDegenerate x
+  --have := strictMono_orderHomOfSimplex x rfl
+  --have := @le_orderHomOfSimplex
+  let S : Finset (Fin (d + 1)) :=
+    { i | ⟨i.1, by omega⟩ < orderHomOfSimplex x.1 rfl i }
+  by_cases hS : S.Nonempty
+  · sorry
+  · have h := Fin.strictMono_insert_last (objEquiv x.1)
+      (strictMono_of_nonDegenerate x) ⟨Fin.last _, Fin.last _⟩ sorry
+    refine ⟨⟨_, (objEquiv_non_degenerate_iff
+      (objEquiv.{u}.symm ⟨_, h.monotone⟩)).2 h.injective⟩,
+      (standardSimplex.objEquiv _ _).symm
+        (SimplexCategory.δ (Fin.last _)), objEquiv.injective ?_⟩
+    ext j : 2
+    dsimp
+    sorry
+
+lemma nondegenerate_mem_ofSimplex {d : ℕ}
+    (x : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonDegenerate d) {n : ℕ} (hn : p + q = n) :
+    ∃ (y : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonDegenerate n),
+      x.1 ∈ (Subcomplex.ofSimplex y.1).obj _ := by
+  subst hn
+  have hd := Nat.le_of_lt_succ (dim_lt_of_nondegenerate _ x (p + q + 1))
+  obtain ⟨i, hi⟩ := Nat.le.dest hd
+  induction i generalizing d with
+  | zero =>
+      obtain rfl : d = p + q := by omega
+      exact ⟨x, Subcomplex.mem_ofSimplex_obj _⟩
+  | succ d' hd' =>
+      obtain ⟨y, hy⟩ := nondegenerate_mem_ofSimplex_aux x (by omega)
+      obtain ⟨z, hz⟩ := hd' y (by omega) (by omega)
+      rw [← Subcomplex.ofSimplex_le_iff] at hz
+      exact ⟨z, hz _ hy⟩
+
 lemma subcomplex_eq_top_iff (A : (Δ[p] ⊗ Δ[q] : SSet.{u}).Subcomplex)
     {n : ℕ} (hn : p + q = n) :
     A = ⊤ ↔ (Δ[p] ⊗ Δ[q]).NonDegenerate n ⊆ A.obj (op [n]) := by
-  sorry
+  constructor
+  · rintro rfl
+    simp
+  · intro h
+    apply le_antisymm le_top
+    simp only [Subcomplex.le_iff_contains_nonDegenerate, Subtype.forall,
+      top_subpresheaf_obj, Set.top_eq_univ, Set.mem_univ, forall_const]
+    intro d x hx
+    obtain ⟨y, hy⟩ := nondegenerate_mem_ofSimplex ⟨x, hx⟩ hn
+    exact (Subcomplex.ofSimplex_le_iff _ _).2 (h y.2) _ hy
 
 namespace nonDegenerateEquiv₁
 
