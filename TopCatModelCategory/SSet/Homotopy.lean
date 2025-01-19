@@ -1,8 +1,9 @@
 import TopCatModelCategory.IsFibrant
 import TopCatModelCategory.SSet.AnodyneExtensions
+import TopCatModelCategory.SSet.Horn
 
 open HomotopicalAlgebra CategoryTheory Simplicial MonoidalCategory Opposite
-  ChosenFiniteProducts
+  ChosenFiniteProducts Limits
 
 universe u
 
@@ -65,6 +66,49 @@ namespace Homotopy
 @[simps]
 noncomputable def refl : Homotopy f f where
   h := snd _ _ ≫ f.map
+
+variable {f g}
+
+instance (J : Type*) [Category J] (Y : SSet) :
+    PreservesColimitsOfShape J (tensorRight Y) := sorry
+
+instance (J : Type*) [Category J] (Y : SimplexCategoryᵒᵖ ⥤ Type u) :
+    PreservesColimitsOfShape J (tensorRight Y) :=
+  inferInstanceAs (PreservesColimitsOfShape J (tensorRight (show SSet from Y)))
+
+noncomputable def symm (hfg : Homotopy f g) [IsFibrant Y] : Homotopy g f := by
+  apply Nonempty.some
+  have := anodyneExtensions.subcomplex_unionProd_mem_of_left (subcomplexHorn 2 0) A
+    (anodyneExtensions.subcomplexHorn_ι_mem 1 0)
+  obtain ⟨α, hα₁, hα₂⟩ :=
+    (subcomplexHorn₂₀.isPushout₀.{u}.map (tensorRight X)).exists_desc
+      hfg.h (snd _ _ ≫ f.map) (by
+        dsimp
+        rw [whiskerRight_snd_assoc, ← hfg.h₀, SSet.ι₀,
+          standardSimplex.obj₀Equiv_symm_apply, ← Category.assoc]
+        congr 1
+        ext : 1
+        · ext _ ⟨x, _⟩ _
+          obtain ⟨x, rfl⟩ := (standardSimplex.objEquiv _ _).symm.surjective x
+          obtain rfl := Subsingleton.elim x (SimplexCategory.const _ _ 0)
+          rfl
+        · simp)
+  dsimp at α hα₁ hα₂
+  obtain ⟨β, hβ₁, hβ₂⟩ :=
+    (unionProd_isPushout _ _).exists_desc (snd _ _ ≫ φ ≫ B.ι) α (by
+      apply (subcomplexHorn₂₀.isPushout₀.{u}.map (tensorRight (A : SSet))).hom_ext
+      · simp [← hfg.rel, ← hα₁, whisker_exchange_assoc]
+      · dsimp
+        simp [← whisker_exchange_assoc, hα₂,
+          whiskerRight_snd_assoc, whiskerLeft_snd_assoc, comm])
+  obtain ⟨h, fac⟩ := anodyneExtensions.exists_lift_of_isFibrant β
+    (anodyneExtensions.subcomplex_unionProd_mem_of_left (subcomplexHorn 2 0) A
+      (anodyneExtensions.subcomplexHorn_ι_mem 1 0))
+  exact ⟨{
+    h := standardSimplex.map (SimplexCategory.δ 0) ▷ _ ≫ h
+    h₀ := sorry
+    h₁ := sorry
+    rel := sorry }⟩
 
 end Homotopy
 

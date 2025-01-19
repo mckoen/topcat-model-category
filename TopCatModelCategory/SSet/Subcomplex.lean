@@ -158,6 +158,8 @@ lemma prod_monotone {S₁ S₂ : X.Subcomplex} (hX : S₁ ≤ S₂) {T₁ T₂ :
 example : PartialOrder X.Subcomplex := inferInstance
 example : SemilatticeSup X.Subcomplex := inferInstance
 
+def prodIso : (prod S T : SSet) ≅ (S : SSet) ⊗ (T : SSet) := sorry
+
 section
 
 variable {S₁ S₂ : X.Subcomplex} (h : S₁ ≤ S₂)
@@ -206,6 +208,12 @@ lemma prod_le_prod_top : S.prod T ≤ S.prod ⊤ :=
 
 lemma prod_le_unionProd : S.prod T ≤ S.unionProd T :=
   (prod_le_prod_top S T).trans (prod_top_le_unionProd S T)
+
+noncomputable def unionProd.ι₁ : X ⊗ T ⟶ unionProd S T :=
+  (topIso X).inv ▷ _ ≫ (prodIso _ _).inv ≫ homOfLE (top_prod_le_unionProd S T)
+
+noncomputable def unionProd.ι₂ : (S : SSet.{u}) ⊗ Y ⟶ (unionProd S T : SSet.{u}) :=
+  _ ◁ (topIso Y).inv ≫ (prodIso _ _).inv ≫ homOfLE (prod_top_le_unionProd S T)
 
 end Subcomplex
 
@@ -324,6 +332,10 @@ lemma unionProd_sq : Sq (S.prod T) ((⊤ : X.Subcomplex).prod T) (S.prod ⊤) (u
     simp [prod, Set.prod, Membership.mem, Set.Mem, setOf]
     tauto
 
+lemma unionProd_isPushout : IsPushout (S.ι ▷ (T : SSet)) ((S : SSet) ◁ T.ι)
+    (unionProd.ι₁ S T) (unionProd.ι₂ S T) := by
+  sorry
+
 @[simps]
 def preimage (A : X.Subcomplex) (p : Y ⟶ X) : Y.Subcomplex where
   obj n := p.app n ⁻¹' (A.obj n)
@@ -344,13 +356,17 @@ def fromPreimage (A : X.Subcomplex) (p : Y ⟶ X) :
 def ofSimplex {n : ℕ} (x : X _[n]) : X.Subcomplex :=
   range ((X.yonedaEquiv (.mk n)).symm x)
 
+@[simp]
+lemma range_eq_ofSimplex {n : ℕ} (f : Δ[n] ⟶ X) :
+    range f = ofSimplex (X.yonedaEquiv _ f) := by
+  simp [ofSimplex]
+
 lemma mem_ofSimplex_obj {n : ℕ} (x : X _[n]) : x ∈ (ofSimplex x).obj _ := by
   refine ⟨standardSimplex.objMk .id, ?_⟩
   obtain ⟨x, rfl⟩ := (X.yonedaEquiv _).surjective x
   rw [Equiv.symm_apply_apply]
   rfl
 
-@[simp]
 lemma ofSimplex_le_iff {n : ℕ} (x : X _[n]) (A : X.Subcomplex) :
     ofSimplex x ≤ A ↔ x ∈ A.obj _ := by
   constructor
@@ -413,6 +429,18 @@ lemma preimage_eq_iff {X Y : SSet.{u}}
   apply Set.preimage_eq_iff
   rw [← mono_iff_injective]
   infer_instance
+
+end
+
+section
+
+variable {Y} (f : X ⟶ Y) {B : Y.Subcomplex} (hf : B.preimage f = ⊤)
+
+def lift : X ⟶ B :=
+  (topIso X).inv ≫ homOfLE (by simp [hf]) ≫ B.fromPreimage f
+
+@[reassoc (attr := simp)]
+lemma lift_ι : lift f hf ≫ B.ι = f := rfl
 
 end
 

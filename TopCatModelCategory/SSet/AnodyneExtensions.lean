@@ -3,6 +3,7 @@ import TopCatModelCategory.SSet.CategoryWithFibrations
 import TopCatModelCategory.SSet.ChosenFiniteProducts
 import TopCatModelCategory.SSet.SimplexCategory
 import TopCatModelCategory.SSet.NonDegenerateProdSimplex
+import TopCatModelCategory.IsFibrant
 import Mathlib.CategoryTheory.MorphismProperty.Limits
 import Mathlib.CategoryTheory.MorphismProperty.Retract
 import Mathlib.CategoryTheory.MorphismProperty.TransfiniteComposition
@@ -71,6 +72,18 @@ instance : anodyneExtensions.{u}.IsStableUnderCobaseChange := by
   infer_instance
 
 namespace anodyneExtensions
+
+lemma hasLeftLiftingProperty {A B : SSet.{u}} {f : A ⟶ B} (hf : anodyneExtensions f)
+    ⦃X Y : SSet.{u}⦄ (p : X ⟶ Y) [Fibration p] :
+    HasLiftingProperty f p :=
+  hf _ (mem_fibrations p)
+
+lemma exists_lift_of_isFibrant {A B X : SSet.{u}} (f : A ⟶ X) [IsFibrant X] {g : A ⟶ B}
+    (hg : anodyneExtensions g) :
+    ∃ (h : B ⟶ X), g ≫ h = f := by
+  have := hg.hasLeftLiftingProperty
+  have sq : CommSq f g (terminal.from _) (terminal.from _) := ⟨by simp⟩
+  exact ⟨sq.lift, by simp⟩
 
 lemma of_isIso {X Y : SSet.{u}} (f : X ⟶ Y) [IsIso f] :
     anodyneExtensions f :=
@@ -225,3 +238,5 @@ lemma subcomplex_unionProd_mem_of_right {X Y : SSet.{u}}
   sorry
 
 end anodyneExtensions
+
+end SSet

@@ -163,6 +163,13 @@ def faceRepresentableBy (S : Finset (Fin (n + 1)))
           (e.apply_symm_apply ⟨(objEquiv _ _ x).toOrderHom i, _⟩) }
   homEquiv_comp f g := by aesop
 
+def isoOfRepresentableBy {X : SSet.{u}} {m : ℕ} (h : X.RepresentableBy (.mk m)) :
+    Δ[m] ≅ X :=
+  NatIso.ofComponents (fun n ↦ Equiv.toIso ((objEquiv _ _).trans h.homEquiv)) (by
+    intros
+    ext x
+    apply h.homEquiv_comp)
+
 lemma obj₀Equiv_symm_mem_face_iff (S : Finset (Fin (n + 1))) (i : Fin (n + 1)) :
     (obj₀Equiv.symm i) ∈ (face S).obj (op (.mk 0)) ↔ i ∈ S := by
   constructor
@@ -196,7 +203,7 @@ lemma face_eq_ofSimplex (S : Finset (Fin (n + 1))) (m : ℕ) (e : Fin (m + 1) �
     obtain ⟨f, rfl⟩ := (objEquiv _ _).symm.surjective x
     ext j : 1
     simpa only [Subtype.ext_iff] using e.apply_symm_apply ⟨_, hx j⟩
-  · simp
+  · simp [Subcomplex.ofSimplex_le_iff]
 
 lemma face_singleton_compl (i : Fin (n + 2)) :
     face.{u} {i}ᶜ =

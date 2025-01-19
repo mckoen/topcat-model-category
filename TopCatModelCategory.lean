@@ -5,6 +5,7 @@ import TopCatModelCategory.CatCommSq
 import TopCatModelCategory.CellComplex
 import TopCatModelCategory.ClosedEmbeddings
 import TopCatModelCategory.ColimitsType
+import TopCatModelCategory.CommSq
 import TopCatModelCategory.Factorization
 import TopCatModelCategory.Fin
 import TopCatModelCategory.Homotopy.Basic

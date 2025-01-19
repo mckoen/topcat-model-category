@@ -1,8 +1,45 @@
 import Mathlib.Algebra.Group.Nat.Defs
 import Mathlib.Order.Fin.Basic
 import Mathlib.Data.Fintype.Card
+import Mathlib.Tactic.FinCases
 
 namespace Fin
+
+@[simps]
+def orderIsoSingleton {α : Type*} [Preorder α] (a : α) :
+    Fin 1 ≃o ({a} : Finset α) where
+  toFun _ := ⟨a, by simp⟩
+  invFun _ := 0
+  left_inv _ := by aesop
+  right_inv _ := by aesop
+  map_rel_iff' := by aesop
+
+@[simps! apply]
+noncomputable def orderIsoPair {α : Type*} [Preorder α] [DecidableEq α] (a b : α) (hab : a < b) :
+    Fin 2 ≃o ({a, b} : Finset α) where
+  toEquiv := Equiv.ofBijective (fun i ↦ match i with
+    | 0 => ⟨a, by simp⟩
+    | 1 => ⟨b, by simp⟩) (by
+    constructor
+    · intro i j h
+      fin_cases i <;> fin_cases j <;> aesop
+    · rintro ⟨x, hx⟩
+      simp only [Finset.mem_insert, Finset.mem_singleton] at hx
+      obtain rfl | rfl := hx
+      · exact ⟨0, rfl⟩
+      · exact ⟨1, rfl⟩)
+  map_rel_iff' := by
+    intro i j
+    fin_cases i <;> fin_cases j
+    · simp
+    · simpa using hab.le
+    · dsimp
+      simp only [Subtype.mk_le_mk, isValue, le_zero_iff, Nat.reduceAdd, one_eq_zero_iff, zero_add,
+        Nat.succ_ne_self, iff_false]
+      intro h
+      have := lt_of_le_of_lt h hab
+      simp at this
+    · simp
 
 lemma eq_last_or_eq_castSucc {n : ℕ} (i : Fin (n + 1)) :
     i = Fin.last _ ∨ ∃ (j : Fin n), i = j.castSucc := by
