@@ -13,6 +13,10 @@ class IsFinite : Prop where
 
 attribute [instance] IsFinite.finite
 
+instance [X.IsFinite] (n : ℕ) : Finite (X.NonDegenerate n) :=
+  Finite.of_injective (fun x ↦ (⟨n, x⟩ : Σ (d : ℕ), X.NonDegenerate d))
+    (fun _ _ ↦ by simp)
+
 lemma isFinite_of_hasDimensionLT (d : ℕ) [X.HasDimensionLT d]
     (h : ∀ (i : ℕ) (_ : i < d), Finite (X.NonDegenerate i)) :
     X.IsFinite where
@@ -51,5 +55,16 @@ lemma hasDimensionLT_of_isFinite [X.IsFinite] :
   have := hd (φ ⟨n, ⟨x, hx⟩⟩) (by simp)
   dsimp [φ] at this
   omega
+
+instance [X.IsFinite] (n : SimplexCategoryᵒᵖ) : Finite (X.obj n) := by
+  obtain ⟨n⟩ := n
+  induction' n using SimplexCategory.rec with n
+  let φ : (Σ (m : Fin (n + 1)) (f : ([n] : SimplexCategory) ⟶ [m.1]),
+    X.NonDegenerate m.1) → X _[n] := fun ⟨m, f, x⟩ ↦ X.map f.op x.1
+  have hφ : Function.Surjective φ := fun x ↦ by
+    obtain ⟨m, f, hf, y, rfl⟩ := X.exists_non_degenerate x
+    have := SimplexCategory.le_of_epi hf
+    exact ⟨⟨⟨m, by omega⟩, f, y⟩, rfl⟩
+  exact Finite.of_surjective _ hφ
 
 end SSet

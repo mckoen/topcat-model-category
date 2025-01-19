@@ -1,4 +1,5 @@
 import TopCatModelCategory.SSet.NonDegenerateProdSimplex
+import TopCatModelCategory.SSet.Finite
 
 universe u
 
@@ -60,5 +61,14 @@ lemma hasDimensionLT_prod (d₁ d₂ : ℕ) [X₁.HasDimensionLT d₁] [X₂.Has
   have := X₁.dim_lt_of_nondegenerate x₁ d₁
   have := X₂.dim_lt_of_nondegenerate x₂ d₂
   omega
+
+instance [X₁.IsFinite] [X₂.IsFinite] : (X₁ ⊗ X₂).IsFinite := by
+  obtain ⟨d₁, _⟩ := X₁.hasDimensionLT_of_isFinite
+  obtain ⟨d₂, _⟩ := X₂.hasDimensionLT_of_isFinite
+  have := hasDimensionLT_prod X₁ X₂ d₁ d₂ (d₁ + d₂) (by omega)
+  refine isFinite_of_hasDimensionLT _ (d₁ + d₂) ?_
+  intros i hi
+  have : Finite ((X₁ ⊗ X₂).obj (op [i])) := inferInstanceAs (Finite (X₁ _[i] × X₂ _[i]))
+  infer_instance
 
 end SSet
