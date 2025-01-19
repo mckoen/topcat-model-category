@@ -2,10 +2,11 @@ import TopCatModelCategory.SSet.Degenerate
 
 universe u
 
-open CategoryTheory
+open CategoryTheory Opposite Simplicial
 
 namespace SSet
 
+@[mk_iff]
 class HasDimensionLT (X : SSet.{u}) (d : ℕ) : Prop where
   degenerate_eq_top (n : ℕ) (hn : d ≤ n) : X.Degenerate n = ⊤
 
@@ -24,6 +25,10 @@ lemma dim_lt_of_nondegenerate {n : ℕ} (x : X.NonDegenerate n) (d : ℕ)
   by_contra!
   obtain ⟨x, hx⟩ := x
   simp [X.nondegenerate_eq_bot_of_hasDimensionLT d n this] at hx
+
+lemma hasDimensionLT_of_le (hn : d ≤ n) : HasDimensionLT X n where
+  degenerate_eq_top i hi :=
+    X.degenerate_eq_top_of_hasDimensionLT d i (hn.trans hi)
 
 end
 
@@ -62,5 +67,32 @@ lemma Subcomplex.hasDimensionLT_of_le {X : SSet.{u}} {A B : X.Subcomplex} (h : A
     (d : ℕ) [HasDimensionLT B d] : HasDimensionLT A d := by
   have := mono_homOfLE h
   exact hasDimensionLT_of_mono (Subcomplex.homOfLE h) d
+
+lemma hasDimensionLT_of_epi {X Y : SSet.{u}} (f : X ⟶ Y) [Epi f] (d : ℕ)
+    [X.HasDimensionLT d] : Y.HasDimensionLT d where
+  degenerate_eq_top n hn := by
+    ext y
+    simp only [Set.top_eq_univ, Set.mem_univ, iff_true]
+    obtain ⟨x, rfl⟩ := epi_iff_surjective (f := (f.app (op [n]))).1 inferInstance y
+    apply degenerate_map
+    simp [X.degenerate_eq_top_of_hasDimensionLT d n hn]
+
+instance {X Y : SSet.{u}} (f : X ⟶ Y) (d : ℕ) [X.HasDimensionLT d] :
+    HasDimensionLT (Subcomplex.range f) d := by
+  exact hasDimensionLT_of_epi (toRangeSubcomplex f) d
+
+lemma hasDimensionLT_iSup_iff {X : SSet.{u}} {ι : Type*} (A : ι → X.Subcomplex) (d : ℕ) :
+    HasDimensionLT (⨆ i, A i :) d ↔ ∀ i, HasDimensionLT (A i) d := by
+  simp only [hasDimensionLT_iff, Subcomplex.degenerate_eq_top_iff]
+  aesop
+
+lemma hasDimensionLT_iff_subcomplex_top (X : SSet.{u}) (d : ℕ) :
+    X.HasDimensionLT d ↔ HasDimensionLT (⊤ : X.Subcomplex) d := by
+  constructor
+  · intro
+    infer_instance
+  · intro h
+    simp only [hasDimensionLT_iff, Subcomplex.degenerate_eq_top_iff] at h
+    simpa [hasDimensionLT_iff] using h
 
 end SSet

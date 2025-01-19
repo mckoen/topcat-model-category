@@ -255,6 +255,28 @@ lemma eq_top_iff_contains_nonDegenerate :
     A = ⊤ ↔ ∀ (n : ℕ), X.NonDegenerate n ⊆ A.obj _ := by
   simpa using le_iff_contains_nonDegenerate ⊤ A
 
+lemma degenerate_eq_top_iff (n : ℕ) :
+    Degenerate A n = ⊤ ↔ (X.Degenerate n ⊓ A.obj _) = A.obj _ := by
+  constructor
+  · intro h
+    ext x
+    simp only [Set.inf_eq_inter, Set.mem_inter_iff, and_iff_right_iff_imp]
+    intro hx
+    simp only [← A.mem_degenerate_iff ⟨x, hx⟩, h, Set.top_eq_univ, Set.mem_univ]
+  · intro h
+    simp only [Set.inf_eq_inter, Set.inter_eq_right] at h
+    ext x
+    simpa [A.mem_degenerate_iff] using h x.2
+
+variable (X) in
+lemma iSup_ofSimplex_nonDegenerate_eq_top :
+    ⨆ (x : Σ (p : ℕ), X.NonDegenerate p), ofSimplex x.2.1 = ⊤ := by
+  rw [eq_top_iff_contains_nonDegenerate]
+  intro n x hx
+  simp only [Subpresheaf.iSup_obj, Set.iSup_eq_iUnion, Set.mem_iUnion, Sigma.exists,
+    Subtype.exists, exists_prop]
+  exact ⟨n, x, hx, mem_ofSimplex_obj x⟩
+
 end Subcomplex
 
 section

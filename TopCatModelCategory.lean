@@ -23,6 +23,7 @@ import TopCatModelCategory.SSet.Boundary
 import TopCatModelCategory.SSet.CategoryWithFibrations
 import TopCatModelCategory.SSet.ChosenFiniteProducts
 import TopCatModelCategory.SSet.Degenerate
+import TopCatModelCategory.SSet.DimensionProd
 import TopCatModelCategory.SSet.Finite
 import TopCatModelCategory.SSet.HasDimensionLT
 import TopCatModelCategory.SSet.Homotopy

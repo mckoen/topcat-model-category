@@ -1,5 +1,4 @@
 import TopCatModelCategory.SSet.Boundary
-import TopCatModelCategory.SSet.Finite
 
 universe u
 
