@@ -19,6 +19,10 @@ def const {X Y : SSet.{u}} (y : Y _[0]) : X ⟶ Y where
     rfl
 
 @[reassoc (attr := simp)]
+lemma comp_const {X Y Z : SSet.{u}} (f : X ⟶ Y) (z : Z _[0]) :
+    f ≫ const z = const z := rfl
+
+@[reassoc (attr := simp)]
 lemma const_comp {X Y Z : SSet.{u}} (y : Y _[0]) (g : Y ⟶ Z) :
     const (X := X) y ≫ g = const (g.app _ y) := by
   ext m x
