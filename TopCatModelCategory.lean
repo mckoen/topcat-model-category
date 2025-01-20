@@ -26,8 +26,10 @@ import TopCatModelCategory.SSet.ChosenFiniteProducts
 import TopCatModelCategory.SSet.Degenerate
 import TopCatModelCategory.SSet.DimensionProd
 import TopCatModelCategory.SSet.Finite
+import TopCatModelCategory.SSet.FundamentalGroupoid
 import TopCatModelCategory.SSet.HasDimensionLT
 import TopCatModelCategory.SSet.Homotopy
+import TopCatModelCategory.SSet.HomotopyBasic
 import TopCatModelCategory.SSet.Horn
 import TopCatModelCategory.SSet.NonDegenerateProdSimplex
 import TopCatModelCategory.SSet.Paths

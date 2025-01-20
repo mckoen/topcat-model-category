@@ -1,4 +1,4 @@
-import TopCatModelCategory.SSet.Homotopy
+import TopCatModelCategory.SSet.HomotopyBasic
 
 universe u
 
