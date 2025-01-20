@@ -111,8 +111,12 @@ def Hom.id (x : FundamentalGroupoid X) : Hom x x :=
 noncomputable def Hom.comp {x₀ x₁ x₂ : FundamentalGroupoid X} (f : Hom x₀ x₁) (g : Hom x₁ x₂) :
     Hom x₀ x₂ := by
   refine Quot.lift₂ (fun p₀₁ p₁₂ ↦ (Path.comp p₀₁ p₁₂).homotopyClass) ?_ ?_ f g
-  · sorry
-  · sorry
+  · rintro p₀₁ p₁₂ p₁₂' ⟨h⟩
+    exact (Path.compUniqueUpToHomotopy (p₀₁.compStruct p₁₂)
+      (p₀₁.compStruct p₁₂') (.refl _) h).eq
+  · rintro p₀₁ p₀₁' p₁₂ ⟨h⟩
+    exact (Path.compUniqueUpToHomotopy (p₀₁.compStruct p₁₂)
+      (p₀₁'.compStruct p₁₂) h (.refl _)).eq
 
 noncomputable instance : CategoryStruct (FundamentalGroupoid X) where
   Hom := Hom
@@ -122,6 +126,10 @@ noncomputable instance : CategoryStruct (FundamentalGroupoid X) where
 def homMk {x₀ x₁ : FundamentalGroupoid X} (p : Path x₀ x₁) :
     x₀ ⟶ x₁ :=
   p.homotopyClass
+
+@[simp]
+lemma homMk_refl (x : FundamentalGroupoid X) :
+    homMk (Path.id x) = 𝟙 x := rfl
 
 lemma homMk_eq_of_homotopy {p q : Path x₀ x₁} (h : p.Homotopy q) :
     homMk p = homMk q :=
