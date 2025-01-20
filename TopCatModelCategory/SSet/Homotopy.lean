@@ -132,7 +132,7 @@ end RelativeMorphism
 
 end Subcomplex
 
-section
+/-section
 
 variable (X : SSet.{u})
 
@@ -146,7 +146,7 @@ lemma toπ₀_surjective : Function.Surjective X.toπ₀ := by
 lemma toπ₀_congr (p : X _[1]) : X.toπ₀ (X.δ 1 p) = X.toπ₀ (X.δ 0 p) :=
   Quot.sound ⟨p, rfl, rfl⟩
 
-end
+end-/
 
 namespace KanComplex
 
