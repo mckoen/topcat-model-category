@@ -2,7 +2,7 @@ import TopCatModelCategory.IsFibrant
 import TopCatModelCategory.SSet.AnodyneExtensions
 import TopCatModelCategory.SSet.Horn
 
-open HomotopicalAlgebra CategoryTheory Simplicial MonoidalCategory Opposite
+open HomotopicalAlgebra CategoryTheory Category Simplicial MonoidalCategory Opposite
   ChosenFiniteProducts Limits
 
 universe u
@@ -17,6 +17,11 @@ def const {X Y : SSet.{u}} (y : Y _[0]) : X ⟶ Y where
     dsimp
     rw [← FunctorToTypes.map_comp_apply]
     rfl
+
+@[reassoc (attr := simp)]
+lemma const_comp {X Y Z : SSet.{u}} (y : Y _[0]) (g : Y ⟶ Z) :
+    const (X := X) y ≫ g = const (g.app _ y) := by
+  sorry
 
 private noncomputable abbrev ι₀ {X : SSet.{u}} : X ⟶ Δ[1] ⊗ X :=
   lift (const (standardSimplex.obj₀Equiv.{u}.symm 0)) (𝟙 X)
@@ -85,7 +90,7 @@ noncomputable def symm (hfg : Homotopy f g) [IsFibrant Y] : Homotopy g f := by
       hfg.h (snd _ _ ≫ f.map) (by
         dsimp
         rw [whiskerRight_snd_assoc, ← hfg.h₀, SSet.ι₀,
-          standardSimplex.obj₀Equiv_symm_apply, ← Category.assoc]
+          standardSimplex.obj₀Equiv_symm_apply, ← assoc]
         congr 1
         ext : 1
         · ext _ ⟨x, _⟩ _
@@ -95,7 +100,7 @@ noncomputable def symm (hfg : Homotopy f g) [IsFibrant Y] : Homotopy g f := by
         · simp)
   dsimp at α hα₁ hα₂
   obtain ⟨β, hβ₁, hβ₂⟩ :=
-    (unionProd_isPushout _ _).exists_desc (snd _ _ ≫ φ ≫ B.ι) α (by
+    (unionProd.isPushout _ _).exists_desc (snd _ _ ≫ φ ≫ B.ι) α (by
       apply (subcomplexHorn₂₀.isPushout₀.{u}.map (tensorRight (A : SSet))).hom_ext
       · simp [← hfg.rel, ← hα₁, whisker_exchange_assoc]
       · dsimp
@@ -106,9 +111,15 @@ noncomputable def symm (hfg : Homotopy f g) [IsFibrant Y] : Homotopy g f := by
       (anodyneExtensions.subcomplexHorn_ι_mem 1 0))
   exact ⟨{
     h := standardSimplex.map (SimplexCategory.δ 0) ▷ _ ≫ h
-    h₀ := sorry
-    h₁ := sorry
-    rel := sorry }⟩
+    h₀ := by
+      rw [← hfg.h₁, ← hα₁, ← hβ₂, ← fac, ← assoc, ← assoc, ← assoc, ← assoc]
+      rfl
+    h₁ := by simpa only [assoc, hβ₂, hα₂, lift_snd_assoc, id_comp,
+        unionProd.ι₂_ι_assoc] using (SSet.ι₁ ≫ subcomplexHorn₂₀.ι₀₂ ▷ X ≫
+          unionProd.ι₂ (subcomplexHorn 2 0) A) ≫= fac
+    rel := by simpa only [assoc, hβ₁] using
+        (standardSimplex.map (SimplexCategory.δ (0 : Fin 3)) ▷ _ ≫
+          unionProd.ι₁ (subcomplexHorn 2 0) A) ≫= fac }⟩
 
 end Homotopy
 

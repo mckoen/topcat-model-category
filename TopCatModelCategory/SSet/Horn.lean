@@ -132,6 +132,14 @@ def ι₀₂ : Δ[1] ⟶ subcomplexHorn.{u} 2 0 :=
       rw [standardSimplex.face_singleton_compl]
       rfl))
 
+@[reassoc (attr := simp)]
+lemma ι₀₁_ι : ι₀₁.{u} ≫ (subcomplexHorn.{u} 2 0).ι =
+  standardSimplex.{u}.map (SimplexCategory.δ 2) := by simp [ι₀₁]
+
+@[reassoc (attr := simp)]
+lemma ι₀₂_ι : ι₀₂.{u} ≫ (subcomplexHorn.{u} 2 0).ι =
+  standardSimplex.{u}.map (SimplexCategory.δ 1) := by simp [ι₀₂]
+
 lemma isPushout₀ :
     IsPushout (standardSimplex.{u}.map (SimplexCategory.δ (1 : Fin 2)))
       (standardSimplex.{u}.map (SimplexCategory.δ (1 : Fin 2))) ι₀₁ ι₀₂ := by

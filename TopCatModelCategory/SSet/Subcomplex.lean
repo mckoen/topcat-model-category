@@ -158,8 +158,6 @@ lemma prod_monotone {S₁ S₂ : X.Subcomplex} (hX : S₁ ≤ S₂) {T₁ T₂ :
 example : PartialOrder X.Subcomplex := inferInstance
 example : SemilatticeSup X.Subcomplex := inferInstance
 
-def prodIso : (prod S T : SSet) ≅ (S : SSet) ⊗ (T : SSet) := sorry
-
 section
 
 variable {S₁ S₂ : X.Subcomplex} (h : S₁ ≤ S₂)
@@ -208,12 +206,6 @@ lemma prod_le_prod_top : S.prod T ≤ S.prod ⊤ :=
 
 lemma prod_le_unionProd : S.prod T ≤ S.unionProd T :=
   (prod_le_prod_top S T).trans (prod_top_le_unionProd S T)
-
-noncomputable def unionProd.ι₁ : X ⊗ T ⟶ unionProd S T :=
-  (topIso X).inv ▷ _ ≫ (prodIso _ _).inv ≫ homOfLE (top_prod_le_unionProd S T)
-
-noncomputable def unionProd.ι₂ : (S : SSet.{u}) ⊗ Y ⟶ (unionProd S T : SSet.{u}) :=
-  _ ◁ (topIso Y).inv ≫ (prodIso _ _).inv ≫ homOfLE (prod_top_le_unionProd S T)
 
 end Subcomplex
 
@@ -322,20 +314,7 @@ end Sq
 
 section
 
-variable {Y} (S : X.Subcomplex) (T : Y.Subcomplex)
-
-lemma unionProd_sq : Sq (S.prod T) ((⊤ : X.Subcomplex).prod T) (S.prod ⊤) (unionProd S T) where
-  max_eq := rfl
-  min_eq := by
-    ext n ⟨x, y⟩
-    change _ ∧ _ ↔ _
-    simp [prod, Set.prod, Membership.mem, Set.Mem, setOf]
-    tauto
-
-lemma unionProd_isPushout : IsPushout (S.ι ▷ (T : SSet)) ((S : SSet) ◁ T.ι)
-    (unionProd.ι₁ S T) (unionProd.ι₂ S T) := by
-  sorry
-
+variable {Y}
 @[simps]
 def preimage (A : X.Subcomplex) (p : Y ⟶ X) : Y.Subcomplex where
   obj n := p.app n ⁻¹' (A.obj n)
@@ -484,6 +463,42 @@ noncomputable def isColimitPushoutCoconeOfPullback [hf : Mono f] :
           simpa only [Subtype.mk.injEq] using hf n h)))
 
 end
+
+namespace unionProd
+
+variable {Y} (S : X.Subcomplex) (T : Y.Subcomplex)
+
+noncomputable def ι₁ : X ⊗ T ⟶ unionProd S T :=
+  lift (X ◁ T.ι) (by
+    ext m ⟨x₁, x₂⟩
+    simp [unionProd, Set.prod]
+    exact Or.inl x₂.2)
+
+noncomputable def ι₂ : (S : SSet.{u}) ⊗ Y ⟶ (unionProd S T : SSet.{u}) :=
+  lift (S.ι ▷ Y) (by
+    ext m ⟨x₁, x₂⟩
+    simp [unionProd, Set.prod]
+    exact Or.inr x₁.2)
+
+@[reassoc (attr := simp)]
+lemma ι₁_ι : ι₁ S T ≫ (unionProd S T).ι = X ◁ T.ι := rfl
+
+@[reassoc (attr := simp)]
+lemma ι₂_ι : ι₂ S T ≫ (unionProd S T).ι = S.ι ▷ Y := rfl
+
+lemma sq : Sq (S.prod T) ((⊤ : X.Subcomplex).prod T) (S.prod ⊤) (unionProd S T) where
+  max_eq := rfl
+  min_eq := by
+    ext n ⟨x, y⟩
+    change _ ∧ _ ↔ _
+    simp [prod, Set.prod, Membership.mem, Set.Mem, setOf]
+    tauto
+
+lemma isPushout : IsPushout (S.ι ▷ (T : SSet)) ((S : SSet) ◁ T.ι)
+    (unionProd.ι₁ S T) (unionProd.ι₂ S T) := by
+  sorry
+
+end unionProd
 
 end Subcomplex
 
