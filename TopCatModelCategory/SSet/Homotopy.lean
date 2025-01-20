@@ -21,7 +21,8 @@ def const {X Y : SSet.{u}} (y : Y _[0]) : X ⟶ Y where
 @[reassoc (attr := simp)]
 lemma const_comp {X Y Z : SSet.{u}} (y : Y _[0]) (g : Y ⟶ Z) :
     const (X := X) y ≫ g = const (g.app _ y) := by
-  sorry
+  ext m x
+  simp [FunctorToTypes.naturality]
 
 private noncomputable abbrev ι₀ {X : SSet.{u}} : X ⟶ Δ[1] ⊗ X :=
   lift (const (standardSimplex.obj₀Equiv.{u}.symm 0)) (𝟙 X)
@@ -74,8 +75,8 @@ noncomputable def refl : Homotopy f f where
 
 variable {f g}
 
-instance (J : Type*) [Category J] (Y : SSet) :
-    PreservesColimitsOfShape J (tensorRight Y) := sorry
+-- consequence of the closed monoidal structure
+instance (Y : SSet) : (tensorRight Y).IsLeftAdjoint := sorry
 
 instance (J : Type*) [Category J] (Y : SimplexCategoryᵒᵖ ⥤ Type u) :
     PreservesColimitsOfShape J (tensorRight Y) :=
@@ -121,12 +122,40 @@ noncomputable def symm (hfg : Homotopy f g) [IsFibrant Y] : Homotopy g f := by
         (standardSimplex.map (SimplexCategory.δ (0 : Fin 3)) ▷ _ ≫
           unionProd.ι₁ (subcomplexHorn 2 0) A) ≫= fac }⟩
 
+noncomputable def trans {f₁ f₂ f₃ : RelativeMorphism A B φ}
+    (h₁₂ : Homotopy f₁ f₂) (h₂₃ : Homotopy f₂ f₃) [IsFibrant Y] : Homotopy f₁ f₃ := by
+  sorry
+
+variable (A B φ) in
+lemma equivalence [IsFibrant Y] :
+    _root_.Equivalence (α := RelativeMorphism A B φ)
+      (fun f g ↦ Nonempty (Homotopy f g)) where
+  refl f := ⟨refl _⟩
+  symm h := ⟨h.some.symm⟩
+  trans h₁₂ h₂₃ := ⟨h₁₂.some.trans h₂₃.some⟩
+
 end Homotopy
 
 variable (A B φ)
 
 def HomotopyClass : Type u :=
   Quot (α := RelativeMorphism A B φ) (fun f g ↦ Nonempty (Homotopy f g))
+
+variable {A B φ}
+
+def homotopyClass (f : RelativeMorphism A B φ) : HomotopyClass A B φ := Quot.mk _ f
+
+lemma Homotopy.eq {f g : RelativeMorphism A B φ} (h : Homotopy f g) :
+    f.homotopyClass = g.homotopyClass :=
+  Quot.sound ⟨h⟩
+
+lemma HomotopyClass.eq_homotopyClass (x : HomotopyClass A B φ) :
+    ∃ (f : RelativeMorphism A B φ), f.homotopyClass = x :=
+  Quot.mk_surjective x
+
+noncomputable def Homotopy.of_eq {f g : RelativeMorphism A B φ} [IsFibrant Y]
+    (h : f.homotopyClass = g.homotopyClass) : Homotopy f g :=
+  ((Equivalence.quot_mk_eq_iff (Homotopy.equivalence A B φ) _ _).1 h).some
 
 end RelativeMorphism
 
