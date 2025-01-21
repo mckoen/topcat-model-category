@@ -7,6 +7,7 @@ import Mathlib.AlgebraicTopology.SimplicialSet.Monoidal
 import Mathlib.CategoryTheory.Sites.Subsheaf
 import Mathlib.CategoryTheory.MorphismProperty.Limits
 import TopCatModelCategory.ColimitsType
+import TopCatModelCategory.CommSq
 
 
 /-!
@@ -523,6 +524,23 @@ noncomputable def isColimitPushoutCoconeOfPullback [hf : Mono f] :
 
 end
 
+variable {Y} in
+noncomputable def prodIso (S : X.Subcomplex) (T : Y.Subcomplex) :
+    (S.prod T : SSet) ≅ (S : SSet) ⊗ (T : SSet) where
+  hom := ChosenFiniteProducts.lift
+    (lift ((S.prod T).ι ≫ ChosenFiniteProducts.fst _ _) (by
+      ext n ⟨x, h⟩
+      simpa using h.1))
+    (lift ((S.prod T).ι ≫ ChosenFiniteProducts.snd _ _) (by
+      ext n ⟨x, h⟩
+      simpa using h.2))
+  inv := lift (S.ι ⊗ T.ι) (by
+    ext n ⟨x, y⟩
+    dsimp
+    simp only [Set.mem_preimage, tensorHom_app_apply, Subpresheaf.ι_app,
+      Set.mem_univ, iff_true]
+    exact ⟨x.2, y.2⟩)
+
 namespace unionProd
 
 variable {Y} (S : X.Subcomplex) (T : Y.Subcomplex)
@@ -554,8 +572,12 @@ lemma sq : Sq (S.prod T) ((⊤ : X.Subcomplex).prod T) (S.prod ⊤) (unionProd S
     tauto
 
 lemma isPushout : IsPushout (S.ι ▷ (T : SSet)) ((S : SSet) ◁ T.ι)
-    (unionProd.ι₁ S T) (unionProd.ι₂ S T) := by
-  sorry
+    (unionProd.ι₁ S T) (unionProd.ι₂ S T) :=
+  (sq S T).isPushout.of_iso
+    (Subcomplex.prodIso _ _)
+    (Subcomplex.prodIso _ _ ≪≫ MonoidalCategory.whiskerRightIso (topIso X) _)
+    (Subcomplex.prodIso _ _ ≪≫ MonoidalCategory.whiskerLeftIso _ (topIso Y))
+    (Iso.refl _) rfl rfl rfl rfl
 
 @[simp]
 lemma preimage_β_hom : (unionProd S T).preimage (β_ _ _).hom = unionProd T S := by
