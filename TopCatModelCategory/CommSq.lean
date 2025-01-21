@@ -2,6 +2,8 @@ import Mathlib.CategoryTheory.Limits.Shapes.Pullback.CommSq
 
 namespace CategoryTheory
 
+open Limits
+
 variable {C : Type*} [Category C]
 
 namespace IsPushout
@@ -29,6 +31,11 @@ lemma exists_desc (sq : IsPushout f g inl inr)
     {W : C} (h : X ⟶ W) (k : Y ⟶ W) (w : f ≫ h = g ≫ k) :
     ∃ (d : P ⟶ W), inl ≫ d = h ∧ inr ≫ d = k :=
   ⟨sq.desc h k w, by simp, by simp⟩
+
+noncomputable def isColimitBinaryCofan (sq : IsPushout f g inl inr) (hZ : IsInitial Z) :
+    IsColimit (BinaryCofan.mk inl inr) :=
+  BinaryCofan.IsColimit.mk _ (fun {U} s t ↦ sq.desc s t (hZ.hom_ext _ _))
+    (by simp) (by simp) (fun s t m h₁ h₂ ↦ by apply sq.hom_ext <;> simpa)
 
 end IsPushout
 

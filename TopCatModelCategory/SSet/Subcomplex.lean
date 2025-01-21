@@ -66,6 +66,11 @@ instance : CompleteLattice (Subpresheaf P) where
 
 namespace Subpresheaf
 
+@[simp] lemma top_obj (i : Cᵒᵖ) : (⊤ : Subpresheaf P).obj i = ⊤ := rfl
+@[simp] lemma bot_obj (i : Cᵒᵖ) : (⊥ : Subpresheaf P).obj i = ⊥ := rfl
+
+variable {P}
+
 lemma sSup_obj (S : Set (Subpresheaf P)) (U : Cᵒᵖ) :
     (sSup S).obj U = sSup (Set.image (fun T ↦ T.obj U) S) := rfl
 
@@ -118,6 +123,12 @@ variable (X) in
 @[simps!]
 def topIso : ((⊤ : X.Subcomplex) : SSet) ≅ X :=
   NatIso.ofComponents (fun n ↦  (Equiv.Set.univ (X.obj n)).toIso)
+
+def isInitialBot : IsInitial ((⊥ : X.Subcomplex) : SSet.{u}) :=
+  IsInitial.ofUniqueHom (fun P ↦
+    { app i := fun ⟨x, hx⟩ ↦ by simp at hx
+      naturality i j f := by ext ⟨x, hx⟩; simp at hx })
+    (fun _ _ ↦ by ext _ ⟨x, hx⟩; simp at hx)
 
 variable {S} in
 @[ext]

@@ -1,3 +1,5 @@
+import TopCatModelCategory.CommSq
+import TopCatModelCategory.SSet.Boundary
 import TopCatModelCategory.SSet.HomotopyBasic
 
 universe u
@@ -15,18 +17,58 @@ lemma yonedaEquiv_symm_zero (x : X _[0]) :
 
 namespace subcomplexBoundary₁
 
-def ι₀ : Δ[0] ⟶ (subcomplexBoundary 1 : SSet.{u}) := sorry
+lemma sq : Subcomplex.Sq ⊥ (standardSimplex.face {0}) (standardSimplex.face {1})
+    (subcomplexBoundary.{u} 1) where
+  max_eq := by
+    rw [subcomplexBoundary_eq_iSup]
+    ext
+    rw [Subpresheaf.max_obj, Set.mem_union, Subpresheaf.iSup_obj,
+      Set.iSup_eq_iUnion, Set.mem_iUnion]
+    constructor
+    · rintro (h₀ | h₁)
+      · exact ⟨1, h₀⟩
+      · exact ⟨0, h₁⟩
+    · rintro ⟨i, h⟩
+      fin_cases i
+      · exact Or.inr h
+      · exact Or.inl h
+  min_eq := by
+    ext ⟨m⟩ x
+    induction' m using SimplexCategory.rec with m
+    aesop
 
-def ι₁ : Δ[0] ⟶ (subcomplexBoundary 1 : SSet.{u}) := sorry
+def ι₀ : Δ[0] ⟶ (subcomplexBoundary 1 : SSet.{u}) :=
+  (standardSimplex.isoOfRepresentableBy
+    (standardSimplex.faceRepresentableBy.{u} ({1}ᶜ : Finset (Fin 2)) 0
+    (Fin.orderIsoSingleton 0))).hom ≫
+    Subcomplex.homOfLE (face_le_subcomplexBoundary (1 : Fin 2))
 
-def isColimit : IsColimit (BinaryCofan.mk ι₀.{u} ι₁) := sorry
+def ι₁ : Δ[0] ⟶ (subcomplexBoundary 1 : SSet.{u}) :=
+  (standardSimplex.isoOfRepresentableBy
+    (standardSimplex.faceRepresentableBy.{u} ({0}ᶜ : Finset (Fin 2)) 0
+    (Fin.orderIsoSingleton 1))).hom ≫
+    Subcomplex.homOfLE (face_le_subcomplexBoundary (0 : Fin 2))
+
+lemma isPushout : IsPushout (initial.to _) (initial.to _) ι₀.{u} ι₁.{u} :=
+  sq.{u}.isPushout.of_iso' (initialIsoIsInitial Subcomplex.isInitialBot)
+    (standardSimplex.isoOfRepresentableBy
+      (standardSimplex.faceRepresentableBy.{u} ({1}ᶜ : Finset (Fin 2)) 0
+      (Fin.orderIsoSingleton 0)))
+    (standardSimplex.isoOfRepresentableBy
+      (standardSimplex.faceRepresentableBy.{u} ({0}ᶜ : Finset (Fin 2)) 0
+      (Fin.orderIsoSingleton 1))) (Iso.refl _)
+    (initialIsInitial.hom_ext _ _) (initialIsInitial.hom_ext _ _)
+    (by simp [ι₀]) (by simp [ι₁])
+
+noncomputable def isColimit : IsColimit (BinaryCofan.mk ι₀.{u} ι₁) :=
+  isPushout.{u}.isColimitBinaryCofan initialIsInitial
 
 @[ext]
 lemma hom_ext {f g : (subcomplexBoundary 1 : SSet) ⟶ X}
     (h₀ : ι₀ ≫ f = ι₀ ≫ g) (h₁ : ι₁ ≫ f = ι₁ ≫ g) : f = g := by
   apply BinaryCofan.IsColimit.hom_ext isColimit <;> assumption
 
-def desc (x₀ x₁ : X _[0]) : (subcomplexBoundary 1 : SSet) ⟶ X :=
+noncomputable def desc (x₀ x₁ : X _[0]) : (subcomplexBoundary 1 : SSet) ⟶ X :=
   (BinaryCofan.IsColimit.desc' isColimit ((yonedaEquiv _ _).symm x₀)
     ((yonedaEquiv _ _).symm x₁)).1
 
@@ -87,7 +129,8 @@ structure CompStruct (p₀₁ : Path x₀ x₁) (p₁₂ : Path x₁ x₂) (p₀
   h₀₂ : standardSimplex.map (SimplexCategory.δ 1) ≫ map = p₀₂.map
 
 lemma exists_compStruct (p₀₁ : Path x₀ x₁) (p₁₂ : Path x₁ x₂) :
-    ∃ (p₀₂ : Path x₀ x₂), Nonempty (CompStruct p₀₁ p₁₂ p₀₂) := sorry
+    ∃ (p₀₂ : Path x₀ x₂), Nonempty (CompStruct p₀₁ p₁₂ p₀₂) := by
+  sorry
 
 def compUniqueUpToHomotopy
     {p₀₁ p₀₁' : Path x₀ x₁} {p₁₂ p₁₂' : Path x₁ x₂} {p₀₂ p₀₂' : Path x₀ x₂}
