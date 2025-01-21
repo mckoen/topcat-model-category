@@ -1,10 +1,12 @@
 import TopCatModelCategory.CommSq
-import TopCatModelCategory.SSet.Boundary
+import TopCatModelCategory.IsFibrant
+import TopCatModelCategory.SSet.Horn
 import TopCatModelCategory.SSet.HomotopyBasic
+import TopCatModelCategory.SSet.AnodyneExtensions
 
 universe u
 
-open CategoryTheory Category Simplicial Limits
+open HomotopicalAlgebra CategoryTheory Category Simplicial Limits
 
 namespace SSet
 
@@ -49,6 +51,22 @@ def ι₁ : Δ[0] ⟶ (subcomplexBoundary 1 : SSet.{u}) :=
     (Fin.orderIsoSingleton 1))).hom ≫
     Subcomplex.homOfLE (face_le_subcomplexBoundary (0 : Fin 2))
 
+@[reassoc (attr := simp)]
+lemma ι₀_ι : ι₀.{u} ≫ (subcomplexBoundary 1).ι =
+    standardSimplex.map (SimplexCategory.δ 1) := by
+  apply (yonedaEquiv _ _ ).injective
+  ext i
+  fin_cases i
+  rfl
+
+@[reassoc (attr := simp)]
+lemma ι₁_ι : ι₁.{u} ≫ (subcomplexBoundary 1).ι =
+    standardSimplex.map (SimplexCategory.δ 0) := by
+  apply (yonedaEquiv _ _ ).injective
+  ext i
+  fin_cases i
+  rfl
+
 lemma isPushout : IsPushout (initial.to _) (initial.to _) ι₀.{u} ι₁.{u} :=
   sq.{u}.isPushout.of_iso' (initialIsoIsInitial Subcomplex.isInitialBot)
     (standardSimplex.isoOfRepresentableBy
@@ -85,9 +103,10 @@ end subcomplexBoundary₁
 namespace KanComplex
 
 variable (X)
-
-structure FundamentalGroupoid where
+structure FundamentalGroupoid [IsFibrant X] where
   pt : X _[0]
+
+variable [IsFibrant X]
 
 namespace FundamentalGroupoid
 
@@ -107,16 +126,43 @@ abbrev Path (x₀ x₁ : FundamentalGroupoid X) :=
   Subcomplex.RelativeMorphism.{u} _ _
     (subcomplexBoundary₁.desc x₀.pt x₁.pt ≫ (Subcomplex.topIso X).inv)
 
-def Path.id (x : FundamentalGroupoid X) : Path x x where
-  map := const x.pt
+@[simps]
+def Path.mk {x₀ x₁ : FundamentalGroupoid X} (f : Δ[1] ⟶ X)
+    (h₀ : standardSimplex.map (SimplexCategory.δ 1) ≫ f = const x₀.pt := by simp)
+    (h₁ : standardSimplex.map (SimplexCategory.δ 0) ≫ f = const x₁.pt := by simp) :
+    Path x₀ x₁ where
+  map := f
   comm := by
     apply subcomplexBoundary₁.hom_ext
-    · rw [assoc, subcomplexBoundary₁.ι₀_desc_assoc, comp_const, comp_const,
-        yonedaEquiv_symm_zero, const_comp, FunctorToTypes.comp, Subpresheaf.ι_app,
-        Subcomplex.topIso_inv_app_coe]
-    · rw [assoc, subcomplexBoundary₁.ι₁_desc_assoc, comp_const, comp_const,
-        yonedaEquiv_symm_zero, const_comp, FunctorToTypes.comp, Subpresheaf.ι_app,
-        Subcomplex.topIso_inv_app_coe]
+    · dsimp
+      rw [assoc, subcomplexBoundary₁.ι₀_desc_assoc, yonedaEquiv_symm_zero, const_comp,
+        subcomplexBoundary₁.ι₀_ι_assoc, h₀, FunctorToTypes.comp,
+        Subpresheaf.ι_app, Subcomplex.topIso_inv_app_coe]
+    · dsimp
+      rw [assoc, subcomplexBoundary₁.ι₁_desc_assoc, yonedaEquiv_symm_zero, const_comp,
+        subcomplexBoundary₁.ι₁_ι_assoc, h₁, FunctorToTypes.comp,
+        Subpresheaf.ι_app, Subcomplex.topIso_inv_app_coe]
+
+@[reassoc]
+lemma Path.comm₀ {x₀ x₁ : FundamentalGroupoid X} (p : Path x₀ x₁) :
+    standardSimplex.map (SimplexCategory.δ 1) ≫ p.map = const x₀.pt := by
+  have := subcomplexBoundary₁.ι₀ ≫= p.comm
+  rw [assoc, subcomplexBoundary₁.ι₀_ι_assoc, subcomplexBoundary₁.ι₀_desc_assoc,
+    yonedaEquiv_symm_zero, const_comp, FunctorToTypes.comp, Subpresheaf.ι_app,
+    Subcomplex.topIso_inv_app_coe] at this
+  exact this
+
+@[reassoc]
+lemma Path.comm₁ {x₀ x₁ : FundamentalGroupoid X} (p : Path x₀ x₁) :
+    standardSimplex.map (SimplexCategory.δ 0) ≫ p.map = const x₁.pt := by
+  have := subcomplexBoundary₁.ι₁ ≫= p.comm
+  rw [assoc, subcomplexBoundary₁.ι₁_ι_assoc, subcomplexBoundary₁.ι₁_desc_assoc,
+    yonedaEquiv_symm_zero, const_comp, FunctorToTypes.comp, Subpresheaf.ι_app,
+    Subcomplex.topIso_inv_app_coe] at this
+  exact this
+
+def Path.id (x : FundamentalGroupoid X) : Path x x :=
+  Path.mk (const x.pt)
 
 namespace Path
 
@@ -130,13 +176,35 @@ structure CompStruct (p₀₁ : Path x₀ x₁) (p₁₂ : Path x₁ x₂) (p₀
 
 lemma exists_compStruct (p₀₁ : Path x₀ x₁) (p₁₂ : Path x₁ x₂) :
     ∃ (p₀₂ : Path x₀ x₂), Nonempty (CompStruct p₀₁ p₁₂ p₀₂) := by
-  sorry
+  obtain ⟨α, h₀₁, h₁₂⟩ := subcomplexHorn₂₁.isPushout.exists_desc p₀₁.map p₁₂.map (by
+    have h₀ := subcomplexBoundary₁.ι₁ ≫= p₀₁.comm
+    have h₁ := subcomplexBoundary₁.ι₀ ≫= p₁₂.comm
+    rw [assoc, subcomplexBoundary₁.ι₁_ι_assoc,
+      subcomplexBoundary₁.ι₁_desc_assoc] at h₀
+    rw [assoc, subcomplexBoundary₁.ι₀_ι_assoc,
+      subcomplexBoundary₁.ι₀_desc_assoc] at h₁
+    rw [h₀, h₁])
+  obtain ⟨β, hβ⟩ := anodyneExtensions.exists_lift_of_isFibrant α
+    (anodyneExtensions.subcomplexHorn_ι_mem 1 1)
+  have h₀₁' := subcomplexHorn₂₁.ι₀₁ ≫= hβ
+  rw [subcomplexHorn₂₁.ι₀₁_ι_assoc, h₀₁] at h₀₁'
+  have h₀₂' := subcomplexHorn₂₁.ι₁₂ ≫= hβ
+  rw [subcomplexHorn₂₁.ι₁₂_ι_assoc, h₁₂] at h₀₂'
+  refine ⟨Path.mk (standardSimplex.map (SimplexCategory.δ 1) ≫ β) ?_ ?_,
+    ⟨{ map := β, h₀₁ := h₀₁', h₁₂ := h₀₂', h₀₂ := rfl }⟩⟩
+  · have := SimplexCategory.δ_comp_δ_self (n := 0) (i := 1)
+    dsimp at this
+    rw [← Functor.map_comp_assoc, this, Functor.map_comp_assoc, h₀₁', p₀₁.comm₀]
+  · have := SimplexCategory.δ_comp_δ (n := 0) (i := 0) (j := 0) (by simp)
+    dsimp at this
+    rw [← Functor.map_comp_assoc, this, Functor.map_comp_assoc, h₀₂', p₁₂.comm₁]
 
 def compUniqueUpToHomotopy
     {p₀₁ p₀₁' : Path x₀ x₁} {p₁₂ p₁₂' : Path x₁ x₂} {p₀₂ p₀₂' : Path x₀ x₂}
     (s : CompStruct p₀₁ p₁₂ p₀₂) (s' : CompStruct p₀₁' p₁₂' p₀₂')
     (h₀₁ : p₀₁.Homotopy p₀₁') (h₀₁ : p₁₂.Homotopy p₁₂') :
-    p₀₂.Homotopy p₀₂' := sorry
+    p₀₂.Homotopy p₀₂' := by
+  sorry
 
 noncomputable def comp (p₀₁ : Path x₀ x₁) (p₁₂ : Path x₁ x₂) :
     Path x₀ x₂ :=
@@ -174,7 +242,8 @@ def homMk {x₀ x₁ : FundamentalGroupoid X} (p : Path x₀ x₁) :
 lemma homMk_refl (x : FundamentalGroupoid X) :
     homMk (Path.id x) = 𝟙 x := rfl
 
-lemma homMk_eq_of_homotopy {p q : Path x₀ x₁} (h : p.Homotopy q) :
+lemma homMk_eq_of_homotopy {x₀ x₁ : FundamentalGroupoid X}
+    {p q : Path x₀ x₁} (h : p.Homotopy q) :
     homMk p = homMk q :=
   h.eq
 
