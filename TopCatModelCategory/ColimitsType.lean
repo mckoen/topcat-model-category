@@ -1,10 +1,11 @@
 import Mathlib.CategoryTheory.Limits.Shapes.Pullback.CommSq
+import Mathlib.CategoryTheory.Limits.Shapes.Multiequalizer
 import Mathlib.CategoryTheory.Limits.Shapes.Types
 import Mathlib.Data.Set.Lattice
 
-universe u
+universe v u
 
-open CategoryTheory
+open CategoryTheory Limits
 
 namespace Lattice
 
@@ -136,3 +137,103 @@ end
 end Pushouts
 
 end CategoryTheory.Limits.Types
+
+namespace Lattice
+
+variable {T : Type*} [CompleteLattice T] {ι : Type*} (X : T) (U : ι → T) (V : ι → ι → T)
+
+structure MulticoequalizerDiagram where
+  hX : X = ⨆ (i : ι), U i
+  hV (i j : ι) : V i j = U i ⊓ U j
+
+namespace MulticoequalizerDiagram
+
+variable {X U V} (d : MulticoequalizerDiagram X U V)
+
+@[simps]
+def multispanIndex : MultispanIndex T where
+  L := ι × ι
+  R := ι
+  fstFrom := Prod.fst
+  sndFrom := Prod.snd
+  left := fun ⟨i, j⟩ ↦ V i j
+  right := U
+  fst := fun ⟨i, j⟩ ↦ homOfLE (by
+    dsimp
+    rw [d.hV]
+    exact inf_le_left)
+  snd := fun ⟨i, j⟩ ↦ homOfLE (by
+    dsimp
+    rw [d.hV]
+    exact inf_le_right)
+
+@[simps! pt]
+def multicofork : Multicofork d.multispanIndex :=
+  Multicofork.ofπ _ X (fun i ↦ homOfLE (by simpa only [d.hX] using le_iSup U i))
+    (fun _ ↦ rfl)
+
+end MulticoequalizerDiagram
+
+end Lattice
+
+namespace CategoryTheory.Limits
+
+@[simps]
+def MultispanIndex.map {C D : Type*} [Category C] [Category D]
+    (d : MultispanIndex C) (F : C ⥤ D) : MultispanIndex D where
+  L := d.L
+  R := d.R
+  fstFrom := d.fstFrom
+  sndFrom := d.sndFrom
+  left i := F.obj (d.left i)
+  right i := F.obj (d.right i)
+  fst i := F.map (d.fst i)
+  snd i := F.map (d.snd i)
+
+@[simps!]
+def Multicofork.map {C D : Type*} [Category C] [Category D]
+    {d : MultispanIndex C} (c : Multicofork d) (F : C ⥤ D) :
+    Multicofork (d.map F) :=
+  Multicofork.ofπ _ (F.obj c.pt) (fun i ↦ F.map (c.π i)) (fun j ↦ by
+    dsimp
+    rw [← F.map_comp, ← F.map_comp, condition])
+
+namespace Types
+
+variable {T : Type u} {ι : Type v} {X : Set T} {U : ι → Set T} {V : ι → ι → Set T}
+  (d : Lattice.MulticoequalizerDiagram X U V)
+
+namespace isColimitMulticoforkMapSetToTypes
+
+include d in
+lemma exists_index (x : X) : ∃ (i : ι), x.1 ∈ U i := by
+  obtain ⟨x, hx⟩ := x
+  rw [d.hX] at hx
+  aesop
+
+noncomputable def index (x : X) : ι := (exists_index d x).choose
+
+lemma mem (x : X) : x.1 ∈ U (index d x) := (exists_index d x).choose_spec
+
+variable {d} (s : Multicofork (d.multispanIndex.map Set.toTypes))
+
+noncomputable def desc (x : X) : s.pt := s.π (index d x) ⟨x, mem d x⟩
+
+lemma fac_apply (i : ι) (u : U i) :
+    desc s ⟨u, by simp only [d.hX]; aesop⟩ = s.π i u :=
+  congr_fun (s.condition ⟨index d _, i⟩) ⟨u, by
+    dsimp
+    simp only [d.hV, Set.inf_eq_inter, Set.mem_inter_iff, Subtype.coe_prop, and_true]
+    apply mem⟩
+
+end isColimitMulticoforkMapSetToTypes
+
+open isColimitMulticoforkMapSetToTypes in
+noncomputable def isColimitMulticoforkMapSetToTypes : IsColimit (d.multicofork.map Set.toTypes) :=
+  Multicofork.IsColimit.mk _ desc (fun s i ↦ by ext x; apply fac_apply) (fun s m hm ↦ by
+    ext x
+    exact congr_fun (hm (index d x)) ⟨x.1, mem d x⟩)
+
+end Types
+
+end CategoryTheory.Limits
