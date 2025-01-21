@@ -222,4 +222,67 @@ lemma isPushout :
 
 end subcomplexHorn₂₁
 
+namespace subcomplexHorn₂₂
+
+lemma sq : Subcomplex.Sq (standardSimplex.face {2}) (standardSimplex.face {0, 2})
+    (standardSimplex.face {1, 2}) (subcomplexHorn 2 2) where
+  max_eq := by
+    apply le_antisymm
+    · rw [sup_le_iff]
+      constructor
+      · exact face_le_subcomplexHorn (1 : Fin 3) 2 (by simp)
+      · exact face_le_subcomplexHorn (0 : Fin 3) 2 (by simp)
+    · rw [subcomplexHorn_eq_iSup, iSup_le_iff]
+      rintro i
+      fin_cases i
+      · exact le_sup_right
+      · exact le_sup_left
+  min_eq := by simp [standardSimplex.face_inter_face]
+
+def ι₀₂ : Δ[1] ⟶ subcomplexHorn.{u} 2 2 :=
+  Subcomplex.lift (B := subcomplexHorn 2 2)
+    (standardSimplex.{u}.map (SimplexCategory.δ 1))
+    (le_antisymm (by simp) (by
+      rw [← Subcomplex.image_le_iff, Subcomplex.image_top,
+        Subcomplex.range_eq_ofSimplex]
+      refine le_trans ?_ (face_le_subcomplexHorn.{u} (1 : Fin 3) 2 (by simp))
+      rw [standardSimplex.face_singleton_compl]
+      rfl))
+
+def ι₁₂ : Δ[1] ⟶ subcomplexHorn.{u} 2 2 :=
+  Subcomplex.lift (standardSimplex.{u}.map (SimplexCategory.δ 0))
+    (le_antisymm (by simp) (by
+      rw [← Subcomplex.image_le_iff, Subcomplex.image_top,
+        Subcomplex.range_eq_ofSimplex]
+      refine le_trans ?_ (face_le_subcomplexHorn.{u} (0 : Fin 3) 2 (by simp))
+      rw [standardSimplex.face_singleton_compl]
+      rfl))
+
+@[reassoc (attr := simp)]
+lemma ι₀₂_ι : ι₀₂.{u} ≫ (subcomplexHorn.{u} 2 2).ι =
+  standardSimplex.{u}.map (SimplexCategory.δ 1) := by simp [ι₀₂]
+
+@[reassoc (attr := simp)]
+lemma ι₁₂_ι : ι₁₂.{u} ≫ (subcomplexHorn.{u} 2 2).ι =
+  standardSimplex.{u}.map (SimplexCategory.δ 0) := by simp [ι₁₂]
+
+lemma isPushout :
+    IsPushout (standardSimplex.{u}.map (SimplexCategory.δ (0 : Fin 2)))
+      (standardSimplex.{u}.map (SimplexCategory.δ (0 : Fin 2))) ι₀₂ ι₁₂ := by
+  fapply sq.{u}.isPushout.of_iso'
+    (standardSimplex.isoOfRepresentableBy
+      (standardSimplex.faceRepresentableBy.{u} {2} 0 (Fin.orderIsoSingleton _)))
+    (standardSimplex.isoOfRepresentableBy
+      (standardSimplex.faceRepresentableBy.{u} {0, 2} 1 (Fin.orderIsoPair _ _ (by simp))))
+    (standardSimplex.isoOfRepresentableBy
+      (standardSimplex.faceRepresentableBy.{u} {1, 2} 1 (Fin.orderIsoPair _ _ (by simp))))
+    (Iso.refl _)
+  all_goals
+    rw [← cancel_mono (Subpresheaf.ι _)]
+    apply (yonedaEquiv _ _).injective
+    ext i : 1
+    fin_cases i <;> rfl
+
+end subcomplexHorn₂₂
+
 end SSet

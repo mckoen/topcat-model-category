@@ -103,7 +103,25 @@ end CategoryTheory
 
 namespace SSet
 
-variable (X Y : SSet.{u})
+variable {X Y : SSet.{u}}
+
+@[simp]
+lemma braiding_hom_apply_fst {n : SimplexCategoryᵒᵖ} (x : (X ⊗ Y).obj n) :
+    ((β_ X Y).hom.app n x).1 = x.2 := rfl
+
+@[simp]
+lemma braiding_hom_apply_snd {n : SimplexCategoryᵒᵖ} (x : (X ⊗ Y).obj n) :
+    ((β_ X Y).hom.app n x).2 = x.1 := rfl
+
+@[simp]
+lemma braiding_inv_apply_fst {n : SimplexCategoryᵒᵖ} (x : (Y ⊗ X).obj n) :
+    ((β_ X Y).inv.app n x).1 = x.2 := rfl
+
+@[simp]
+lemma braiding_inv_apply_snd {n : SimplexCategoryᵒᵖ} (x : (Y ⊗ X).obj n) :
+    ((β_ X Y).inv.app n x).2 = x.1 := rfl
+
+variable (X Y)
 
 protected abbrev Subcomplex := Subpresheaf X
 
@@ -205,6 +223,11 @@ def forget : X.Subcomplex ⥤ SSet.{u} where
 
 noncomputable def unionProd : (X ⊗ Y).Subcomplex := ((⊤ : X.Subcomplex).prod T) ⊔ (S.prod ⊤)
 
+lemma mem_unionProd_iff {n : SimplexCategoryᵒᵖ} (x : (X ⊗ Y).obj n) :
+    x ∈ (unionProd S T).obj _ ↔ x.1 ∈ S.obj _ ∨ x.2 ∈ T.obj _ := by
+  dsimp [unionProd, Set.prod]
+  aesop
+
 lemma top_prod_le_unionProd : (⊤ : X.Subcomplex).prod T ≤ S.unionProd T := le_sup_left
 
 lemma prod_top_le_unionProd : (S.prod ⊤) ≤ S.unionProd T := le_sup_right
@@ -257,6 +280,11 @@ def Subcomplex.range : Y.Subcomplex where
   map := by
     rintro Δ Δ' φ _ ⟨x, rfl⟩
     exact ⟨X.map φ x, by simp⟩
+
+@[simp]
+lemma Subcomplex.range_ι (A : X.Subcomplex) :
+    range A.ι = A := by
+  aesop
 
 def toRangeSubcomplex : X ⟶ Subcomplex.range f where
   app Δ x := ⟨f.app Δ x, ⟨x, rfl⟩⟩
@@ -386,6 +414,13 @@ lemma image_le_iff (Z : Y.Subcomplex) :
 
 lemma image_top : (⊤ : X.Subcomplex).image f = range f := by aesop
 
+lemma image_comp {Z : SSet.{u}} (g : Y ⟶ Z) :
+    S.image (f ≫ g) = (S.image f).image g := by aesop
+
+lemma range_comp {Z : SSet.{u}} (g : Y ⟶ Z) :
+    Subcomplex.range (f ≫ g) = (Subcomplex.range f).image g := by
+  simp only [← image_top, image_comp]
+
 end
 
 section
@@ -419,6 +454,19 @@ lemma preimage_eq_iff {X Y : SSet.{u}}
   apply Set.preimage_eq_iff
   rw [← mono_iff_injective]
   infer_instance
+
+lemma preimage_eq_top_iff {X Y : SSet.{u}}
+    (f : X ⟶ Y) (B : Y.Subcomplex) [Mono f] :
+    B.preimage f = ⊤ ↔ range f ≤ B := by
+  rw [preimage_eq_iff, image_top, inf_eq_right]
+
+@[simp]
+lemma preimage_image_of_isIso {X Y : SSet.{u}} (f : X ⟶ Y) (B : Y.Subcomplex) [IsIso f] :
+    (B.preimage f).image f = B := by
+  apply le_antisymm
+  · rw [image_le_iff]
+  · intro n y hy
+    exact ⟨(inv f).app _ y, by simpa [← FunctorToTypes.comp]⟩
 
 end
 
@@ -508,6 +556,32 @@ lemma sq : Sq (S.prod T) ((⊤ : X.Subcomplex).prod T) (S.prod ⊤) (unionProd S
 lemma isPushout : IsPushout (S.ι ▷ (T : SSet)) ((S : SSet) ◁ T.ι)
     (unionProd.ι₁ S T) (unionProd.ι₂ S T) := by
   sorry
+
+@[simp]
+lemma preimage_β_hom : (unionProd S T).preimage (β_ _ _).hom = unionProd T S := by
+  ext n ⟨x, y⟩
+  simp only [mem_unionProd_iff, preimage_obj, Set.mem_preimage,
+    braiding_hom_apply_fst, braiding_hom_apply_snd]
+  tauto
+
+@[simp]
+lemma preimage_β_inv : (unionProd S T).preimage (β_ _ _).inv = unionProd T S := by
+  apply preimage_β_hom
+
+@[simp]
+lemma image_β_hom : (unionProd S T).image (β_ _ _).hom = unionProd T S := by
+  rw [← preimage_β_hom, preimage_image_of_isIso]
+
+@[simp]
+lemma image_β_inv : (unionProd S T).image (β_ _ _).hom = unionProd T S := by
+  apply image_β_hom
+
+
+noncomputable def symmIso : (unionProd S T : SSet) ≅ (unionProd T S : SSet) where
+  hom := lift ((unionProd S T).ι ≫ (β_ _ _).hom) (by
+    rw [Subcomplex.preimage_eq_top_iff, range_comp, Subcomplex.range_ι, image_β_hom])
+  inv := lift ((unionProd T S).ι ≫ (β_ _ _).hom) (by
+    rw [Subcomplex.preimage_eq_top_iff, range_comp, Subcomplex.range_ι, image_β_hom])
 
 end unionProd
 

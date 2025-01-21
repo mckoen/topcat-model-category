@@ -13,6 +13,10 @@ namespace SSet
 
 variable {X : SSet.{u}}
 
+-- consequence of the closed monoidal structure
+instance : (tensorLeft X).IsLeftAdjoint := sorry
+instance : (tensorRight X).IsLeftAdjoint := sorry
+
 lemma yonedaEquiv_symm_zero (x : X _[0]) :
     (yonedaEquiv _ _).symm x = const x := by
   apply (yonedaEquiv _ _).injective
@@ -144,11 +148,13 @@ lemma ι₀_desc (x₀ x₁ : X _[0]) : ι₀ ≫ desc x₀ x₁ = (yonedaEquiv 
 lemma ι₁_desc (x₀ x₁ : X _[0]) : ι₁ ≫ desc x₀ x₁ = (yonedaEquiv _ _).symm x₁ :=
   (BinaryCofan.IsColimit.desc' isColimit _ _).2.2
 
-def isColimitRightTensor (X : SSet.{u}): IsColimit (BinaryCofan.mk (ι₀ ▷ X) (ι₁ ▷ X)) :=
-  sorry
+noncomputable def isColimitRightTensor (X : SSet.{u}) :
+    IsColimit (BinaryCofan.mk (ι₀ ▷ X) (ι₁ ▷ X)) :=
+  mapIsColimitOfPreservesOfIsColimit (tensorRight X) _ _ isColimit
 
-def isColimitLeftTensor (X : SSet.{u}): IsColimit (BinaryCofan.mk (X ◁ ι₀) (X ◁ ι₁)) :=
-  sorry
+noncomputable def isColimitLeftTensor (X : SSet.{u}) :
+    IsColimit (BinaryCofan.mk (X ◁ ι₀) (X ◁ ι₁)) :=
+  mapIsColimitOfPreservesOfIsColimit (tensorLeft X) _ _ isColimit
 
 end subcomplexBoundary₁
 
@@ -213,6 +219,7 @@ lemma Path.comm₁ {x₀ x₁ : FundamentalGroupoid X} (p : Path x₀ x₁) :
     Subcomplex.topIso_inv_app_coe] at this
   exact this
 
+@[simps! map]
 def Path.id (x : FundamentalGroupoid X) : Path x x :=
   Path.mk (const x.pt)
 
@@ -230,17 +237,27 @@ variable {p q} (h : p.Homotopy q)
 
 @[reassoc (attr := simp)]
 lemma comm₀ : ι₀ ≫ (β_ _ _).hom ≫ h.h = const x₀.pt := by
-  sorry
+  have := Δ[1] ◁ subcomplexBoundary₁.ι₀ ≫= h.rel
+  rw [assoc, whiskerLeft_snd_assoc, subcomplexBoundary₁.ι₀_desc_assoc,
+    yonedaEquiv_symm_zero, const_comp, comp_const,
+    FunctorToTypes.comp, Subpresheaf.ι_app, Subcomplex.topIso_inv_app_coe] at this
+  rw [← cancel_epi (standardSimplex.rightUnitor _).hom, comp_const]
+  exact this
 
 @[reassoc (attr := simp)]
 lemma comm₁ : ι₁ ≫ (β_ _ _).hom ≫ h.h = const x₁.pt := by
-  sorry
+  have := Δ[1] ◁ subcomplexBoundary₁.ι₁ ≫= h.rel
+  rw [assoc, whiskerLeft_snd_assoc, subcomplexBoundary₁.ι₁_desc_assoc,
+    yonedaEquiv_symm_zero, const_comp, comp_const,
+    FunctorToTypes.comp, Subpresheaf.ι_app, Subcomplex.topIso_inv_app_coe] at this
+  rw [← cancel_epi (standardSimplex.rightUnitor _).hom, comp_const]
+  exact this
 
 end Homotopy
 
 end
 
-variable {x₀ x₁ x₂ : FundamentalGroupoid X}
+variable {x₀ x₁ x₂ x₃ : FundamentalGroupoid X}
 
 structure CompStruct (p₀₁ : Path x₀ x₁) (p₁₂ : Path x₁ x₂) (p₀₂ : Path x₀ x₂) where
   map : Δ[2] ⟶ X
@@ -251,6 +268,85 @@ structure CompStruct (p₀₁ : Path x₀ x₁) (p₁₂ : Path x₁ x₂) (p₀
 namespace CompStruct
 
 attribute [reassoc (attr := simp)] h₀₁ h₁₂ h₀₂
+
+def idComp (p : Path x₀ x₁) : CompStruct (Path.id x₀) p p where
+  map := standardSimplex.map (SimplexCategory.σ 0) ≫ p.map
+  h₀₁ := by
+    have := SimplexCategory.δ_comp_σ_of_gt (n := 0) (i := 1) (j := 0) (by simp)
+    dsimp at this
+    rw [← Functor.map_comp_assoc, this, Functor.map_comp_assoc, p.comm₀, comp_const, id_map]
+  h₁₂ := by
+    have := SimplexCategory.δ_comp_σ_self (n := 1) (i := 0)
+    dsimp at this
+    rw [← Functor.map_comp_assoc, this, CategoryTheory.Functor.map_id,
+      CategoryTheory.Category.id_comp]
+  h₀₂ := by
+    have := SimplexCategory.δ_comp_σ_succ (n := 1) (i := 0)
+    dsimp at this
+    rw [← Functor.map_comp_assoc, this, CategoryTheory.Functor.map_id,
+      CategoryTheory.Category.id_comp]
+
+def compId (p : Path x₀ x₁) : CompStruct p (Path.id x₁) p where
+  map := standardSimplex.map (SimplexCategory.σ 1) ≫ p.map
+  h₀₁ := by
+    have := SimplexCategory.δ_comp_σ_succ (n := 1) (i := 1)
+    dsimp at this
+    rw [← Functor.map_comp_assoc, this, CategoryTheory.Functor.map_id, Category.id_comp]
+  h₁₂ := by
+    have := SimplexCategory.δ_comp_σ_of_le (n := 0) (i := 0) (j := 0) (by simp)
+    dsimp at this
+    rw [← Functor.map_comp_assoc, this, Functor.map_comp_assoc, p.comm₁, comp_const, id_map]
+  h₀₂ := by
+    have := SimplexCategory.δ_comp_σ_self (n := 1) (i := 1)
+    dsimp at this
+    rw [← Functor.map_comp_assoc, this, CategoryTheory.Functor.map_id, Category.id_comp]
+
+lemma left_inverse (p : Path x₀ x₁) :
+    ∃ (q : Path x₁ x₀), Nonempty (CompStruct q p (Path.id x₁)) := by
+  obtain ⟨α, h₀₂, h₁₂⟩ := subcomplexHorn₂₂.isPushout.exists_desc (const x₁.pt) p.map
+    (by rw [p.comm₁, comp_const])
+  obtain ⟨β, hβ⟩ := anodyneExtensions.exists_lift_of_isFibrant α
+    (anodyneExtensions.subcomplexHorn_ι_mem 1 2)
+  have h₀₂' := subcomplexHorn₂₂.ι₀₂ ≫= hβ
+  rw [subcomplexHorn₂₂.ι₀₂_ι_assoc, h₀₂] at h₀₂'
+  have h₁₂' := subcomplexHorn₂₂.ι₁₂ ≫= hβ
+  rw [subcomplexHorn₂₂.ι₁₂_ι_assoc, h₁₂] at h₁₂'
+  refine ⟨Path.mk (standardSimplex.map (SimplexCategory.δ 2) ≫ β) ?_ ?_,
+    ⟨{ map := β, h₀₁ := rfl, h₁₂ := h₁₂', h₀₂ := h₀₂' }⟩⟩
+  · have := SimplexCategory.δ_comp_δ_self (n := 0) (i := 1)
+    dsimp at this
+    rw [← Functor.map_comp_assoc, ← this, Functor.map_comp_assoc, h₀₂', comp_const]
+  · have := SimplexCategory.δ_comp_δ (n := 0) (i := 0) (j := 1) (by simp)
+    dsimp at this
+    rw [← Functor.map_comp_assoc, this, Functor.map_comp_assoc, h₁₂', p.comm₀]
+
+lemma right_inverse (p : Path x₀ x₁) :
+    ∃ (q : Path x₁ x₀), Nonempty (CompStruct p q (Path.id x₀)) := by
+  obtain ⟨α, h₀₁, h₁₂⟩ := subcomplexHorn₂₀.isPushout.exists_desc p.map (const x₀.pt)
+    (by rw [p.comm₀, comp_const])
+  obtain ⟨β, hβ⟩ := anodyneExtensions.exists_lift_of_isFibrant α
+    (anodyneExtensions.subcomplexHorn_ι_mem 1 0)
+  have h₀₁' := subcomplexHorn₂₀.ι₀₁ ≫= hβ
+  rw [subcomplexHorn₂₀.ι₀₁_ι_assoc, h₀₁] at h₀₁'
+  have h₀₂' := subcomplexHorn₂₀.ι₀₂ ≫= hβ
+  rw [subcomplexHorn₂₀.ι₀₂_ι_assoc, h₁₂] at h₀₂'
+  refine ⟨Path.mk (standardSimplex.map (SimplexCategory.δ 0) ≫ β) ?_ ?_,
+    ⟨{ map := β, h₀₁ := h₀₁', h₁₂ := rfl, h₀₂ := h₀₂' }⟩⟩
+  · have := SimplexCategory.δ_comp_δ (n := 0) (i := 0) (j := 1) (by simp)
+    dsimp at this
+    rw [← Functor.map_comp_assoc, ← this, Functor.map_comp_assoc, h₀₁', p.comm₁]
+  · have := SimplexCategory.δ_comp_δ_self (n := 0) (i := 0)
+    dsimp at this
+    rw [← Functor.map_comp_assoc, this, Functor.map_comp_assoc, h₀₂', comp_const]
+
+def assoc {f₀₁ : Path x₀ x₁} {f₁₂ : Path x₁ x₂} {f₂₃ : Path x₂ x₃}
+    {f₀₂ : Path x₀ x₂} {f₁₃ : Path x₁ x₃} {f₀₃ : Path x₀ x₃}
+    (h₀₂ : CompStruct f₀₁ f₁₂ f₀₂)
+    (h₁₃ : CompStruct f₁₂ f₂₃ f₁₃)
+    (h : CompStruct f₀₁ f₁₃ f₀₃) :
+    CompStruct f₀₂ f₂₃ f₀₃ :=
+  -- use `subcomplexHorn 2 1`
+  sorry
 
 end CompStruct
 
@@ -268,19 +364,16 @@ lemma exists_compStruct (p₀₁ : Path x₀ x₁) (p₁₂ : Path x₁ x₂) :
     (anodyneExtensions.subcomplexHorn_ι_mem 1 1)
   have h₀₁' := subcomplexHorn₂₁.ι₀₁ ≫= hβ
   rw [subcomplexHorn₂₁.ι₀₁_ι_assoc, h₀₁] at h₀₁'
-  have h₀₂' := subcomplexHorn₂₁.ι₁₂ ≫= hβ
-  rw [subcomplexHorn₂₁.ι₁₂_ι_assoc, h₁₂] at h₀₂'
+  have h₁₂' := subcomplexHorn₂₁.ι₁₂ ≫= hβ
+  rw [subcomplexHorn₂₁.ι₁₂_ι_assoc, h₁₂] at h₁₂'
   refine ⟨Path.mk (standardSimplex.map (SimplexCategory.δ 1) ≫ β) ?_ ?_,
-    ⟨{ map := β, h₀₁ := h₀₁', h₁₂ := h₀₂', h₀₂ := rfl }⟩⟩
+    ⟨{ map := β, h₀₁ := h₀₁', h₁₂ := h₁₂', h₀₂ := rfl }⟩⟩
   · have := SimplexCategory.δ_comp_δ_self (n := 0) (i := 1)
     dsimp at this
     rw [← Functor.map_comp_assoc, this, Functor.map_comp_assoc, h₀₁', p₀₁.comm₀]
   · have := SimplexCategory.δ_comp_δ (n := 0) (i := 0) (j := 0) (by simp)
     dsimp at this
-    rw [← Functor.map_comp_assoc, this, Functor.map_comp_assoc, h₀₂', p₁₂.comm₁]
-
--- consequence of the closed monoidal structure
-instance (Y : SSet) : (tensorLeft Y).IsLeftAdjoint := sorry
+    rw [← Functor.map_comp_assoc, this, Functor.map_comp_assoc, h₁₂', p₁₂.comm₁]
 
 noncomputable def compUniqueUpToHomotopy
     {p₀₁ p₀₁' : Path x₀ x₁} {p₁₂ p₁₂' : Path x₁ x₂} {p₀₂ p₀₂' : Path x₀ x₂}
@@ -449,11 +542,45 @@ lemma homMk_eq_of_homotopy {x₀ x₁ : FundamentalGroupoid X}
 
 variable {x₀ x₁ x₂ : FundamentalGroupoid X}
 
+lemma homMk_surjective : Function.Surjective (homMk (x₀ := x₀) (x₁ := x₁)) := by
+  apply Quot.mk_surjective
+
 lemma Path.CompStruct.fac {x₀ x₁ x₂ : FundamentalGroupoid X}
     {p₀₁ : Path x₀ x₁} {p₁₂ : Path x₁ x₂} {p₀₂ : Path x₀ x₂}
     (h : CompStruct p₀₁ p₁₂ p₀₂) : homMk p₀₁ ≫ homMk p₁₂ = homMk p₀₂ :=
   homMk_eq_of_homotopy (compUniqueUpToHomotopy (Path.compStruct p₀₁ p₁₂)
     h (.refl _) (.refl _))
+
+noncomputable instance : Category (FundamentalGroupoid X) where
+  id_comp f := by
+    obtain ⟨p, rfl⟩ := homMk_surjective f
+    exact (Path.CompStruct.idComp p).fac
+  comp_id f:= by
+    obtain ⟨p, rfl⟩ := homMk_surjective f
+    exact (Path.CompStruct.compId p).fac
+  assoc {x₀ x₁ x₂ x₃} f₀₁ f₁₂ f₂₃ := by
+    obtain ⟨p₀₁, rfl⟩ := homMk_surjective f₀₁
+    obtain ⟨p₁₂, rfl⟩ := homMk_surjective f₁₂
+    obtain ⟨p₂₃, rfl⟩ := homMk_surjective f₂₃
+    exact (Path.CompStruct.assoc (Path.compStruct p₀₁ p₁₂)
+      (Path.compStruct p₁₂ p₂₃) (Path.compStruct p₀₁ (p₁₂.comp p₂₃))).fac
+
+noncomputable instance : Groupoid (FundamentalGroupoid X) :=
+  Groupoid.ofIsIso (fun {x₀ x₁} f ↦ by
+    obtain ⟨p, hp⟩ := homMk_surjective f
+    have ⟨g, hg⟩ : ∃ g, f ≫ g = 𝟙 x₀ := by
+      obtain ⟨q, ⟨hq⟩⟩ := Path.CompStruct.right_inverse p
+      exact ⟨homMk q, by rw [← hp, hq.fac, homMk_refl]⟩
+    have ⟨g', hg'⟩ : ∃ g', g' ≫ f = 𝟙 x₁ := by
+      obtain ⟨q, ⟨hq⟩⟩ := Path.CompStruct.left_inverse p
+      exact ⟨homMk q, by rw [← hp, hq.fac, homMk_refl]⟩
+    obtain rfl : g = g' := by
+      replace hg := g' ≫= hg
+      replace hg' := hg' =≫ g
+      rw [comp_id] at hg
+      rw [assoc, id_comp] at hg'
+      rw [← hg', hg]
+    exact ⟨g, hg, hg'⟩)
 
 end FundamentalGroupoid
 
