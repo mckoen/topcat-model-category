@@ -138,7 +138,7 @@ end Pushouts
 
 end CategoryTheory.Limits.Types
 
-namespace Lattice
+namespace CompleteLattice
 
 variable {T : Type*} [CompleteLattice T] {ι : Type*} (X : T) (U : ι → T) (V : ι → ι → T)
 
@@ -158,11 +158,11 @@ def multispanIndex : MultispanIndex T where
   sndFrom := Prod.snd
   left := fun ⟨i, j⟩ ↦ V i j
   right := U
-  fst := fun ⟨i, j⟩ ↦ homOfLE (by
+  fst _ := homOfLE (by
     dsimp
     rw [d.hV]
     exact inf_le_left)
-  snd := fun ⟨i, j⟩ ↦ homOfLE (by
+  snd _ := homOfLE (by
     dsimp
     rw [d.hV]
     exact inf_le_right)
@@ -172,9 +172,34 @@ def multicofork : Multicofork d.multispanIndex :=
   Multicofork.ofπ _ X (fun i ↦ homOfLE (by simpa only [d.hX] using le_iSup U i))
     (fun _ ↦ rfl)
 
+variable [Preorder ι]
+
+@[simps]
+def multispanIndex' : MultispanIndex T where
+  L := { (i, j) : ι × ι | i < j }
+  R := ι
+  fstFrom := fun ⟨⟨i, j⟩, _⟩ ↦ i
+  sndFrom := fun ⟨⟨i, j⟩, _⟩ ↦ j
+  left := fun ⟨⟨i, j⟩, _⟩ ↦ V i j
+  right := U
+  fst _ := homOfLE (by
+    dsimp
+    rw [d.hV]
+    exact inf_le_left)
+  snd _ := homOfLE (by
+    dsimp
+    rw [d.hV]
+    exact inf_le_right)
+
+@[simps! pt]
+def multicofork' : Multicofork d.multispanIndex' :=
+  Multicofork.ofπ _ X (fun i ↦ homOfLE (by simpa only [d.hX] using le_iSup U i))
+    (fun _ ↦ rfl)
+
+
 end MulticoequalizerDiagram
 
-end Lattice
+end CompleteLattice
 
 namespace CategoryTheory.Limits
 
@@ -201,7 +226,7 @@ def Multicofork.map {C D : Type*} [Category C] [Category D]
 namespace Types
 
 variable {T : Type u} {ι : Type v} {X : Set T} {U : ι → Set T} {V : ι → ι → Set T}
-  (d : Lattice.MulticoequalizerDiagram X U V)
+  (d : CompleteLattice.MulticoequalizerDiagram X U V)
 
 namespace isColimitMulticoforkMapSetToTypes
 
@@ -215,6 +240,8 @@ noncomputable def index (x : X) : ι := (exists_index d x).choose
 
 lemma mem (x : X) : x.1 ∈ U (index d x) := (exists_index d x).choose_spec
 
+section
+
 variable {d} (s : Multicofork (d.multispanIndex.map Set.toTypes))
 
 noncomputable def desc (x : X) : s.pt := s.π (index d x) ⟨x, mem d x⟩
@@ -226,11 +253,46 @@ lemma fac_apply (i : ι) (u : U i) :
     simp only [d.hV, Set.inf_eq_inter, Set.mem_inter_iff, Subtype.coe_prop, and_true]
     apply mem⟩
 
+end
+
+section
+
+variable [LinearOrder ι] {d} (s : Multicofork (d.multispanIndex'.map Set.toTypes))
+
+noncomputable def desc' (x : X) : s.pt := s.π (index d x) ⟨x, mem d x⟩
+
+lemma condition'_apply (x : T) (i j : ι) (hi : x ∈ U i) (hj : x ∈ U j) :
+    s.π i ⟨x, hi⟩ = s.π j ⟨x, hj⟩ := by
+  obtain hij | rfl | hij := lt_trichotomy i j
+  · refine congr_fun (s.condition ⟨⟨i, j⟩, hij⟩) ⟨x, ?_⟩
+    dsimp
+    rw [d.hV]
+    exact ⟨hi, hj⟩
+  · rfl
+  · refine congr_fun (s.condition ⟨⟨j, i⟩, hij⟩).symm ⟨x, ?_⟩
+    dsimp
+    rw [d.hV]
+    exact ⟨hj, hi⟩
+
+lemma fac'_apply (i : ι) (u : U i) :
+    desc' s ⟨u, by simp only [d.hX]; aesop⟩ = s.π i u := by
+  apply condition'_apply
+
+end
+
 end isColimitMulticoforkMapSetToTypes
 
 open isColimitMulticoforkMapSetToTypes in
-noncomputable def isColimitMulticoforkMapSetToTypes : IsColimit (d.multicofork.map Set.toTypes) :=
+noncomputable def isColimitMulticoforkMapSetToTypes :
+    IsColimit (d.multicofork.map Set.toTypes) :=
   Multicofork.IsColimit.mk _ desc (fun s i ↦ by ext x; apply fac_apply) (fun s m hm ↦ by
+    ext x
+    exact congr_fun (hm (index d x)) ⟨x.1, mem d x⟩)
+
+open isColimitMulticoforkMapSetToTypes in
+noncomputable def isColimitMulticoforkMapSetToTypes' [LinearOrder ι] :
+    IsColimit (d.multicofork'.map Set.toTypes) :=
+  Multicofork.IsColimit.mk _ desc' (fun s i ↦ by ext x; apply fac'_apply) (fun s m hm ↦ by
     ext x
     exact congr_fun (hm (index d x)) ⟨x.1, mem d x⟩)
 
