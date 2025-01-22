@@ -307,7 +307,7 @@ def multicofork :
 
 end desc
 
-noncomputable def desc : (subcomplexHorn 3 1 : SSet.{u}) ⟶ X :=
+noncomputable def desc : (subcomplexHorn 3 1 : SSet) ⟶ X :=
   (subcomplexHorn.isColimit (n := 3) 1).desc (desc.multicofork f₀ f₂ f₃ h₁₂ h₁₃ h₂₃)
 
 @[reassoc (attr := simp)]
@@ -327,6 +327,11 @@ lemma ι₃_desc : ι₃ ≫ desc f₀ f₂ f₃ h₁₂ h₁₃ h₂₃ = f₃ 
   rw [← cancel_epi (standardSimplex.faceSingletonComplIso 3).inv, ← assoc,
     subcomplexHorn.faceSingletonComplIso_inv_ι]
   exact (subcomplexHorn.isColimit 1).fac _ (.right ⟨3, by simp⟩)
+
+include h₁₂ h₁₃ h₂₃ in
+lemma exists_desc : ∃ (φ : (subcomplexHorn 3 1 : SSet) ⟶ X),
+    ι₀ ≫ φ = f₀ ∧ ι₂ ≫ φ = f₂ ∧ ι₃ ≫ φ = f₃ :=
+  ⟨desc f₀ f₂ f₃ h₁₂ h₁₃ h₂₃, by simp⟩
 
 end subcomplexHorn₃₁
 
