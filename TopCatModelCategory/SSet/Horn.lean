@@ -287,8 +287,8 @@ def multicofork :
     | 2 => (standardSimplex.faceSingletonComplIso 2).inv ≫ f₂
     | 3 => (standardSimplex.faceSingletonComplIso 3).inv ≫ f₃) (by
       dsimp
-      intro a
-      fin_cases a
+      intro x
+      fin_cases x
       · dsimp
         simp only [← cancel_epi (standardSimplex.facePairIso.{u} (n := 3) 1 3 (by simp)).hom,
           ← assoc]
