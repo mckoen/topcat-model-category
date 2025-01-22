@@ -16,6 +16,7 @@ import TopCatModelCategory.ModelCategoryCopy
 import TopCatModelCategory.ModelCategorySSet
 import TopCatModelCategory.ModelCategoryTopCat
 import TopCatModelCategory.MorphismProperty
+import TopCatModelCategory.Multiequalizer
 import TopCatModelCategory.PseudoFunctor.LaxNatTrans
 import TopCatModelCategory.PseudoFunctor.MorphismProperty
 import TopCatModelCategory.PseudoFunctor.Pseudofunctor

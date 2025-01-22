@@ -217,6 +217,28 @@ lemma face_singleton_compl (i : Fin (n + 2)) :
       map_rel_iff' := (Fin.succAboveOrderEmb i).map_rel_iff }
   exact face_eq_ofSimplex _ _ e
 
+def faceSingletonComplIso (i : Fin (n + 2)) :
+    Δ[n] ≅ (face {i}ᶜ : SSet.{u}) := by
+  apply isoOfRepresentableBy
+  apply faceRepresentableBy
+  exact
+    { toEquiv := (finSuccAboveEquiv (p := i)).trans
+        { toFun := fun ⟨x, hx⟩ ↦ ⟨x, by simpa using hx⟩
+          invFun := fun ⟨x, hx⟩ ↦ ⟨x, by simpa using hx⟩
+          left_inv _ := rfl
+          right_inv _ := rfl }
+      map_rel_iff' := (Fin.succAboveOrderEmb i).map_rel_iff }
+
+noncomputable def faceSingletonIso (i : Fin (n + 1)) :
+    Δ[0] ≅ (face {i} : SSet.{u}) :=
+  standardSimplex.isoOfRepresentableBy
+      (standardSimplex.faceRepresentableBy.{u} _ _ (Fin.orderIsoSingleton i))
+
+noncomputable def facePairIso (i j : Fin (n + 1)) (hij : i < j) :
+    Δ[1] ≅ (face {i, j} : SSet.{u}) :=
+  standardSimplex.isoOfRepresentableBy
+      (standardSimplex.faceRepresentableBy.{u} _ _ (Fin.orderIsoPair i j hij))
+
 lemma mem_non_degenerate_iff_mono {d : ℕ} (x : (Δ[n] : SSet.{u}) _[d]) :
     x ∈ Δ[n].NonDegenerate d ↔ Mono (objEquiv _ _ x) := by
   obtain ⟨f, rfl⟩ := (objEquiv _ _).symm.surjective x

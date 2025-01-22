@@ -205,6 +205,11 @@ instance mono_homOfLE : Mono (homOfLE h) := mono_of_mono_fac (homOfLE_ι h)
 
 end
 
+@[simps]
+def toPresheafFunctor : X.Subcomplex ⥤ SSet.{u} where
+  obj S := S
+  map h := homOfLE (leOfHom h)
+
 section
 
 variable {S₁ S₂ : X.Subcomplex} (h : S₁ = S₂)
@@ -606,6 +611,32 @@ noncomputable def symmIso : (unionProd S T : SSet) ≅ (unionProd T S : SSet) wh
     rw [Subcomplex.preimage_eq_top_iff, range_comp, Subcomplex.range_ι, image_β_hom])
 
 end unionProd
+
+section multicoequalizer
+
+variable {A : X.Subcomplex} {ι : Type*}
+  {U : ι → X.Subcomplex} {V : ι → ι → X.Subcomplex}
+  (h : CompleteLattice.MulticoequalizerDiagram A U V)
+
+noncomputable def multicoforkIsColimit :
+    IsColimit (h.multicofork.map toPresheafFunctor) :=
+  evaluationJointlyReflectsColimits _ (fun n ↦ by
+    have h' : CompleteLattice.MulticoequalizerDiagram (A.obj n) (fun i ↦ (U i).obj n)
+        (fun i j ↦ (V i j).obj n) :=
+      { hX := by simp [h.hX]
+        hV := by simp [h.hV] }
+    exact (isColimitMapMulticoforkEquiv _ _).2 (Types.isColimitMulticoforkMapSetToTypes h'))
+
+noncomputable def multicoforkIsColimit' [LinearOrder ι] :
+    IsColimit (h.multicofork'.map toPresheafFunctor) :=
+  evaluationJointlyReflectsColimits _ (fun n ↦ by
+    have h' : CompleteLattice.MulticoequalizerDiagram (A.obj n) (fun i ↦ (U i).obj n)
+        (fun i j ↦ (V i j).obj n) :=
+      { hX := by simp [h.hX]
+        hV := by simp [h.hV] }
+    exact (isColimitMapMulticoforkEquiv _ _).2 (Types.isColimitMulticoforkMapSetToTypes' h'))
+
+end multicoequalizer
 
 end Subcomplex
 

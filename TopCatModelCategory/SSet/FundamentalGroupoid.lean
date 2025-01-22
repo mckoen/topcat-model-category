@@ -308,9 +308,9 @@ lemma left_inverse (p : Path x₀ x₁) :
   obtain ⟨β, hβ⟩ := anodyneExtensions.exists_lift_of_isFibrant α
     (anodyneExtensions.subcomplexHorn_ι_mem 1 2)
   have h₀₂' := subcomplexHorn₂₂.ι₀₂ ≫= hβ
-  rw [subcomplexHorn₂₂.ι₀₂_ι_assoc, h₀₂] at h₀₂'
+  rw [subcomplexHorn.ι_ι_assoc, h₀₂] at h₀₂'
   have h₁₂' := subcomplexHorn₂₂.ι₁₂ ≫= hβ
-  rw [subcomplexHorn₂₂.ι₁₂_ι_assoc, h₁₂] at h₁₂'
+  rw [subcomplexHorn.ι_ι_assoc, h₁₂] at h₁₂'
   refine ⟨Path.mk (standardSimplex.map (SimplexCategory.δ 2) ≫ β) ?_ ?_,
     ⟨{ map := β, h₀₁ := rfl, h₁₂ := h₁₂', h₀₂ := h₀₂' }⟩⟩
   · have := SimplexCategory.δ_comp_δ_self (n := 0) (i := 1)
@@ -327,9 +327,9 @@ lemma right_inverse (p : Path x₀ x₁) :
   obtain ⟨β, hβ⟩ := anodyneExtensions.exists_lift_of_isFibrant α
     (anodyneExtensions.subcomplexHorn_ι_mem 1 0)
   have h₀₁' := subcomplexHorn₂₀.ι₀₁ ≫= hβ
-  rw [subcomplexHorn₂₀.ι₀₁_ι_assoc, h₀₁] at h₀₁'
+  rw [subcomplexHorn.ι_ι_assoc, h₀₁] at h₀₁'
   have h₀₂' := subcomplexHorn₂₀.ι₀₂ ≫= hβ
-  rw [subcomplexHorn₂₀.ι₀₂_ι_assoc, h₁₂] at h₀₂'
+  rw [subcomplexHorn.ι_ι_assoc, h₁₂] at h₀₂'
   refine ⟨Path.mk (standardSimplex.map (SimplexCategory.δ 0) ≫ β) ?_ ?_,
     ⟨{ map := β, h₀₁ := h₀₁', h₁₂ := rfl, h₀₂ := h₀₂' }⟩⟩
   · have := SimplexCategory.δ_comp_δ (n := 0) (i := 0) (j := 1) (by simp)
@@ -363,9 +363,9 @@ lemma exists_compStruct (p₀₁ : Path x₀ x₁) (p₁₂ : Path x₁ x₂) :
   obtain ⟨β, hβ⟩ := anodyneExtensions.exists_lift_of_isFibrant α
     (anodyneExtensions.subcomplexHorn_ι_mem 1 1)
   have h₀₁' := subcomplexHorn₂₁.ι₀₁ ≫= hβ
-  rw [subcomplexHorn₂₁.ι₀₁_ι_assoc, h₀₁] at h₀₁'
+  rw [subcomplexHorn.ι_ι_assoc, h₀₁] at h₀₁'
   have h₁₂' := subcomplexHorn₂₁.ι₁₂ ≫= hβ
-  rw [subcomplexHorn₂₁.ι₁₂_ι_assoc, h₁₂] at h₁₂'
+  rw [subcomplexHorn.ι_ι_assoc, h₁₂] at h₁₂'
   refine ⟨Path.mk (standardSimplex.map (SimplexCategory.δ 1) ≫ β) ?_ ?_,
     ⟨{ map := β, h₀₁ := h₀₁', h₁₂ := h₁₂', h₀₂ := rfl }⟩⟩
   · have := SimplexCategory.δ_comp_δ_self (n := 0) (i := 1)
@@ -406,7 +406,7 @@ noncomputable def compUniqueUpToHomotopy
           standardSimplex.leftUnitor_inv_map_δ_one_assoc, h₀₁.h₀] at this
         rw [standardSimplex.leftUnitor_inv_map_δ_one_assoc, this,
           ← whisker_exchange_assoc, standardSimplex.leftUnitor_inv_naturality_assoc,
-          subcomplexHorn₂₁.ι₀₁_ι_assoc, hβ₁, standardSimplex.leftUnitor_inv_snd_assoc,
+          subcomplexHorn.ι_ι_assoc, hβ₁, standardSimplex.leftUnitor_inv_snd_assoc,
           CompStruct.h₀₁]
       · have := (standardSimplex.map (SimplexCategory.δ 1)) ▷ _ ≫= hα₂
         rw [← cancel_epi (standardSimplex.leftUnitor _).inv,
@@ -416,7 +416,7 @@ noncomputable def compUniqueUpToHomotopy
           standardSimplex.leftUnitor_inv_map_δ_one_assoc, h₁₂.h₀] at this
         rw [standardSimplex.leftUnitor_inv_map_δ_one_assoc, this,
           ← whisker_exchange_assoc, standardSimplex.leftUnitor_inv_naturality_assoc,
-          subcomplexHorn₂₁.ι₁₂_ι_assoc, hβ₁, standardSimplex.leftUnitor_inv_snd_assoc,
+          subcomplexHorn.ι_ι_assoc, hβ₁, standardSimplex.leftUnitor_inv_snd_assoc,
           CompStruct.h₁₂]
     · dsimp
       rw [← comp_whiskerRight_assoc, subcomplexBoundary₁.ι₁_ι,
@@ -430,7 +430,7 @@ noncomputable def compUniqueUpToHomotopy
           standardSimplex.leftUnitor_inv_map_δ_zero_assoc, h₀₁.h₁] at this
         rw [standardSimplex.leftUnitor_inv_map_δ_zero_assoc, this,
           ← whisker_exchange_assoc, standardSimplex.leftUnitor_inv_naturality_assoc,
-          subcomplexHorn₂₁.ι₀₁_ι_assoc, hβ₂, standardSimplex.leftUnitor_inv_snd_assoc,
+          subcomplexHorn.ι_ι_assoc, hβ₂, standardSimplex.leftUnitor_inv_snd_assoc,
           CompStruct.h₀₁]
       · have := (standardSimplex.map (SimplexCategory.δ 0)) ▷ _ ≫= hα₂
         rw [← cancel_epi (standardSimplex.leftUnitor _).inv,
@@ -440,7 +440,7 @@ noncomputable def compUniqueUpToHomotopy
           standardSimplex.leftUnitor_inv_map_δ_zero_assoc, h₁₂.h₁] at this
         rw [standardSimplex.leftUnitor_inv_map_δ_zero_assoc, this,
           ← whisker_exchange_assoc, standardSimplex.leftUnitor_inv_naturality_assoc,
-          subcomplexHorn₂₁.ι₁₂_ι_assoc, hβ₂, standardSimplex.leftUnitor_inv_snd_assoc,
+          subcomplexHorn.ι_ι_assoc, hβ₂, standardSimplex.leftUnitor_inv_snd_assoc,
           CompStruct.h₁₂])
   obtain ⟨h, fac⟩ := anodyneExtensions.exists_lift_of_isFibrant γ
     (anodyneExtensions.subcomplex_unionProd_mem_of_right.{u} (subcomplexBoundary 1)
@@ -475,7 +475,7 @@ noncomputable def compUniqueUpToHomotopy
           ← MonoidalCategory.whiskerLeft_comp_assoc,
           ← MonoidalCategory.whiskerLeft_comp_assoc, assoc,
           ← MonoidalCategory.whiskerLeft_comp_assoc, assoc, assoc,
-          subcomplexHorn₂₁.ι₀₁_ι, subcomplexBoundary₁.ι₀_ι_assoc,
+          subcomplexHorn.ι_ι, subcomplexBoundary₁.ι₀_ι_assoc,
           ← Functor.map_comp, ← Functor.map_comp]
         congr 3
         apply SimplexCategory.δ_comp_δ_self
@@ -495,7 +495,7 @@ noncomputable def compUniqueUpToHomotopy
           ← MonoidalCategory.whiskerLeft_comp_assoc,
           ← MonoidalCategory.whiskerLeft_comp_assoc, assoc,
           ← MonoidalCategory.whiskerLeft_comp_assoc, assoc, assoc,
-          subcomplexHorn₂₁.ι₁₂_ι, subcomplexBoundary₁.ι₁_ι_assoc,
+          subcomplexHorn.ι_ι, subcomplexBoundary₁.ι₁_ι_assoc,
           ← Functor.map_comp, ← Functor.map_comp]
         congr 3 }⟩
 

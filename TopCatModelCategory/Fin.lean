@@ -41,6 +41,37 @@ noncomputable def orderIsoPair {α : Type*} [Preorder α] [DecidableEq α] (a b 
       simp at this
     · simp
 
+@[simps! apply]
+noncomputable def orderIsoTriple {α : Type*} [Preorder α] [DecidableEq α] (a b c : α)
+    (hab : a < b) (hbc : b < c ):
+    Fin 3 ≃o ({a, b, c} : Finset α) where
+  toEquiv := Equiv.ofBijective (fun i ↦ match i with
+    | 0 => ⟨a, by simp⟩
+    | 1 => ⟨b, by simp⟩
+    | 2 => ⟨c, by simp⟩) (by
+    have hac := hab.trans hbc
+    constructor
+    · intro i j h
+      fin_cases i <;> fin_cases j <;> aesop
+    · rintro ⟨x, hx⟩
+      simp only [Finset.mem_insert, Finset.mem_singleton] at hx
+      obtain rfl | rfl | rfl := hx
+      · exact ⟨0, rfl⟩
+      · exact ⟨1, rfl⟩
+      · exact ⟨2, rfl⟩)
+  map_rel_iff' := by
+    intro i j
+    have := hab.le
+    have := hbc.le
+    have := hab.le.trans hbc.le
+    have := hab.trans hbc
+    have h : ∀ ⦃i j : α⦄ (h₁ : i < j), ¬ (j ≤ i) := fun i j hij h ↦ by
+      have := lt_of_le_of_lt h hij
+      simp at this
+    fin_cases i <;> fin_cases j <;> try simp <;> try assumption
+    all_goals apply h; assumption
+
+
 lemma eq_last_or_eq_castSucc {n : ℕ} (i : Fin (n + 1)) :
     i = Fin.last _ ∨ ∃ (j : Fin n), i = j.castSucc := by
   by_cases hi : i = Fin.last _

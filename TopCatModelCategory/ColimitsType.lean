@@ -2,6 +2,7 @@ import Mathlib.CategoryTheory.Limits.Shapes.Pullback.CommSq
 import Mathlib.CategoryTheory.Limits.Shapes.Multiequalizer
 import Mathlib.CategoryTheory.Limits.Shapes.Types
 import Mathlib.Data.Set.Lattice
+import TopCatModelCategory.Multiequalizer
 
 universe v u
 
@@ -11,7 +12,7 @@ namespace Lattice
 
 variable {T : Type u} (x₁ x₂ x₃ x₄ : T) [Lattice T]
 
-structure BicartSq where
+structure BicartSq : Prop where
   max_eq : x₂ ⊔ x₃ = x₄
   min_eq : x₂ ⊓ x₃ = x₁
 
@@ -142,7 +143,7 @@ namespace CompleteLattice
 
 variable {T : Type*} [CompleteLattice T] {ι : Type*} (X : T) (U : ι → T) (V : ι → ι → T)
 
-structure MulticoequalizerDiagram where
+structure MulticoequalizerDiagram : Prop where
   hX : X = ⨆ (i : ι), U i
   hV (i j : ι) : V i j = U i ⊓ U j
 
@@ -202,26 +203,6 @@ end MulticoequalizerDiagram
 end CompleteLattice
 
 namespace CategoryTheory.Limits
-
-@[simps]
-def MultispanIndex.map {C D : Type*} [Category C] [Category D]
-    (d : MultispanIndex C) (F : C ⥤ D) : MultispanIndex D where
-  L := d.L
-  R := d.R
-  fstFrom := d.fstFrom
-  sndFrom := d.sndFrom
-  left i := F.obj (d.left i)
-  right i := F.obj (d.right i)
-  fst i := F.map (d.fst i)
-  snd i := F.map (d.snd i)
-
-@[simps!]
-def Multicofork.map {C D : Type*} [Category C] [Category D]
-    {d : MultispanIndex C} (c : Multicofork d) (F : C ⥤ D) :
-    Multicofork (d.map F) :=
-  Multicofork.ofπ _ (F.obj c.pt) (fun i ↦ F.map (c.π i)) (fun j ↦ by
-    dsimp
-    rw [← F.map_comp, ← F.map_comp, condition])
 
 namespace Types
 
