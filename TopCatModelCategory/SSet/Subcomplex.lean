@@ -141,7 +141,7 @@ instance : CoeOut X.Subcomplex SSet.{u} where
 variable (X) in
 @[simps!]
 def topIso : ((⊤ : X.Subcomplex) : SSet) ≅ X :=
-  NatIso.ofComponents (fun n ↦  (Equiv.Set.univ (X.obj n)).toIso)
+  NatIso.ofComponents (fun n ↦ (Equiv.Set.univ (X.obj n)).toIso)
 
 def isInitialBot : IsInitial ((⊥ : X.Subcomplex) : SSet.{u}) :=
   IsInitial.ofUniqueHom (fun P ↦
