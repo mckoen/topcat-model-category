@@ -12,7 +12,7 @@ namespace SSet
 variable (X : SSet.{u})
 
 def Degenerate (n : ℕ) : Set (X _[n]) :=
-  setOf (fun x ↦ ∃ (m : SimplexCategory) (_ : m.len < n) (f : ([n] : SimplexCategory) ⟶ m),
+  setOf (fun x ↦ ∃ (m : ℕ) (_ : m < n) (f : ([n] : SimplexCategory) ⟶ [m]),
     x ∈ Set.range (X.map f.op))
 
 def NonDegenerate (n : ℕ) : Set (X _[n]) := (X.Degenerate n)ᶜ
@@ -39,27 +39,19 @@ lemma mem_degenerate_iff_non_mem_nondegenerate (x : X _[n]) :
 
 lemma σ_mem_degenerate (i : Fin (n + 1)) (x : X _[n]) :
     X.σ i x ∈ X.Degenerate (n + 1) :=
-  ⟨[n], by dsimp; omega, SimplexCategory.σ i, Set.mem_range_self x⟩
+  ⟨n, by omega, SimplexCategory.σ i, Set.mem_range_self x⟩
 
 lemma mem_degenerate_iff (x : X _[n]) :
     x ∈ X.Degenerate n ↔ ∃ (m : ℕ) (_ : m < n)
       (f : ([n] : SimplexCategory) ⟶ [m]) (_ : Epi f),
         x ∈ Set.range (X.map f.op) := by
-  trans ∃ (m : SimplexCategory) (_ : m.len < n)
-      (f : ([n] : SimplexCategory) ⟶ m) (_ : Epi f),
-        x ∈ Set.range (X.map f.op)
-  · constructor
-    · rintro ⟨m, hm, f, hf, hx⟩
-      rw [← image.fac f, op_comp] at hx
-      have := SimplexCategory.len_le_of_mono (f := image.ι f) inferInstance
-      exact ⟨_, by omega, factorThruImage f, inferInstance, by aesop⟩
-    · rintro ⟨m, hm, f, hf, hx⟩
-      exact ⟨m, hm, f, hx⟩
-  · constructor
-    · rintro ⟨m, hm, f, hf, hx⟩
-      exact ⟨m.len, hm, f, hf, hx⟩
-    · rintro ⟨m, hm, f, hf, hx⟩
-      exact ⟨[m], hm, f, hf, hx⟩
+  constructor
+  · rintro ⟨m, hm, f, y, hy⟩
+    rw [← image.fac f, op_comp] at hy
+    have : _ ≤ m := SimplexCategory.len_le_of_mono (f := image.ι f) inferInstance
+    exact ⟨(image f).len, by omega, factorThruImage f, inferInstance, by aesop⟩
+  · rintro ⟨m, hm, f, hf, hx⟩
+    exact ⟨m, hm, f, hx⟩
 
 lemma degenerate_eq_iUnion_range_σ :
     X.Degenerate (n + 1) = ⨆ (i : Fin (n + 1)), Set.range (X.σ i) := by
