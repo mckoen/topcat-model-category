@@ -18,7 +18,7 @@ lemma subcomplexHorn_eq_iSup (i : Fin (n + 1)) :
   simp [Set.eq_univ_iff_forall]
   rfl
 
-lemma face_le_subcomplexHorn (i j : Fin (n + 1)) (h : i ≠ j):
+lemma face_le_subcomplexHorn (i j : Fin (n + 1)) (h : i ≠ j) :
     standardSimplex.face.{u} {i}ᶜ ≤ subcomplexHorn n j := by
   rw [subcomplexHorn_eq_iSup]
   exact le_iSup (fun (k : ({j}ᶜ : Set (Fin (n + 1)))) ↦ standardSimplex.face.{u} {k.1}ᶜ) ⟨i, h⟩
