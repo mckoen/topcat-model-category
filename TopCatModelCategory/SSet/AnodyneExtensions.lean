@@ -1,4 +1,4 @@
-import TopCatModelCategory.SSet.StandardSimplex
+import TopCatModelCategory.SSet.Horn
 import TopCatModelCategory.SSet.CategoryWithFibrations
 import TopCatModelCategory.SSet.ChosenFiniteProducts
 import TopCatModelCategory.SSet.SimplexCategory
@@ -163,7 +163,8 @@ lemma filtration₁_inter_ofSimplex (j : Fin (n + 1)) :
     filtration₁.{u} j.castSucc ⊓ Subcomplex.ofSimplex (simplex.{u} j).1 =
       (subcomplexHorn.{u} (n + 1) j.succ).image (ιSimplex j) := by
   dsimp [filtration₁]
-  simp only [Subpresheaf.max_min, Subpresheaf.iSup_min]
+  simp only [Subpresheaf.max_min, Subpresheaf.iSup_min,
+    SSet.subcomplexHorn_eq_iSup, Subcomplex.image_iSup]
   sorry
 
 lemma preimage_ιSimplex (j : Fin (n + 1)) :
