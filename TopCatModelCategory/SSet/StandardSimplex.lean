@@ -207,7 +207,7 @@ lemma face_eq_ofSimplex (S : Finset (Fin (n + 1))) (m : ℕ) (e : Fin (m + 1) �
 
 lemma face_singleton_compl (i : Fin (n + 2)) :
     face.{u} {i}ᶜ =
-      Subcomplex.ofSimplex (n := n) (objMk (SimplexCategory.δ i).toOrderHom) := by
+      Subcomplex.ofSimplex ((objEquiv _ _).symm (SimplexCategory.δ i)) := by
   let e : Fin (n + 1) ≃o ({i}ᶜ : Finset _) :=
     { toEquiv := (finSuccAboveEquiv (p := i)).trans
         { toFun := fun ⟨x, hx⟩ ↦ ⟨x, by simpa using hx⟩

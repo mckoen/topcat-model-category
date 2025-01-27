@@ -97,17 +97,28 @@ lemma subcomplexHorn_ι_mem (n : ℕ) (i : Fin (n + 2)) :
 
 namespace subcomplex_unionProd_face_ι_mem
 
-noncomputable abbrev simplex (i : Fin (n + 1)) :=
-  prodStandardSimplex.nonDegenerateEquiv₁ i
+noncomputable abbrev simplex (j : Fin (n + 1)) :=
+  prodStandardSimplex.nonDegenerateEquiv₁ j
 
-noncomputable abbrev ιSimplex (i : Fin (n + 1)) :
+noncomputable abbrev ιSimplex (j : Fin (n + 1)) :
     (Δ[n + 1] : SSet.{u}) ⟶ Δ[1] ⊗ Δ[n] :=
-  (SSet.yonedaEquiv _ _ ).symm (simplex i)
+  (SSet.yonedaEquiv _ _ ).symm (simplex j)
 
-instance (i : Fin (n + 1)) : Mono (ιSimplex.{u} i) := by
+noncomputable def simplexδ (j : Fin (n + 1)) (i : Fin (n + 2)) :
+    (Δ[1] ⊗ Δ[n] : SSet.{u}) _[n] :=
+  (Δ[1] ⊗ Δ[n]).δ i (simplex.{u} j)
+
+@[simp]
+lemma ιSimplex_app_objEquiv_symm_δ (j : Fin (n + 1)) (i : Fin (n + 2)) :
+    (ιSimplex.{u} j).app (op [n])
+      ((standardSimplex.objEquiv [n + 1] (op [n])).symm (SimplexCategory.δ i)) =
+      simplexδ j i := by
+  rfl
+
+instance (j : Fin (n + 1)) : Mono (ιSimplex.{u} j) := by
   rw [standardSimplex.mono_iff]
   exact (prodStandardSimplex.objEquiv_non_degenerate_iff' _).1
-    (prodStandardSimplex.nonDegenerateEquiv₁.{u} i).2
+    (prodStandardSimplex.nonDegenerateEquiv₁.{u} j).2
 
 noncomputable def filtration₁ (i : Fin (n + 2)) :
     (Δ[1] ⊗ Δ[n] : SSet.{u}).Subcomplex :=
@@ -164,7 +175,9 @@ lemma filtration₁_inter_ofSimplex (j : Fin (n + 1)) :
       (subcomplexHorn.{u} (n + 1) j.succ).image (ιSimplex j) := by
   dsimp [filtration₁]
   simp only [Subpresheaf.max_min, Subpresheaf.iSup_min,
-    SSet.subcomplexHorn_eq_iSup, Subcomplex.image_iSup]
+    SSet.subcomplexHorn_eq_iSup, Subcomplex.image_iSup,
+    standardSimplex.face_singleton_compl, Subcomplex.image_ofSimplex,
+    ιSimplex_app_objEquiv_symm_δ j]
   sorry
 
 lemma preimage_ιSimplex (j : Fin (n + 1)) :

@@ -316,6 +316,14 @@ instance {X Y : SSet.{u}} (f : X ⟶ Y) [Mono f] : IsIso (toRangeSubcomplex f) :
   have := mono_of_mono_fac (toRangeSubcomplex_ι f)
   apply isIso_of_mono_of_epi
 
+lemma Subcomplex.range_eq_top_iff : Subcomplex.range f = ⊤ ↔ Epi f := by
+  rw [NatTrans.epi_iff_epi_app, Subpresheaf.ext_iff, funext_iff]
+  simp only [epi_iff_surjective, range_obj, top_subpresheaf_obj, Set.top_eq_univ,
+    Set.range_eq_univ]
+
+lemma Subcomplex.range_eq_top [Epi f] : Subcomplex.range f = ⊤ := by
+  rwa [range_eq_top_iff]
+
 end
 
 namespace Subcomplex
@@ -430,6 +438,15 @@ lemma range_comp {Z : SSet.{u}} (g : Y ⟶ Z) :
 lemma image_iSup {ι : Type*} (S : ι → X.Subcomplex) (f : X ⟶ Y) :
     image (⨆ i, S i) f = ⨆ i, (S i).image f := by
   aesop
+
+@[simp]
+lemma image_ofSimplex {n : ℕ} (x : X _[n]) (f : X ⟶ Y) :
+    (ofSimplex x).image f = ofSimplex (f.app _ x) := by
+  apply le_antisymm
+  · rw [image_le_iff, ofSimplex_le_iff, preimage_obj, Set.mem_preimage]
+    apply mem_ofSimplex_obj
+  · rw [ofSimplex_le_iff]
+    exact ⟨x, mem_ofSimplex_obj _, rfl⟩
 
 end
 
