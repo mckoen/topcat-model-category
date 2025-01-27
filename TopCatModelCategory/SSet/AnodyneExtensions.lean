@@ -170,7 +170,7 @@ lemma filtration₁_last :
   exact (le_iSup (fun (j : Fin (Fin.last (n + 1)).1) ↦
     Subcomplex.ofSimplex (simplex ⟨j, by omega⟩).1) i).trans le_sup_right
 
-lemma filtration₁_inter_ofSimplex (j : Fin (n + 1)) :
+/-lemma filtration₁_inter_ofSimplex (j : Fin (n + 1)) :
     filtration₁.{u} j.castSucc ⊓ Subcomplex.ofSimplex (simplex.{u} j).1 =
       (subcomplexHorn.{u} (n + 1) j.succ).image (ιSimplex j) := by
   dsimp [filtration₁]
@@ -178,14 +178,15 @@ lemma filtration₁_inter_ofSimplex (j : Fin (n + 1)) :
     SSet.subcomplexHorn_eq_iSup, Subcomplex.image_iSup,
     standardSimplex.face_singleton_compl, Subcomplex.image_ofSimplex,
     ιSimplex_app_objEquiv_symm_δ j]
-  sorry
+  sorry-/
 
 lemma preimage_ιSimplex (j : Fin (n + 1)) :
     (filtration₁ j.castSucc).preimage (ιSimplex j) =
       subcomplexHorn.{u} (n + 1) j.succ := by
-  dsimp [filtration₁]
-  rw [Subcomplex.preimage_eq_iff]
-  apply filtration₁_inter_ofSimplex
+  --dsimp [filtration₁]
+  --rw [Subcomplex.preimage_eq_iff]
+  --apply filtration₁_inter_ofSimplex
+  sorry
 
 lemma filtration₁_to_succ_mem (i : Fin (n + 1)) :
     anodyneExtensions (Subcomplex.homOfLE (monotone_filtration₁.{u} i.castSucc_le_succ)) := by
