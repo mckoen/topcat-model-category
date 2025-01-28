@@ -153,7 +153,10 @@ lemma simplexδ_succ_succ_castSucc (j : Fin (n + 1)) :
       ((SimplexCategory.δ_comp_σ_self (i := j.succ)).trans
       (SimplexCategory.δ_comp_σ_succ (i := j.castSucc)).symm) k
 
-@[simp]
+lemma simplexδ_succ_snd (j : Fin (n + 1)) :
+    (simplexδ j j.succ).2 = standardSimplex.objMk .id :=
+  (standardSimplex.objEquiv _ _).injective SimplexCategory.δ_comp_σ_succ
+
 lemma ιSimplex_app_objEquiv_symm_δ (j : Fin (n + 1)) (i : Fin (n + 2)) :
     (ιSimplex.{u} j).app (op [n])
       ((standardSimplex.objEquiv [n + 1] (op [n])).symm (SimplexCategory.δ i)) =
@@ -258,11 +261,36 @@ lemma le_filtration₁_preimage_ιSimplex (j : Fin (n + 1)) :
       refine Or.inl (Or.inr
         (simplexδ_snd_mem_subcomplexBoundary_of_lt _ _ (by simpa using hij)))
 
+lemma Set.not_mem_setOf {α : Type*} (P : α → Prop) (x : α) :
+    x ∉ setOf P ↔ ¬ P x := by simp only [Set.nmem_setOf_iff]
+
 lemma filtration₁_preimage_ιSimplex_le (j : Fin (n + 1)) :
     (filtration₁ j.castSucc).preimage (ιSimplex j) ≤
       subcomplexHorn.{u} (n + 1) j.succ := by
-  dsimp [filtration₁]
-  sorry
+  simp only [standardSimplex.subcomplex_le_horn_iff,
+    standardSimplex.face_singleton_compl, ← Subcomplex.image_le_iff,
+    Subcomplex.image_ofSimplex, Subcomplex.ofSimplex_le_iff]
+  rw [ιSimplex_app_objEquiv_symm_δ]
+  simp [filtration₁, Subcomplex.unionProd, Set.prod, Set.not_mem_setOf]
+  refine ⟨⟨?_, ⟨j, ?_⟩⟩, fun i ↦ ?_⟩
+  · simpa only [simplexδ_succ_snd] using non_mem_subcomplexBoundary n
+  · simp [simplexδ, SimplicialObject.δ, standardSimplex.map_op_apply,
+      standardSimplex.objMk₁, SimplexCategory.δ]
+  · rw [prodStandardSimplex.mem_ofSimplex_iff, Set.not_subset]
+    refine ⟨⟨0, j⟩, ⟨j, ?_⟩, ?_⟩
+    · ext : 1
+      · simp [simplexδ, SimplicialObject.δ, standardSimplex.objMk₁,
+          SimplexCategory.δ]
+      · simp [simplexδ_succ_snd]
+        rfl
+    · obtain ⟨i, hi⟩ := i
+      rintro ⟨⟨a, ha₀⟩, ha⟩
+      simp [simplex, Prod.ext_iff, standardSimplex.objMk₁] at ha
+      obtain ⟨ha₁, ha₂⟩ := ha
+      change Fin.predAbove _ _ = _ at ha₂
+      rw [Fin.predAbove_of_le_castSucc _ _ (by simp; omega), Fin.ext_iff] at ha₂
+      dsimp at ha₂
+      omega
 
 lemma filtration₁_preimage_ιSimplex (j : Fin (n + 1)) :
     (filtration₁ j.castSucc).preimage (ιSimplex j) =

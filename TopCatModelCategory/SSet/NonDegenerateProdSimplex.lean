@@ -110,6 +110,14 @@ def objEquiv {n : ℕ} :
   left_inv := fun ⟨x, y⟩ ↦ by simp
   right_inv _ := rfl
 
+@[simp]
+lemma objEquiv_apply_fst {n : ℕ} (x : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) (i : Fin (n + 1)) :
+    (objEquiv x i).1 = x.1 i := rfl
+
+@[simp]
+lemma objEquiv_apply_snd {n : ℕ} (x : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) (i : Fin (n + 1)) :
+    (objEquiv x i).2 = x.2 i := rfl
+
 lemma objEquiv_naturality {m n : ℕ} (f : ([m] : SimplexCategory) ⟶ [n])
     (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) :
     (objEquiv z).comp f.toOrderHom = objEquiv ((Δ[p] ⊗ Δ[q]).map f.op z) :=
@@ -161,6 +169,13 @@ lemma mem_subsimplex_iff {n : ℕ} (f : Fin (n + 1) →o Fin (p + 1) × Fin (q +
       ext i : 2
       rw [← hφ]
       rfl
+
+lemma mem_ofSimplex_iff {n : ℕ} (y : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) {m : ℕ}
+    (x : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[m]) :
+    x ∈ (Subcomplex.ofSimplex y).obj _ ↔
+      Set.range (objEquiv x) ⊆ Set.range (objEquiv y) := by
+  rw [← mem_subsimplex_iff]
+  rfl
 
 lemma subsimplex_le_subsimplex_iff {n m : ℕ}
     (f : Fin (n + 1) →o Fin (p + 1) × Fin (q + 1))
