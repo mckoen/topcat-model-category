@@ -180,20 +180,59 @@ lemma filtration₁_last :
     ιSimplex_app_objEquiv_symm_δ j]
   sorry-/
 
-lemma preimage_ιSimplex (j : Fin (n + 1)) :
-    (filtration₁ j.castSucc).preimage (ιSimplex j) =
+lemma le_filtration₁_preimage_ιSimplex (j : Fin (n + 1)) :
+    subcomplexHorn.{u} (n + 1) j.succ ≤
+    (filtration₁ j.castSucc).preimage (ιSimplex j) := by
+  rw [subcomplexHorn_eq_iSup]
+  simp only [iSup_le_iff, Subtype.forall, Set.mem_compl_iff, Set.mem_singleton_iff]
+  intro i hij
+  simp only [standardSimplex.face_singleton_compl, filtration₁,
+    Subcomplex.ofSimplex_le_iff, Subcomplex.preimage_obj, Set.mem_preimage,
+    Subpresheaf.max_obj, Set.mem_union, Subpresheaf.iSup_obj, Set.iSup_eq_iUnion,
+    Set.mem_iUnion]
+  rw [ιSimplex_app_objEquiv_symm_δ]
+  simp only [Subcomplex.mem_unionProd_iff, standardSimplex.mem_face_iff,
+    Finset.mem_singleton]
+  dsimp
+  by_cases hj₀ : j = 0
+  · subst hj₀
+    simp only [Fin.succ_zero_eq_one] at hij
+    by_cases hi₀ : i = 0
+    · subst hi₀
+      exact Or.inl (Or.inl (fun i ↦ rfl))
+    · refine Or.inl (Or.inr ?_)
+      obtain _ | n := n
+      · fin_cases i <;> aesop
+      obtain ⟨i, rfl⟩ := Fin.eq_succ_of_ne_zero hi₀
+      simp only [subcomplexBoundary_eq_iSup, Subpresheaf.iSup_obj, Set.iSup_eq_iUnion,
+        Set.mem_iUnion, standardSimplex.mem_face_iff, Finset.mem_compl, Finset.mem_singleton]
+      simp [simplexδ, simplex]
+      refine ⟨i, fun k hk ↦ Fin.succAbove_ne _ _ ((SimplexCategory.congr_toOrderHom_apply
+        (SimplexCategory.δ_comp_σ_of_gt (n := n) (i := i) (j := 0) ?_).symm k).trans hk)⟩
+      by_contra!
+      simp only [Fin.castSucc_zero, Fin.le_zero_iff] at this
+      subst this
+      simp at hij
+  · sorry
+
+lemma filtration₁_preimage_ιSimplex_le (j : Fin (n + 1)) :
+    (filtration₁ j.castSucc).preimage (ιSimplex j) ≤
       subcomplexHorn.{u} (n + 1) j.succ := by
-  --dsimp [filtration₁]
-  --rw [Subcomplex.preimage_eq_iff]
-  --apply filtration₁_inter_ofSimplex
+  dsimp [filtration₁]
   sorry
+
+lemma filtration₁_preimage_ιSimplex (j : Fin (n + 1)) :
+    (filtration₁ j.castSucc).preimage (ιSimplex j) =
+      subcomplexHorn.{u} (n + 1) j.succ :=
+  le_antisymm (filtration₁_preimage_ιSimplex_le j)
+    (le_filtration₁_preimage_ιSimplex j)
 
 lemma filtration₁_to_succ_mem (i : Fin (n + 1)) :
     anodyneExtensions (Subcomplex.homOfLE (monotone_filtration₁.{u} i.castSucc_le_succ)) := by
   have := IsPushout.of_isColimit
     (Subcomplex.isColimitPushoutCoconeOfPullback (ιSimplex i) (filtration₁.{u} i.castSucc)
       (filtration₁.{u} i.succ) (subcomplexHorn.{u} (n + 1) i.succ) ⊤
-      (by simpa using (preimage_ιSimplex i).symm)
+      (by simpa using (filtration₁_preimage_ιSimplex i).symm)
       (by simp only [Subcomplex.image_top, filtration₁_succ, Subcomplex.ofSimplex]))
   exact MorphismProperty.of_isPushout (P := anodyneExtensions) this
     (anodyneExtensions.{u}.comp_mem _ _

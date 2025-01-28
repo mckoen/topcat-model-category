@@ -80,6 +80,14 @@ lemma iSup_obj {ι : Type*} (S : ι → Subpresheaf P) (U : Cᵒᵖ) :
     (iSup S).obj U = iSup (fun i ↦ (S i).obj U) := by
   simp [iSup, sSup_obj]
 
+lemma sInf_obj (S : Set (Subpresheaf P)) (U : Cᵒᵖ) :
+    (sInf S).obj U = sInf (Set.image (fun T ↦ T.obj U) S) := rfl
+
+@[simp]
+lemma iInf_obj {ι : Type*} (S : ι → Subpresheaf P) (U : Cᵒᵖ) :
+    (iInf S).obj U = iInf (fun i ↦ (S i).obj U) := by
+  simp [iInf, sInf_obj]
+
 lemma le_def (S T : Subpresheaf P) : S ≤ T ↔ ∀ U, S.obj U ≤ T.obj U := Iff.rfl
 
 @[simp]
@@ -374,6 +382,22 @@ def preimage (A : X.Subcomplex) (p : Y ⟶ X) : Y.Subcomplex where
   map f := (Set.preimage_mono (A.map f)).trans (by
     simp only [Set.preimage_preimage, FunctorToTypes.naturality _ _ p f]
     rfl)
+
+@[simp]
+lemma preimage_max (A B : X.Subcomplex) (p : Y ⟶ X) :
+    (A ⊔ B).preimage p = A.preimage p ⊔ B.preimage p := rfl
+
+@[simp]
+lemma preimage_min (A B : X.Subcomplex) (p : Y ⟶ X) :
+    (A ⊓ B).preimage p = A.preimage p ⊓ B.preimage p := rfl
+
+@[simp]
+lemma preimage_iSup {ι : Type*} (A : ι → X.Subcomplex) (p : Y ⟶ X) :
+    (⨆ i, A i).preimage p = ⨆ i, (A i).preimage p := by aesop
+
+@[simp]
+lemma preimage_iInf {ι : Type*} (A : ι → X.Subcomplex) (p : Y ⟶ X) :
+    (⨅ i, A i).preimage p = ⨅ i, (A i).preimage p := by aesop
 
 @[simps]
 def fromPreimage (A : X.Subcomplex) (p : Y ⟶ X) :

@@ -8,6 +8,29 @@ universe u
 
 namespace SSet
 
+section
+
+variable (X Y : SSet.{u})
+
+section
+
+variable {m n : SimplexCategoryᵒᵖ} (f : m ⟶ n) (z : (X ⊗ Y).obj m)
+@[simp] lemma prod_map_fst : ((X ⊗ Y).map f z).1 = X.map f z.1 := rfl
+@[simp] lemma prod_map_snd : ((X ⊗ Y).map f z).2 = Y.map f z.2 := rfl
+
+end
+
+@[simp] lemma prod_δ_fst {n : ℕ} (i : Fin (n + 2)) (z : (X ⊗ Y : SSet.{u}) _[n + 1]) :
+    ((X ⊗ Y).δ i z).1 = X.δ i z.1 := rfl
+@[simp] lemma prod_δ_snd {n : ℕ} (i : Fin (n + 2)) (z : (X ⊗ Y : SSet.{u}) _[n + 1]) :
+    ((X ⊗ Y).δ i z).2 = Y.δ i z.2 := rfl
+@[simp] lemma prod_σ_fst {n : ℕ} (i : Fin (n + 1)) (z : (X ⊗ Y : SSet.{u}) _[n]) :
+    ((X ⊗ Y).σ i z).1 = X.σ i z.1 := rfl
+@[simp] lemma prod_σ_snd {n : ℕ} (i : Fin (n + 1)) (z : (X ⊗ Y : SSet.{u}) _[n]) :
+    ((X ⊗ Y).σ i z).2 = Y.σ i z.2 := rfl
+
+end
+
 namespace standardSimplex
 
 lemma objMk_injective {n : SimplexCategory} {m : SimplexCategoryᵒᵖ} :
@@ -381,6 +404,11 @@ noncomputable def nonDegenerateEquiv₁ :
         dsimp at this
         simp only [hi, Fin.isValue, Fin.val_zero, zero_add, Fin.ext_iff, Fin.val_last] at this
         omega)
+
+@[simp]
+lemma nonDegenerateEquiv₁_snd (i : Fin (q + 1)) :
+    (nonDegenerateEquiv₁ i).1.2 =
+      (standardSimplex.objEquiv _ _).symm (SimplexCategory.σ i) := rfl
 
 end prodStandardSimplex
 
