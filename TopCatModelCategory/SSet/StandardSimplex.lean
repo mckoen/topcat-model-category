@@ -59,6 +59,10 @@ lemma objMk_apply {n m : ℕ}
     objMk.{u} (n := .mk n) (m := op (.mk m)) f i = f i :=
   rfl
 
+lemma map_op_apply {n m p : ℕ} (x : Δ[n] _[m])
+    (g : SimplexCategory.mk p ⟶ [m]) (i : Fin (p + 1)) :
+      Δ[n].map g.op x i = x (g.toOrderHom i) := rfl
+
 lemma map_objEquiv_symm_apply {n : ℕ} {m : SimplexCategory} (f : m ⟶ .mk n)
     {p : ℕ} (g :  .mk p ⟶ m) (i : Fin (p + 1)) :
     Δ[n].map g.op ((objEquiv.{u} _ _).symm f) i = f.toOrderHom (g.toOrderHom i) := rfl

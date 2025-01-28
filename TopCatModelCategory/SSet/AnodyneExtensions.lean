@@ -108,6 +108,46 @@ noncomputable def simplexδ (j : Fin (n + 1)) (i : Fin (n + 2)) :
     (Δ[1] ⊗ Δ[n] : SSet.{u}) _[n] :=
   (Δ[1] ⊗ Δ[n]).δ i (simplex.{u} j)
 
+lemma simplexδ_mem_ofSimplex (j : Fin (n + 1)) (i : Fin (n + 2)) :
+    simplexδ.{u} j i ∈ (Subcomplex.ofSimplex (simplex j).1).obj _ :=
+  ⟨_, rfl⟩
+
+lemma simplex_δ_zero_snd_mem_subcomplexBoundary (i : Fin (n + 2)) (hi : i ≠ 0) :
+    (simplexδ 0 i.succ).2 ∈ (subcomplexBoundary _).obj _ := by
+  simp only [subcomplexBoundary_eq_iSup, Subpresheaf.iSup_obj, Set.iSup_eq_iUnion, Set.mem_iUnion,
+    standardSimplex.mem_face_iff, Finset.mem_compl, Finset.mem_singleton]
+  exact ⟨i, fun k hk ↦ Fin.succAbove_ne _ _ ((SimplexCategory.congr_toOrderHom_apply
+    (SimplexCategory.δ_comp_σ_of_gt (n := n) (i := i) (j := 0)
+      (Fin.pos_iff_ne_zero.2 hi)).symm k).trans hk)⟩
+
+lemma simplexδ_snd_mem_subcomplexBoundary_of_lt (j : Fin (n + 1)) (i : Fin (n + 3))
+    (hij : i < j.succ.castSucc) :
+    (simplexδ j.succ i).2 ∈ (subcomplexBoundary _).obj _ := by
+  simp only [subcomplexBoundary_eq_iSup, Subpresheaf.iSup_obj, Set.iSup_eq_iUnion, Set.mem_iUnion,
+    standardSimplex.mem_face_iff, Finset.mem_compl, Finset.mem_singleton]
+  have hi : i ≠ Fin.last _ :=
+    fun hi ↦ not_lt_of_ge (j.succ.castSucc.le_last) (by simpa only [hi] using hij)
+  rw [← Fin.succ_castSucc, ← Fin.le_castSucc_iff] at hij
+  exact ⟨i.castPred hi, fun k hk ↦ Fin.succAbove_ne _ _ ((SimplexCategory.congr_toOrderHom_apply
+    (SimplexCategory.δ_comp_σ_of_le (n := n) (i := i.castPred hi) (j := j) hij) k).symm.trans hk)⟩
+
+lemma simplexδ_succ_succ_castSucc (j : Fin (n + 1)) :
+    simplexδ j.succ j.succ.castSucc = simplexδ j.castSucc j.succ.castSucc := by
+  apply Prod.ext
+  · ext k : 1
+    simp [simplexδ, simplex, SimplicialObject.δ, standardSimplex.map_op_apply,
+      standardSimplex.objMk₁, SimplexCategory.δ]
+    by_cases h₁ : j.succ ≤ k
+    · simp only [j.succ.castSucc.succAbove_of_le_castSucc k (by simpa)]
+      rw [if_neg (by simpa), if_neg (by simpa using j.castSucc_le_succ.trans h₁)]
+    · simp only [not_le] at h₁
+      simp only [j.succ.castSucc.succAbove_of_succ_le k (by simpa)]
+      rw [if_pos (by simpa using h₁.le), if_pos (by simpa [Fin.le_castSucc_iff])]
+  · ext k : 1
+    exact SimplexCategory.congr_toOrderHom_apply
+      ((SimplexCategory.δ_comp_σ_self (i := j.succ)).trans
+      (SimplexCategory.δ_comp_σ_succ (i := j.castSucc)).symm) k
+
 @[simp]
 lemma ιSimplex_app_objEquiv_symm_δ (j : Fin (n + 1)) (i : Fin (n + 2)) :
     (ιSimplex.{u} j).app (op [n])
@@ -170,16 +210,6 @@ lemma filtration₁_last :
   exact (le_iSup (fun (j : Fin (Fin.last (n + 1)).1) ↦
     Subcomplex.ofSimplex (simplex ⟨j, by omega⟩).1) i).trans le_sup_right
 
-/-lemma filtration₁_inter_ofSimplex (j : Fin (n + 1)) :
-    filtration₁.{u} j.castSucc ⊓ Subcomplex.ofSimplex (simplex.{u} j).1 =
-      (subcomplexHorn.{u} (n + 1) j.succ).image (ιSimplex j) := by
-  dsimp [filtration₁]
-  simp only [Subpresheaf.max_min, Subpresheaf.iSup_min,
-    SSet.subcomplexHorn_eq_iSup, Subcomplex.image_iSup,
-    standardSimplex.face_singleton_compl, Subcomplex.image_ofSimplex,
-    ιSimplex_app_objEquiv_symm_δ j]
-  sorry-/
-
 lemma le_filtration₁_preimage_ιSimplex (j : Fin (n + 1)) :
     subcomplexHorn.{u} (n + 1) j.succ ≤
     (filtration₁ j.castSucc).preimage (ιSimplex j) := by
@@ -204,16 +234,19 @@ lemma le_filtration₁_preimage_ιSimplex (j : Fin (n + 1)) :
       obtain _ | n := n
       · fin_cases i <;> aesop
       obtain ⟨i, rfl⟩ := Fin.eq_succ_of_ne_zero hi₀
-      simp only [subcomplexBoundary_eq_iSup, Subpresheaf.iSup_obj, Set.iSup_eq_iUnion,
-        Set.mem_iUnion, standardSimplex.mem_face_iff, Finset.mem_compl, Finset.mem_singleton]
-      simp [simplexδ, simplex]
-      refine ⟨i, fun k hk ↦ Fin.succAbove_ne _ _ ((SimplexCategory.congr_toOrderHom_apply
-        (SimplexCategory.δ_comp_σ_of_gt (n := n) (i := i) (j := 0) ?_).symm k).trans hk)⟩
-      by_contra!
-      simp only [Fin.castSucc_zero, Fin.le_zero_iff] at this
-      subst this
-      simp at hij
-  · sorry
+      exact simplex_δ_zero_snd_mem_subcomplexBoundary _ (by rintro rfl; simp at hij)
+  · obtain ⟨j, rfl⟩ := Fin.eq_succ_of_ne_zero hj₀; clear hj₀
+    obtain _ | n := n
+    · fin_cases j
+    obtain hij | rfl | hij := lt_trichotomy i j.succ.succ
+    · rw [← Fin.le_castSucc_iff] at hij
+      obtain hij | rfl :=  hij.lt_or_eq
+      · exact Or.inl (Or.inr (simplexδ_snd_mem_subcomplexBoundary_of_lt _ _ hij))
+      · exact Or.inr ⟨⟨j, by simp⟩,
+          by simpa only [simplexδ_succ_succ_castSucc]
+            using simplexδ_mem_ofSimplex j.castSucc j.succ.castSucc⟩
+    · simp at hij
+    · sorry
 
 lemma filtration₁_preimage_ιSimplex_le (j : Fin (n + 1)) :
     (filtration₁ j.castSucc).preimage (ιSimplex j) ≤

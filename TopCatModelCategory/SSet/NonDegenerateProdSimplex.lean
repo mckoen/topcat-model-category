@@ -406,6 +406,11 @@ noncomputable def nonDegenerateEquiv₁ :
         omega)
 
 @[simp]
+lemma nonDegenerateEquiv₁_fst (i : Fin (q + 1)) :
+    (nonDegenerateEquiv₁ i).1.1 =
+      standardSimplex.objMk₁ i.succ.castSucc := rfl
+
+@[simp]
 lemma nonDegenerateEquiv₁_snd (i : Fin (q + 1)) :
     (nonDegenerateEquiv₁ i).1.2 =
       (standardSimplex.objEquiv _ _).symm (SimplexCategory.σ i) := rfl
