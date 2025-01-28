@@ -123,6 +123,11 @@ lemma objEquiv_naturality {m n : ℕ} (f : ([m] : SimplexCategory) ⟶ [n])
     (objEquiv z).comp f.toOrderHom = objEquiv ((Δ[p] ⊗ Δ[q]).map f.op z) :=
   rfl
 
+lemma objEquiv_map_apply {n m : ℕ}
+    (x : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) (f : ([m] : SimplexCategory) ⟶ [n]) (i : Fin (m + 1)) :
+      objEquiv ((Δ[p] ⊗ Δ[q]).map f.op x) i =  objEquiv x (f.toOrderHom i) :=
+  rfl
+
 def obj₀Equiv : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[0] ≃ Fin (p + 1) × Fin (q + 1) :=
   objEquiv.trans Fin.oneOrderHomEquiv
 
@@ -306,26 +311,48 @@ lemma nonDegenerate_ext {n : ℕ} {z₁ z₂ : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonD
     simpa only [orderHomOfSimplex_coe, h, Fin.ext_iff, add_right_inj]
       using DFunLike.congr_fun (h₁.trans h₂.symm) i
 
+lemma _root_.Fin.prod_lt_last_last_iff (i : Fin (p + 1) × Fin (q + 1)) :
+    i < (Fin.last _, Fin.last _) ↔ i.1.1 + i.2.1 < p + q := by
+  simp only [Prod.lt_iff]
+  constructor
+  · rintro (⟨h₁, h₂⟩ | ⟨h₁, h₂⟩)
+    all_goals
+      simp [Fin.lt_iff_val_lt_val, Fin.le_iff_val_le_val] at h₁ h₂
+      omega
+  · intro h
+    obtain h₁ | h₁ := (Fin.le_last i.1).lt_or_eq
+    · exact Or.inl ⟨h₁, Fin.le_last _⟩
+    · exact Or.inr ⟨by rw [h₁], by simpa [h₁] using h⟩
+
+lemma _root_.SSet.yonedaEquiv_symm_app_apply {X : SSet.{u}} {n : SimplexCategoryᵒᵖ}
+    (x : X.obj n) {m : SimplexCategoryᵒᵖ} (y : (standardSimplex.obj n.unop).obj m) :
+    ((X.yonedaEquiv n.unop).symm x).app m y = X.map (standardSimplex.objEquiv _ _ y).op x :=
+  rfl
+
 lemma nondegenerate_mem_ofSimplex_aux {d : ℕ}
     (x : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonDegenerate d) (hd : d < p + q) :
     ∃ (y : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonDegenerate (d + 1)),
       x.1 ∈ (Subcomplex.ofSimplex y.1).obj _ := by
-  --have := strictMono_of_nonDegenerate x
-  --have := strictMono_orderHomOfSimplex x rfl
-  --have := @le_orderHomOfSimplex
   let S : Finset (Fin (d + 1)) :=
     { i | ⟨i.1, by omega⟩ < orderHomOfSimplex x.1 rfl i }
   by_cases hS : S.Nonempty
   · sorry
-  · have h := Fin.strictMono_insert_last (objEquiv x.1)
-      (strictMono_of_nonDegenerate x) ⟨Fin.last _, Fin.last _⟩ sorry
+  · simp only [Finset.not_nonempty_iff_eq_empty] at hS
+    have h := Fin.strictMono_insert_last (objEquiv x.1)
+      (strictMono_of_nonDegenerate x) ⟨Fin.last _, Fin.last _⟩ (by
+        rw [_root_.Fin.prod_lt_last_last_iff]
+        refine lt_of_le_of_lt ?_ hd
+        simpa [← hS, S] using Finset.not_mem_empty (Fin.last d))
     refine ⟨⟨_, (objEquiv_non_degenerate_iff
       (objEquiv.{u}.symm ⟨_, h.monotone⟩)).2 h.injective⟩,
       (standardSimplex.objEquiv _ _).symm
         (SimplexCategory.δ (Fin.last _)), objEquiv.injective ?_⟩
     ext j : 2
-    dsimp
-    sorry
+    rw [SSet.yonedaEquiv_symm_app_apply, Equiv.apply_symm_apply, objEquiv_map_apply,
+      Equiv.apply_symm_apply]
+    dsimp [SimplexCategory.δ]
+    rw [Fin.succAbove_of_castSucc_lt _ _ (Fin.castSucc_lt_last j),
+      Fin.insert_last_castSucc]
 
 lemma nondegenerate_mem_ofSimplex {d : ℕ}
     (x : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonDegenerate d) {n : ℕ} (hn : p + q = n) :
