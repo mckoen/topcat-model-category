@@ -246,6 +246,18 @@ lemma insert_apply (i : Fin n) (x : α) (j : Fin (n + 1)) (hj : j ≠ i.succ) :
     rfl
   · rw [predAbove_of_succ_le _ _ (by simpa using h)]
 
+@[simp]
+lemma insert_apply_succAbove (i : Fin (n + 1)) (x : α) (j : Fin n) :
+    insert f i x (i.succAbove j) = f j := by
+  dsimp [insert]
+  rw [dif_neg (succAbove_ne i j)]
+  by_cases h : j.castSucc < i
+  · simp only [Fin.succAbove_of_castSucc_lt i j h, dif_pos h,
+      coe_castSucc, Fin.eta]
+  · simp only [not_lt] at h
+    simp only [Fin.succAbove_of_le_castSucc i j h,
+      dif_neg (not_lt.2 (h.trans j.castSucc_le_succ)), pred_succ]
+
 end
 
 section

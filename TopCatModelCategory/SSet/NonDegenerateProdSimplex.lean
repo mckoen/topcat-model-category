@@ -311,6 +311,11 @@ lemma nonDegenerate_ext {n : ℕ} {z₁ z₂ : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonD
     simpa only [orderHomOfSimplex_coe, h, Fin.ext_iff, add_right_inj]
       using DFunLike.congr_fun (h₁.trans h₂.symm) i
 
+lemma _root_.Fin.prod_zero_zero_lt_iff (i : Fin (p + 1) × Fin (q + 1)) :
+    (0, 0) < i ↔ 0 < i.1.1 + i.2.1 := by
+  rw [Prod.lt_iff]
+  aesop
+
 lemma _root_.Fin.prod_lt_last_last_iff (i : Fin (p + 1) × Fin (q + 1)) :
     i < (Fin.last _, Fin.last _) ↔ i.1.1 + i.2.1 < p + q := by
   simp only [Prod.lt_iff]
@@ -329,6 +334,34 @@ lemma _root_.SSet.yonedaEquiv_symm_app_apply {X : SSet.{u}} {n : SimplexCategory
     ((X.yonedaEquiv n.unop).symm x).app m y = X.map (standardSimplex.objEquiv _ _ y).op x :=
   rfl
 
+lemma _root_.Fin.prod_exists_intermediate (k₀ k₂ : Fin (p + 1) × Fin (q + 1))
+    (h₀₂ : k₀ ≤ k₂)
+    (h : k₀.1.1 + k₀.2.1 + 2 ≤ k₂.1.1 + k₂.2.1) :
+    ∃ k₁, k₀ < k₁ ∧ k₁ < k₂ := by
+  obtain ⟨x₀, y₀⟩ := k₀
+  obtain ⟨x₂, y₂⟩ := k₂
+  simp only [Prod.le_def] at h₀₂ h
+  obtain ⟨hx, hy⟩ := h₀₂
+  obtain hx' | rfl := hx.lt_or_eq
+  · obtain hy' | rfl := hy.lt_or_eq
+    · exact ⟨⟨x₀, y₂⟩, by aesop⟩
+    · obtain ⟨x₂', rfl⟩ := x₂.eq_succ_of_ne_zero (fun hx₂ ↦ by
+        rw [Fin.ext_iff] at hx₂
+        dsimp at hx₂
+        omega)
+      refine ⟨⟨x₂'.castSucc, y₀⟩, ?_⟩
+      rw [Fin.val_succ] at h
+      simp [Fin.lt_iff_val_lt_val]
+      omega
+  · obtain ⟨y₂', rfl⟩ := y₂.eq_succ_of_ne_zero (fun hy₂ ↦ by
+      rw [Fin.ext_iff] at hy₂
+      dsimp at hy₂
+      omega)
+    refine ⟨⟨x₀, y₂'.castSucc⟩, ?_⟩
+    rw [Fin.val_succ] at h
+    simp [Fin.lt_iff_val_lt_val]
+    omega
+
 lemma nondegenerate_mem_ofSimplex_aux {d : ℕ}
     (x : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonDegenerate d) (hd : d < p + q) :
     ∃ (y : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonDegenerate (d + 1)),
@@ -336,7 +369,37 @@ lemma nondegenerate_mem_ofSimplex_aux {d : ℕ}
   let S : Finset (Fin (d + 1)) :=
     { i | ⟨i.1, by omega⟩ < orderHomOfSimplex x.1 rfl i }
   by_cases hS : S.Nonempty
-  · sorry
+  · obtain ⟨i₀, hi₀⟩ : ∃ i₀, i₀ = S.min' hS := ⟨_, rfl⟩
+    obtain rfl | ⟨i₀, rfl⟩ := Fin.eq_zero_or_eq_succ i₀
+    · have h := Fin.strictMono_insert_zero (objEquiv x.1)
+        (strictMono_of_nonDegenerate x) ⟨0, 0⟩ (by
+          simpa only [← hi₀, S, Finset.mem_filter, Finset.mem_univ,
+            true_and, _root_.Fin.prod_zero_zero_lt_iff]
+              using S.min'_mem hS)
+      exact ⟨⟨_, (objEquiv_non_degenerate_iff
+        (objEquiv.{u}.symm ⟨_, h.monotone⟩)).2 h.injective⟩,
+        (standardSimplex.objEquiv _ _).symm
+          (SimplexCategory.δ 0), objEquiv.injective rfl⟩
+    · obtain ⟨k, hk₁, hk₂⟩ := Fin.prod_exists_intermediate (objEquiv x.1 i₀.castSucc)
+        (objEquiv x.1 i₀.succ) ((objEquiv x.1).monotone i₀.castSucc_le_succ) (by
+          have h₀ : i₀.castSucc ∉ S := fun h₀ ↦ by
+            have := S.min'_le _ h₀
+            simp [← hi₀] at this
+          have h₁ : i₀.succ ∈ S := by
+            simpa only [hi₀] using S.min'_mem hS
+          simp [S] at h₀ h₁ ⊢
+          omega)
+      have h := Fin.strictMono_insert (objEquiv x.1)
+        (strictMono_of_nonDegenerate x) i₀ k hk₁ hk₂
+      refine ⟨⟨_, (objEquiv_non_degenerate_iff
+        (objEquiv.{u}.symm ⟨_, h.monotone⟩)).2 h.injective⟩,
+        (standardSimplex.objEquiv _ _).symm
+          (SimplexCategory.δ i₀.succ.castSucc), objEquiv.injective ?_⟩
+      ext j : 2
+      rw [SSet.yonedaEquiv_symm_app_apply, Equiv.apply_symm_apply, objEquiv_map_apply,
+        Equiv.apply_symm_apply]
+      dsimp [SimplexCategory.δ]
+      rw [← Fin.succ_castSucc, Fin.insert_apply_succAbove]
   · simp only [Finset.not_nonempty_iff_eq_empty] at hS
     have h := Fin.strictMono_insert_last (objEquiv x.1)
       (strictMono_of_nonDegenerate x) ⟨Fin.last _, Fin.last _⟩ (by
