@@ -3,6 +3,7 @@ import TopCatModelCategory.IsFibrant
 import TopCatModelCategory.SSet.Horn
 import TopCatModelCategory.SSet.HomotopyBasic
 import TopCatModelCategory.SSet.AnodyneExtensions
+import TopCatModelCategory.SSet.Monoidal
 
 universe u
 
@@ -12,10 +13,6 @@ open HomotopicalAlgebra CategoryTheory Category Simplicial Limits MonoidalCatego
 namespace SSet
 
 variable {X : SSet.{u}}
-
--- consequence of the closed monoidal structure
-instance : (tensorLeft X).IsLeftAdjoint := sorry
-instance : (tensorRight X).IsLeftAdjoint := sorry
 
 namespace standardSimplex
 
