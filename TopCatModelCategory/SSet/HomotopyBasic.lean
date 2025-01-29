@@ -1,3 +1,4 @@
+import TopCatModelCategory.SSet.Basic
 import TopCatModelCategory.SSet.StandardSimplex
 import TopCatModelCategory.SSet.Subcomplex
 
@@ -7,25 +8,6 @@ open CategoryTheory Category Simplicial MonoidalCategory Opposite
 universe u
 
 namespace SSet
-
-@[simps]
-def const {X Y : SSet.{u}} (y : Y _[0]) : X ⟶ Y where
-  app n _ := Y.map (n.unop.const _ 0).op y
-  naturality n m f := by
-    ext
-    dsimp
-    rw [← FunctorToTypes.map_comp_apply]
-    rfl
-
-@[reassoc (attr := simp)]
-lemma comp_const {X Y Z : SSet.{u}} (f : X ⟶ Y) (z : Z _[0]) :
-    f ≫ const z = const z := rfl
-
-@[reassoc (attr := simp)]
-lemma const_comp {X Y Z : SSet.{u}} (y : Y _[0]) (g : Y ⟶ Z) :
-    const (X := X) y ≫ g = const (g.app _ y) := by
-  ext m x
-  simp [FunctorToTypes.naturality]
 
 noncomputable abbrev ι₀ {X : SSet.{u}} : X ⟶ Δ[1] ⊗ X :=
   lift (const (standardSimplex.obj₀Equiv.{u}.symm 0)) (𝟙 X)

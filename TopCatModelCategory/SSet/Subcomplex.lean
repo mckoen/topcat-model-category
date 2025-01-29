@@ -535,6 +535,28 @@ end
 
 section
 
+variable {n : ℕ} (x : X _[n])
+
+def toOfSimplex : Δ[n] ⟶ ofSimplex x :=
+  Subcomplex.lift ((yonedaEquiv _ _).symm x) (by
+    apply le_antisymm (by simp)
+    rw [← image_le_iff, image_top, range_eq_ofSimplex, Equiv.apply_symm_apply])
+
+@[reassoc (attr := simp)]
+def toOfSimplex_ι :
+    toOfSimplex x ≫ (ofSimplex x).ι = (yonedaEquiv _ _).symm x := rfl
+
+instance : Epi (toOfSimplex x) := by
+  rw [← range_eq_top_iff]
+  ext m ⟨_, u, rfl⟩
+  simp only [Subpresheaf.toPresheaf_obj, range_eq_ofSimplex, top_subpresheaf_obj, Set.top_eq_univ,
+    Set.mem_univ, iff_true]
+  exact ⟨u, by simp; rfl⟩
+
+end
+
+section
+
 variable {Y} (f : Y ⟶ X) (A B : X.Subcomplex) (A' B' : Y.Subcomplex)
     (hA' : A' = A.preimage f ⊓ B')
     (hB : B = A ⊔ B'.image f)

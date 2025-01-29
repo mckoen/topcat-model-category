@@ -21,11 +21,13 @@ import TopCatModelCategory.PseudoFunctor.LaxNatTrans
 import TopCatModelCategory.PseudoFunctor.MorphismProperty
 import TopCatModelCategory.PseudoFunctor.Pseudofunctor
 import TopCatModelCategory.SSet.AnodyneExtensions
+import TopCatModelCategory.SSet.Basic
 import TopCatModelCategory.SSet.Boundary
 import TopCatModelCategory.SSet.CategoryWithFibrations
 import TopCatModelCategory.SSet.ChosenFiniteProducts
 import TopCatModelCategory.SSet.Degenerate
 import TopCatModelCategory.SSet.DimensionProd
+import TopCatModelCategory.SSet.Fiber
 import TopCatModelCategory.SSet.Finite
 import TopCatModelCategory.SSet.FundamentalGroupoid
 import TopCatModelCategory.SSet.HasDimensionLT

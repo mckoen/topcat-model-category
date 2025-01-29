@@ -17,11 +17,6 @@ variable {X : SSet.{u}}
 instance : (tensorLeft X).IsLeftAdjoint := sorry
 instance : (tensorRight X).IsLeftAdjoint := sorry
 
-lemma yonedaEquiv_symm_zero (x : X _[0]) :
-    (yonedaEquiv _ _).symm x = const x := by
-  apply (yonedaEquiv _ _).injective
-  simp [yonedaEquiv, yonedaCompUliftFunctorEquiv]
-
 namespace standardSimplex
 
 variable (X) {Y : SSet.{u}}

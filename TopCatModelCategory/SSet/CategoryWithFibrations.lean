@@ -38,6 +38,10 @@ lemma cofibrations_eq : cofibrations SSet.{u} = monomorphisms _ := rfl
 
 lemma fibrations_eq : fibrations SSet.{u} = J.rlp := rfl
 
+instance : IsStableUnderBaseChange (fibrations SSet.{u}) := by
+  rw [fibrations_eq]
+  infer_instance
+
 section
 
 variable {X Y : SSet.{u}} (f : X ⟶ Y)
