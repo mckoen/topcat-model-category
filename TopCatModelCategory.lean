@@ -15,6 +15,7 @@ import TopCatModelCategory.JoyalTrickDual
 import TopCatModelCategory.ModelCategoryCopy
 import TopCatModelCategory.ModelCategorySSet
 import TopCatModelCategory.ModelCategoryTopCat
+import TopCatModelCategory.MonoidalClosed
 import TopCatModelCategory.MorphismProperty
 import TopCatModelCategory.Multiequalizer
 import TopCatModelCategory.PseudoFunctor.LaxNatTrans

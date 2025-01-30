@@ -1,6 +1,7 @@
 import TopCatModelCategory.SSet.Basic
 import TopCatModelCategory.SSet.Fiber
 import TopCatModelCategory.SSet.StandardSimplex
+import TopCatModelCategory.SSet.Monoidal
 import TopCatModelCategory.SSet.Subcomplex
 
 open CategoryTheory Category Simplicial MonoidalCategory Opposite
@@ -9,20 +10,6 @@ open CategoryTheory Category Simplicial MonoidalCategory Opposite
 universe u
 
 namespace SSet
-
-noncomputable abbrev ι₀ {X : SSet.{u}} : X ⟶ Δ[1] ⊗ X :=
-  lift (const (standardSimplex.obj₀Equiv.{u}.symm 0)) (𝟙 X)
-
-@[reassoc (attr := simp)]
-lemma ι₀_comp {X Y : SSet.{u}} (f : X ⟶ Y) :
-    ι₀ ≫ _ ◁ f = f ≫ ι₀ := rfl
-
-noncomputable abbrev ι₁ {X : SSet.{u}} : X ⟶ Δ[1] ⊗ X :=
-  lift (const (standardSimplex.obj₀Equiv.{u}.symm 1)) (𝟙 X)
-
-@[reassoc (attr := simp)]
-lemma ι₁_comp {X Y : SSet.{u}} (f : X ⟶ Y) :
-    ι₁ ≫ _ ◁ f = f ≫ ι₁ := rfl
 
 namespace Subcomplex
 

@@ -1,24 +1,92 @@
 import Mathlib.AlgebraicTopology.SimplicialSet.Monoidal
+import Mathlib.CategoryTheory.Closed.FunctorToTypes
 import Mathlib.CategoryTheory.Closed.Monoidal
+import TopCatModelCategory.MonoidalClosed
+import TopCatModelCategory.SSet.Basic
+import TopCatModelCategory.SSet.StandardSimplex
 
 universe u
 
-open CategoryTheory MonoidalCategory Simplicial Opposite
+open CategoryTheory MonoidalCategory Simplicial Opposite Limits
+  ChosenFiniteProducts
 
 namespace SSet
 
-instance : MonoidalClosed (SSet.{u}) := sorry
+section
 
-variable (X : SSet.{u})
+variable {X : SSet.{u}}
 
-instance : (tensorLeft X).IsLeftAdjoint := sorry
-instance : (tensorRight X).IsLeftAdjoint := sorry
+-- this should be refactored, using `X ⊗ Δ[1]` instead...
+noncomputable abbrev ι₀ {X : SSet.{u}} : X ⟶ Δ[1] ⊗ X :=
+  lift (const (standardSimplex.obj₀Equiv.{u}.symm 0)) (𝟙 X)
 
-instance : (ihom X).IsRightAdjoint := sorry
+@[reassoc (attr := simp)]
+lemma ι₀_comp {X Y : SSet.{u}} (f : X ⟶ Y) :
+    ι₀ ≫ _ ◁ f = f ≫ ι₀ := rfl
 
-variable {X} {Y : SSet.{u}}
+noncomputable abbrev ι₁ {X : SSet.{u}} : X ⟶ Δ[1] ⊗ X :=
+  lift (const (standardSimplex.obj₀Equiv.{u}.symm 1)) (𝟙 X)
 
-def ihom₀Equiv : ((ihom X).obj Y) _[0] ≃ (X ⟶ Y) := sorry
+@[reassoc (attr := simp)]
+lemma ι₁_comp {X Y : SSet.{u}} (f : X ⟶ Y) :
+    ι₁ ≫ _ ◁ f = f ≫ ι₁ := rfl
+
+end
+
+namespace standardSimplex
+
+variable (X) {Y : SSet.{u}}
+
+def isTerminalObj₀ : IsTerminal (Δ[0] : SSet.{u}) :=
+  IsTerminal.ofUniqueHom (fun _ ↦ SSet.const (obj₀Equiv.symm 0)) (fun _ _ ↦ by ext; simp)
+
+noncomputable def leftUnitor : Δ[0] ⊗ X ≅ X where
+  hom := snd _ _
+  inv := lift (isTerminalObj₀.from _) (𝟙 X)
+
+@[reassoc (attr := simp)]
+lemma leftUnitor_inv_snd : (leftUnitor X).inv ≫ snd _ _ = 𝟙 _ := rfl
+
+variable {X} in
+@[reassoc (attr := simp)]
+lemma leftUnitor_inv_naturality (f : X ⟶ Y) :
+    (leftUnitor X).inv ≫ _ ◁ f = f ≫ (leftUnitor Y).inv := rfl
+
+@[reassoc (attr := simp)]
+lemma leftUnitor_inv_map_δ_zero :
+    (standardSimplex.leftUnitor X).inv ≫ standardSimplex.map (SimplexCategory.δ 0) ▷ X =
+      ι₁ := rfl
+
+@[reassoc (attr := simp)]
+lemma leftUnitor_inv_map_δ_one :
+    (standardSimplex.leftUnitor X).inv ≫ standardSimplex.map (SimplexCategory.δ 1) ▷ X =
+      ι₀ := rfl
+
+noncomputable def rightUnitor : X ⊗ Δ[0] ≅ X where
+  hom := fst _ _
+  inv := lift (𝟙 X) (isTerminalObj₀.from _)
+
+@[reassoc (attr := simp)]
+lemma rightUnitor_inv_map_δ_zero :
+    (standardSimplex.rightUnitor X).inv ≫ X ◁ standardSimplex.map (SimplexCategory.δ 0) =
+      ι₁ ≫ (β_ _ _).hom := rfl
+
+@[reassoc (attr := simp)]
+lemma rightUnitor_inv_map_δ_one :
+    (standardSimplex.rightUnitor X).inv ≫ X ◁ standardSimplex.map (SimplexCategory.δ 1) =
+      ι₀ ≫ (β_ _ _).hom := rfl
+
+end standardSimplex
+
+instance : MonoidalClosed (SSet.{u}) :=
+  inferInstanceAs (MonoidalClosed (SimplexCategoryᵒᵖ ⥤ Type u))
+
+variable {X Y : SSet.{u}}
+
+noncomputable def ihom₀Equiv : ((ihom X).obj Y) _[0] ≃ (X ⟶ Y) :=
+  (yonedaEquiv _ _).symm.trans
+    (((ihom.adjunction X).homEquiv Δ[0] Y).symm.trans
+      (Iso.homFromEquiv (standardSimplex.rightUnitor X)))
 
 lemma ihom₀Equiv_symm_comp {Z : SSet.{u}} (f : X ⟶ Y) (g : Y ⟶ Z) :
     ihom₀Equiv.symm (f ≫ g) =

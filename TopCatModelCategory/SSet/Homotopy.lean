@@ -29,7 +29,8 @@ instance [IsFibrant Y] :
 namespace RelativeMorphism
 
 @[simps]
-def equiv : RelativeMorphism A B φ ≃ (relativeMorphism A B φ : SSet.{u}) _[0] where
+noncomputable def equiv :
+    RelativeMorphism A B φ ≃ (relativeMorphism A B φ : SSet.{u}) _[0] where
   toFun f := ⟨ihom₀Equiv.symm f.map, by
     dsimp [relativeMorphism, fiber]
     rw [ofSimplex_obj₀, Set.mem_preimage, Set.mem_singleton_iff, ← f.comm,

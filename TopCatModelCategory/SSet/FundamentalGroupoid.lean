@@ -14,51 +14,6 @@ namespace SSet
 
 variable {X : SSet.{u}}
 
-namespace standardSimplex
-
-variable (X) {Y : SSet.{u}}
-
-def isTerminalObj₀ : IsTerminal (Δ[0] : SSet.{u}) :=
-  IsTerminal.ofUniqueHom (fun _ ↦ SSet.const (obj₀Equiv.symm 0)) (by aesop_cat)
-
-noncomputable def leftUnitor : Δ[0] ⊗ X ≅ X where
-  hom := snd _ _
-  inv := lift (isTerminalObj₀.from _) (𝟙 X)
-
-@[reassoc (attr := simp)]
-lemma leftUnitor_inv_snd : (leftUnitor X).inv ≫ snd _ _ = 𝟙 _ := rfl
-
-variable {X} in
-@[reassoc (attr := simp)]
-lemma leftUnitor_inv_naturality (f : X ⟶ Y) :
-    (leftUnitor X).inv ≫ _ ◁ f = f ≫ (leftUnitor Y).inv := rfl
-
-@[reassoc (attr := simp)]
-lemma leftUnitor_inv_map_δ_zero :
-    (standardSimplex.leftUnitor X).inv ≫ standardSimplex.map (SimplexCategory.δ 0) ▷ X =
-      ι₁ := rfl
-
-@[reassoc (attr := simp)]
-lemma leftUnitor_inv_map_δ_one :
-    (standardSimplex.leftUnitor X).inv ≫ standardSimplex.map (SimplexCategory.δ 1) ▷ X =
-      ι₀ := rfl
-
-noncomputable def rightUnitor : X ⊗ Δ[0] ≅ X where
-  hom := fst _ _
-  inv := lift (𝟙 X) (isTerminalObj₀.from _)
-
-@[reassoc (attr := simp)]
-lemma rightUnitor_inv_map_δ_zero :
-    (standardSimplex.rightUnitor X).inv ≫ X ◁ standardSimplex.map (SimplexCategory.δ 0) =
-      ι₁ ≫ (β_ _ _).hom := rfl
-
-@[reassoc (attr := simp)]
-lemma rightUnitor_inv_map_δ_one :
-    (standardSimplex.rightUnitor X).inv ≫ X ◁ standardSimplex.map (SimplexCategory.δ 1) =
-      ι₀ ≫ (β_ _ _).hom := rfl
-
-end standardSimplex
-
 namespace subcomplexBoundary₁
 
 lemma sq : Subcomplex.Sq ⊥ (standardSimplex.face {0}) (standardSimplex.face {1})
