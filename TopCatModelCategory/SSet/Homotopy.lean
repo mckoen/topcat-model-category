@@ -55,7 +55,6 @@ noncomputable def equiv {f g : RelativeMorphism A B φ} :
         rw [← cancel_mono (Subpresheaf.ι _), assoc, Subcomplex.lift_ι, const_comp,
           Subpresheaf.ι_app, equiv_apply_coe, ← h.h₀]
         apply (yonedaEquiv _ _).injective
-        simp [-EmbeddingLike.apply_eq_iff_eq]
         sorry) sorry
   invFun h :=
     { h := (β_ _ _).hom ≫ MonoidalClosed.uncurry (h.map ≫ Subpresheaf.ι _)
