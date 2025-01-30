@@ -315,13 +315,20 @@ variable {x₀ x₁ x₂ x₃ : FundamentalGroupoid X}
 
 structure CompStruct (p₀₁ : Path x₀ x₁) (p₁₂ : Path x₁ x₂) (p₀₂ : Path x₀ x₂) where
   map : Δ[2] ⟶ X
-  h₀₁ : standardSimplex.map (SimplexCategory.δ 2) ≫ map = p₀₁.map
-  h₁₂ : standardSimplex.map (SimplexCategory.δ 0) ≫ map = p₁₂.map
-  h₀₂ : standardSimplex.map (SimplexCategory.δ 1) ≫ map = p₀₂.map
+  h₀₁ : standardSimplex.map (SimplexCategory.δ 2) ≫ map = p₀₁.map := by aesop_cat
+  h₁₂ : standardSimplex.map (SimplexCategory.δ 0) ≫ map = p₁₂.map := by aesop_cat
+  h₀₂ : standardSimplex.map (SimplexCategory.δ 1) ≫ map = p₀₂.map := by aesop_cat
 
 namespace CompStruct
 
 attribute [reassoc (attr := simp)] h₀₁ h₁₂ h₀₂
+
+@[simps]
+def pushforward {p₀₁ : Path x₀ x₁} {p₁₂ : Path x₁ x₂} {p₀₂ : Path x₀ x₂}
+    (h : CompStruct p₀₁ p₁₂ p₀₂)
+    {Y : SSet.{u}} (f : X ⟶ Y) :
+    CompStruct (p₀₁.pushforward f) (p₁₂.pushforward f) (p₀₂.pushforward f) where
+  map := h.map ≫ f
 
 def idComp (p : Path x₀ x₁) : CompStruct (Path.id x₀) p p where
   map := standardSimplex.map (SimplexCategory.σ 0) ≫ p.map
@@ -714,15 +721,12 @@ noncomputable instance : Groupoid (FundamentalGroupoid X) :=
       rw [← hg', hg]
     exact ⟨g, hg, hg'⟩)
 
-lemma eqToIso_hom {x y : FundamentalGroupoid X} (h : x = y) :
-    (eqToIso h).hom = homMk (Path.ofEq h) := by
+@[simp]
+lemma Hom.ofEq_map {x y : FundamentalGroupoid X} (h : x = y) {Y : SSet.{u}} [IsFibrant Y]
+    (f : X ⟶ Y) :
+    Hom.map (eqToHom h) f = eqToHom (show x.map f = y.map f by rw [h]) := by
   subst h
-  rfl
-
-lemma eqToIso_inv {x y : FundamentalGroupoid X} (h : x = y) :
-    (eqToIso h).inv = homMk (Path.ofEq h.symm) := by
-  subst h
-  rfl
+  apply Hom.id_map
 
 end FundamentalGroupoid
 
@@ -737,7 +741,11 @@ def mapFundamentalGroupoid :
   map {x₀ x₁} g := g.map f
   map_id x := by
     simp only [← homMk_refl, map_homMk, Path.id_pushforward]
-  map_comp := sorry
+  map_comp {x₀ x₁ x₂} f₀₁ f₁₂ := by
+    dsimp only
+    obtain ⟨p₀₁, rfl⟩ := homMk_surjective f₀₁
+    obtain ⟨p₁₂, rfl⟩ := homMk_surjective f₁₂
+    exact ((Path.compStruct p₀₁ p₁₂).pushforward f).fac.symm
 
 variable {f}
 noncomputable def congrMapFundamentalGroupoid {g : X ⟶ Y} (h : f = g) :
@@ -745,6 +753,7 @@ noncomputable def congrMapFundamentalGroupoid {g : X ⟶ Y} (h : f = g) :
   NatIso.ofComponents (fun x ↦ eqToIso (by rw [h]))
 
 variable (X) in
+@[simps!]
 noncomputable def idMapFundamentalGroupoidIso :
     mapFundamentalGroupoid (𝟙 X) ≅ 𝟭 _ :=
   NatIso.ofComponents (fun _ ↦ Iso.refl _)
@@ -765,6 +774,25 @@ noncomputable def compMapFundamentalGroupoidIso :
     mapFundamentalGroupoid (f ≫ g) ≅
       mapFundamentalGroupoid f ⋙ mapFundamentalGroupoid g :=
   compMapFundamentalGroupoidIso' f g (f ≫ g) rfl
+
+noncomputable def FundamentalGroupoid.equivalenceOfIso
+    [IsFibrant X] [IsFibrant Y] (e : X ≅ Y) :
+    FundamentalGroupoid X ≌ FundamentalGroupoid Y where
+  functor := mapFundamentalGroupoid e.hom
+  inverse := mapFundamentalGroupoid e.inv
+  unitIso := (idMapFundamentalGroupoidIso X).symm ≪≫
+    compMapFundamentalGroupoidIso' _ _ _ e.hom_inv_id
+  counitIso := (compMapFundamentalGroupoidIso' _ _ _ e.inv_hom_id).symm ≪≫
+    idMapFundamentalGroupoidIso Y
+  functor_unitIso_comp x := by
+    dsimp
+    rw [comp_id]
+    erw [id_comp]
+    rw [Hom.ofEq_map, eqToHom_trans, eqToHom_refl]
+
+instance [IsIso f] [IsFibrant X] [IsFibrant Y] :
+    (mapFundamentalGroupoid f).IsEquivalence :=
+  (FundamentalGroupoid.equivalenceOfIso (asIso f)).isEquivalence_functor
 
 end KanComplex
 
