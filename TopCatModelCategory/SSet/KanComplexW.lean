@@ -35,6 +35,13 @@ lemma W.bijective (hf : W f) (n : ℕ) (x : X _[0]) (y : Y _[0]) (h : f.app _ x 
     Function.Bijective (mapπ f n x y h) :=
   hf.choose_spec.choose_spec.2 n x y h
 
+lemma W.bijective_of_iso {n : ℕ} [IsFibrant X]
+    {x y : FundamentalGroupoid X} (e : x ≅ y)
+    (hx : Function.Bijective (mapπ f n x.pt _ rfl)) :
+    Function.Bijective (mapπ f n y.pt _ rfl) := by
+  -- needs the action of the fundamental groupoid on homotopy groups
+  sorry
+
 variable (f) in
 lemma W.of_iso [IsIso f] [IsFibrant X] [IsFibrant Y] : W f := by
   apply W.mk
@@ -77,11 +84,30 @@ lemma W.of_postcomp (hg : W g) (hfg : W (f ≫ g)) : W f := by
       mapπ_comp_mapπ f n x _ rfl g _ rfl]
     exact hfg.bijective n x _ rfl
 
-instance : W.{u}.IsStableUnderComposition where
-  comp_mem f g hf hg := W.comp f g hf hg
+lemma W.of_precomp (hf : W f) (hfg : W (f ≫ g)) : W g := by
+  have := hf.isFibrant_src
+  have := hf.isFibrant_tgt
+  have := hfg.isFibrant_tgt
+  apply W.mk
+  · have := hf.isEquivalence
+    have := hfg.isEquivalence
+    have := Functor.isEquivalence_of_iso
+      (compMapFundamentalGroupoidIso f g)
+    exact Functor.isEquivalence_of_comp_left
+      (mapFundamentalGroupoid f) _
+  · rintro n y _ rfl
+    have hg (x : X _[0]) : Function.Bijective (mapπ g n (f.app _ x) _ rfl) := by
+      rw [← Function.Bijective.of_comp_iff _ (hf.bijective n x _ rfl),
+        mapπ_comp_mapπ f n x _ rfl g _ rfl]
+      exact hfg.bijective n x _ rfl
+    have := hf.isEquivalence
+    exact W.bijective_of_iso
+      (e := (mapFundamentalGroupoid f).objObjPreimageIso _) (hg _)
 
-instance : W.{u}.HasOfPostcompProperty W where
+instance : W.{u}.HasTwoOutOfThreeProperty where
+  comp_mem f g hf hg := W.comp f g hf hg
   of_postcomp f g hg hfg := W.of_postcomp f g hg hfg
+  of_precomp f g hf hfg := W.of_precomp f g hf hfg
 
 end KanComplex
 
