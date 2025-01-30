@@ -153,10 +153,8 @@ end subcomplexBoundary₁
 namespace KanComplex
 
 variable (X)
-structure FundamentalGroupoid [IsFibrant X] where
+structure FundamentalGroupoid where
   pt : X _[0]
-
-variable [IsFibrant X]
 
 namespace FundamentalGroupoid
 
@@ -293,6 +291,8 @@ def compId (p : Path x₀ x₁) : CompStruct p (Path.id x₁) p where
     dsimp at this
     rw [← Functor.map_comp_assoc, this, CategoryTheory.Functor.map_id, Category.id_comp]
 
+variable [IsFibrant X]
+
 lemma left_inverse (p : Path x₀ x₁) :
     ∃ (q : Path x₁ x₀), Nonempty (CompStruct q p (Path.id x₁)) := by
   obtain ⟨α, h₀₂, h₁₂⟩ := subcomplexHorn₂₂.isPushout.exists_desc (const x₁.pt) p.map
@@ -361,6 +361,8 @@ noncomputable def assoc {f₀₁ : Path x₀ x₁} {f₁₂ : Path x₁ x₂} {f
         ← Functor.map_comp_assoc, this] }⟩
 
 end CompStruct
+
+variable [IsFibrant X]
 
 lemma exists_compStruct (p₀₁ : Path x₀ x₁) (p₁₂ : Path x₁ x₂) :
     ∃ (p₀₂ : Path x₀ x₂), Nonempty (CompStruct p₀₁ p₁₂ p₀₂) := by
@@ -523,6 +525,8 @@ end Path
 
 def Hom.id (x : FundamentalGroupoid X) : Hom x x :=
   (Path.id x).homotopyClass
+
+variable [IsFibrant X]
 
 noncomputable def Hom.comp {x₀ x₁ x₂ : FundamentalGroupoid X} (f : Hom x₀ x₁) (g : Hom x₁ x₂) :
     Hom x₀ x₂ := by

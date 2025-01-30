@@ -1,3 +1,7 @@
+import TopCatModelCategory.SSet.FundamentalGroupoid
+import TopCatModelCategory.SSet.Fibrations
+import TopCatModelCategory.SSet.Fiber
+import TopCatModelCategory.SSet.Monoidal
 import TopCatModelCategory.SSet.HomotopyBasic
 import TopCatModelCategory.IsFibrant
 import TopCatModelCategory.SSet.AnodyneExtensions
@@ -12,59 +16,65 @@ variable {X Y : SSet.{u}} {A : X.Subcomplex} {B : Y.Subcomplex} {φ : (A : SSet)
 
 namespace Subcomplex
 
+variable (A B φ) in
+noncomputable def relativeMorphism : ((ihom X).obj Y).Subcomplex :=
+  Subcomplex.fiber ((MonoidalClosed.pre (C := SSet.{u}) A.ι).app Y)
+    (ihom₀Equiv.symm (φ ≫ B.ι))
+
+instance [IsFibrant Y] :
+    IsFibrant (C := SSet.{u}) (relativeMorphism A B φ) := by
+  dsimp [relativeMorphism]
+  infer_instance
+
 namespace RelativeMorphism
+
+@[simps]
+def equiv : RelativeMorphism A B φ ≃ (relativeMorphism A B φ : SSet.{u}) _[0] where
+  toFun f := ⟨ihom₀Equiv.symm f.map, by
+    dsimp [relativeMorphism, fiber]
+    rw [ofSimplex_obj₀, Set.mem_preimage, Set.mem_singleton_iff, ← f.comm,
+      ihom₀Equiv_symm_comp]⟩
+  invFun g :=
+    { map := ihom₀Equiv g.1
+      comm := by
+        have := g.2
+        simp [relativeMorphism, fiber] at this
+        apply ihom₀Equiv.symm.injective
+        rw [← this, ihom₀Equiv_symm_comp, Equiv.symm_apply_apply] }
+  left_inv _ := by aesop
+  right_inv _ := by aesop
 
 namespace Homotopy
 
--- consequence of the closed monoidal structure
-instance (Y : SSet) : (tensorRight Y).IsLeftAdjoint := sorry
-
-instance (J : Type*) [Category J] (Y : SimplexCategoryᵒᵖ ⥤ Type u) :
-    PreservesColimitsOfShape J (tensorRight Y) :=
-  inferInstanceAs (PreservesColimitsOfShape J (tensorRight (show SSet from Y)))
+noncomputable def equiv {f g : RelativeMorphism A B φ} :
+    Homotopy f g ≃ KanComplex.FundamentalGroupoid.Path (X := relativeMorphism A B φ)
+        (.mk (RelativeMorphism.equiv f))
+        (.mk (RelativeMorphism.equiv g)) where
+  toFun h := KanComplex.FundamentalGroupoid.Path.mk
+      (Subcomplex.lift (MonoidalClosed.curry ((β_ _ _).hom ≫ h.h)) sorry) (by
+        rw [← cancel_mono (Subpresheaf.ι _), assoc, Subcomplex.lift_ι, const_comp,
+          Subpresheaf.ι_app, equiv_apply_coe, ← h.h₀]
+        apply (yonedaEquiv _ _).injective
+        simp [-EmbeddingLike.apply_eq_iff_eq]
+        sorry) sorry
+  invFun h :=
+    { h := (β_ _ _).hom ≫ MonoidalClosed.uncurry (h.map ≫ Subpresheaf.ι _)
+      h₀ := sorry
+      h₁ := sorry
+      rel := sorry }
+  left_inv h := by aesop
+  right_inv h := by aesop
 
 noncomputable def symm {f g : RelativeMorphism A B φ}
     (hfg : Homotopy f g) [IsFibrant Y] : Homotopy g f := by
   apply Nonempty.some
-  obtain ⟨α, hα₁, hα₂⟩ :=
-    (subcomplexHorn₂₀.isPushout.{u}.map (tensorRight X)).exists_desc
-      hfg.h (snd _ _ ≫ f.map) (by
-        dsimp
-        rw [whiskerRight_snd_assoc, ← hfg.h₀, SSet.ι₀,
-          standardSimplex.obj₀Equiv_symm_apply, ← assoc]
-        congr 1
-        ext : 1
-        · ext _ ⟨x, _⟩ _
-          obtain ⟨x, rfl⟩ := (standardSimplex.objEquiv _ _).symm.surjective x
-          obtain rfl := Subsingleton.elim x (SimplexCategory.const _ _ 0)
-          rfl
-        · simp)
-  dsimp at α hα₁ hα₂
-  obtain ⟨β, hβ₁, hβ₂⟩ :=
-    (unionProd.isPushout _ _).exists_desc (snd _ _ ≫ φ ≫ B.ι) α (by
-      apply (subcomplexHorn₂₀.isPushout.{u}.map (tensorRight (A : SSet))).hom_ext
-      · simp [← hfg.rel, ← hα₁, whisker_exchange_assoc]
-      · dsimp
-        simp [← whisker_exchange_assoc, hα₂,
-          whiskerRight_snd_assoc, whiskerLeft_snd_assoc, comm])
-  obtain ⟨h, fac⟩ := anodyneExtensions.exists_lift_of_isFibrant β
-    (anodyneExtensions.subcomplex_unionProd_mem_of_left (subcomplexHorn 2 0) A
-      (anodyneExtensions.subcomplexHorn_ι_mem 1 0))
-  exact ⟨{
-    h := standardSimplex.map (SimplexCategory.δ 0) ▷ _ ≫ h
-    h₀ := by
-      rw [← hfg.h₁, ← hα₁, ← hβ₂, ← fac, ← assoc, ← assoc, ← assoc, ← assoc]
-      rfl
-    h₁ := by simpa only [assoc, hβ₂, hα₂, lift_snd_assoc, id_comp,
-        unionProd.ι₂_ι_assoc] using (SSet.ι₁ ≫ subcomplexHorn₂₀.ι₀₂ ▷ X ≫
-          unionProd.ι₂ (subcomplexHorn 2 0) A) ≫= fac
-    rel := by simpa only [assoc, hβ₁] using
-        (standardSimplex.map (SimplexCategory.δ (0 : Fin 3)) ▷ _ ≫
-          unionProd.ι₁ (subcomplexHorn 2 0) A) ≫= fac }⟩
+  obtain ⟨h, _⟩ := KanComplex.FundamentalGroupoid.homMk_surjective
+    (Groupoid.inv (KanComplex.FundamentalGroupoid.homMk (equiv hfg)))
+  exact ⟨equiv.symm h⟩
 
 noncomputable def trans {f₁ f₂ f₃ : RelativeMorphism A B φ}
-    (h₁₂ : Homotopy f₁ f₂) (h₂₃ : Homotopy f₂ f₃) [IsFibrant Y] : Homotopy f₁ f₃ := by
-  sorry
+    (h₁₂ : Homotopy f₁ f₂) (h₂₃ : Homotopy f₂ f₃) [IsFibrant Y] : Homotopy f₁ f₃ :=
+  equiv.symm ((equiv h₁₂).comp (equiv h₂₃))
 
 variable (A B φ) in
 lemma equivalence [IsFibrant Y] :

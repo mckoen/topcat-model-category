@@ -55,7 +55,7 @@ noncomputable def ofSimplexIsTerminal (x : X _[0]) :
     IsTerminal (ofSimplex x : SSet.{u}) :=
   isTerminal _
 
-lemma ofSimplex_ι_app_zero (x : X _[0]) (y):
+lemma ofSimplex_ι_app_zero (x : X _[0]) (y) :
     (ofSimplex x).ι.app (op [0]) y = x := by
   rw [Subsingleton.elim y ⟨x, by exact mem_ofSimplex_obj x⟩, Subpresheaf.ι_app]
 
@@ -63,6 +63,17 @@ lemma ofSimplex_ι_app_zero (x : X _[0]) (y):
 lemma ofSimplex_ι (x : X _[0]) : (ofSimplex x).ι = SSet.const x := by
   ext n ⟨_, u, rfl⟩
   simp
+
+@[simp]
+lemma ofSimplex_obj₀ (x : X _[0]) :
+    (ofSimplex x).obj (op [0]) = {x} := by
+  ext y
+  simp only [Set.mem_singleton_iff]
+  constructor
+  · rintro ⟨y, _, rfl⟩
+    simp
+  · rintro rfl
+    apply mem_ofSimplex_obj
 
 lemma preimage_isPullback (B : Y.Subcomplex) (f : X ⟶ Y) :
     IsPullback (B.preimage f).ι (B.fromPreimage f) f B.ι where
@@ -86,8 +97,6 @@ instance (B : Y.Subcomplex) (f : X ⟶ Y) [hf : Fibration f] :
   rw [fibration_iff] at hf ⊢
   exact MorphismProperty.of_isPullback (C := SSet) (preimage_isPullback B f) hf
 
-end Subcomplex
-
 section
 
 variable (f : X ⟶ Y) (y : Y _[0])
@@ -110,5 +119,7 @@ lemma fiber_isPullback :
     rw [Subcomplex.ofSimplex_ι, comp_id, yonedaEquiv_symm_zero, comp_const]
 
 end
+
+end Subcomplex
 
 end SSet
