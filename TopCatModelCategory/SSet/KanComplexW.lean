@@ -1,4 +1,5 @@
 import TopCatModelCategory.SSet.Homotopy
+import TopCatModelCategory.SSet.FundamentalGroupoidAction
 
 universe u
 
@@ -35,12 +36,13 @@ lemma W.bijective (hf : W f) (n : ℕ) (x : X _[0]) (y : Y _[0]) (h : f.app _ x 
     Function.Bijective (mapπ f n x y h) :=
   hf.choose_spec.choose_spec.2 n x y h
 
-lemma W.bijective_of_iso {n : ℕ} [IsFibrant X]
+lemma W.bijective_of_iso {n : ℕ} [IsFibrant X] [IsFibrant Y]
     {x y : FundamentalGroupoid X} (e : x ≅ y)
     (hx : Function.Bijective (mapπ f n x.pt _ rfl)) :
     Function.Bijective (mapπ f n y.pt _ rfl) := by
-  -- needs the action of the fundamental groupoid on homotopy groups
-  sorry
+  rw [← isIso_iff_bijective] at hx ⊢
+  exact (NatTrans.isIso_app_iff_of_iso
+    (FundamentalGroupoid.actionMap f n) e).1 hx
 
 variable (f) in
 lemma W.of_iso [IsIso f] [IsFibrant X] [IsFibrant Y] : W f := by

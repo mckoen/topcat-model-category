@@ -31,6 +31,7 @@ import TopCatModelCategory.SSet.Fiber
 import TopCatModelCategory.SSet.Fibrations
 import TopCatModelCategory.SSet.Finite
 import TopCatModelCategory.SSet.FundamentalGroupoid
+import TopCatModelCategory.SSet.FundamentalGroupoidAction
 import TopCatModelCategory.SSet.HasDimensionLT
 import TopCatModelCategory.SSet.Homotopy
 import TopCatModelCategory.SSet.HomotopyBasic
