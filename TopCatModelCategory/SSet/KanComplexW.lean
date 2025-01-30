@@ -45,7 +45,7 @@ lemma W.of_iso [IsIso f] [IsFibrant X] [IsFibrant Y] : W f := by
 variable (X) in
 lemma W.id [IsFibrant X] : W (𝟙 X) := W.of_iso _
 
-variable {Z : SSet.{u}} {g : Y ⟶ Z}
+variable (f) {Z : SSet.{u}} (g : Y ⟶ Z)
 
 lemma W.comp (hf : W f) (hg : W g) : W (f ≫ g) := by
   have := hf.isFibrant_src
@@ -61,8 +61,27 @@ lemma W.comp (hf : W f) (hg : W g) : W (f ≫ g) := by
     rw [← mapπ_comp_mapπ f n x _ rfl g _ rfl]
     exact (hg.bijective n _ _ rfl).comp (hf.bijective n x _ rfl)
 
+lemma W.of_postcomp (hg : W g) (hfg : W (f ≫ g)) : W f := by
+  have := hg.isFibrant_src
+  have := hg.isFibrant_tgt
+  have := hfg.isFibrant_src
+  apply W.mk
+  · have := hg.isEquivalence
+    have := hfg.isEquivalence
+    have := Functor.isEquivalence_of_iso
+      (compMapFundamentalGroupoidIso f g)
+    exact Functor.isEquivalence_of_comp_right _
+      (mapFundamentalGroupoid g)
+  · rintro n x _ rfl
+    rw [← Function.Bijective.of_comp_iff' (hg.bijective n (f.app _ x) _ rfl),
+      mapπ_comp_mapπ f n x _ rfl g _ rfl]
+    exact hfg.bijective n x _ rfl
+
 instance : W.{u}.IsStableUnderComposition where
-  comp_mem _ _ hf hg := hf.comp hg
+  comp_mem f g hf hg := W.comp f g hf hg
+
+instance : W.{u}.HasOfPostcompProperty W where
+  of_postcomp f g hg hfg := W.of_postcomp f g hg hfg
 
 end KanComplex
 
