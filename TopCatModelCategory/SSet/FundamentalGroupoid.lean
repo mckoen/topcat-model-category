@@ -153,6 +153,7 @@ end subcomplexBoundary₁
 namespace KanComplex
 
 variable (X)
+
 structure FundamentalGroupoid where
   pt : X _[0]
 
@@ -160,11 +161,17 @@ namespace FundamentalGroupoid
 
 variable {X}
 
+@[simps apply]
 def objEquiv : FundamentalGroupoid X ≃ X _[0] where
   toFun x := x.pt
   invFun x := { pt := x}
   left_inv _ := rfl
   right_inv _ := rfl
+
+@[simps! pt]
+def map {Y : SSet.{u}} (f : X ⟶ Y) (x : FundamentalGroupoid X) :
+    FundamentalGroupoid Y :=
+  objEquiv.symm (f.app _ (objEquiv x))
 
 def Hom (x₀ x₁ : FundamentalGroupoid X) :=
   Subcomplex.RelativeMorphism.HomotopyClass.{u} _ _
@@ -173,6 +180,12 @@ def Hom (x₀ x₁ : FundamentalGroupoid X) :=
 abbrev Path (x₀ x₁ : FundamentalGroupoid X) :=
   Subcomplex.RelativeMorphism.{u} _ _
     (subcomplexBoundary₁.desc x₀.pt x₁.pt ≫ (Subcomplex.topIso X).inv)
+
+@[ext]
+lemma Path.ext {x₀ x₁ : FundamentalGroupoid X} {p q : Path x₀ x₁}
+    (h : p.map = q.map) :
+    p = q :=
+  Subcomplex.RelativeMorphism.ext h
 
 @[simps]
 def Path.mk {x₀ x₁ : FundamentalGroupoid X} (f : Δ[1] ⟶ X)
@@ -190,6 +203,10 @@ def Path.mk {x₀ x₁ : FundamentalGroupoid X} (f : Δ[1] ⟶ X)
       rw [assoc, subcomplexBoundary₁.ι₁_desc_assoc, yonedaEquiv_symm_zero, const_comp,
         subcomplexBoundary₁.ι₁_ι_assoc, h₁, FunctorToTypes.comp,
         Subpresheaf.ι_app, Subcomplex.topIso_inv_app_coe]
+
+def Path.ofEq {x₀ x₁ : FundamentalGroupoid X} (h : x₀ = x₁) :
+    Path x₀ x₁ :=
+  Path.mk (const x₀.pt) rfl (by rw [h]; rfl)
 
 @[reassoc]
 lemma Path.comm₀ {x₀ x₁ : FundamentalGroupoid X} (p : Path x₀ x₁) :
@@ -213,11 +230,39 @@ lemma Path.comm₁ {x₀ x₁ : FundamentalGroupoid X} (p : Path x₀ x₁) :
 def Path.id (x : FundamentalGroupoid X) : Path x x :=
   Path.mk (const x.pt)
 
+@[simp]
+lemma Path.ofEq_refl (x : FundamentalGroupoid x) :
+    Path.ofEq (rfl : x = x) = Path.id x := rfl
+
 namespace Path
 
 section
 
-variable {x₀ x₁ : FundamentalGroupoid X} (p q : Path x₀ x₁)
+variable {x₀ x₁ : FundamentalGroupoid X}
+
+@[simps! map]
+def pushforward (p : Path x₀ x₁) {Y : SSet.{u}} (f : X ⟶ Y) :
+    Path (x₀.map f) (x₁.map f) :=
+  Path.mk (p.map ≫ f) (by simp [p.comm₀_assoc])
+    (by simp [p.comm₁_assoc])
+
+@[simp]
+lemma id_pushforward (x : FundamentalGroupoid X) {Y : SSet.{u}} (f : X ⟶ Y) :
+    (Path.id x).pushforward f = Path.id (map f x) := by
+  aesop
+
+@[simp]
+lemma pushforward_id (p : Path x₀ x₁) :
+    p.pushforward (𝟙 X) = p := by
+  aesop
+
+@[simp]
+lemma pushforward_comp (p : Path x₀ x₁) {Y Z : SSet.{u}} (f : X ⟶ Y)
+    (g : Y ⟶ Z) :
+    p.pushforward (f ≫ g) = (p.pushforward f).pushforward g := by
+  aesop
+
+variable (p q : Path x₀ x₁)
 
 nonrec abbrev Homotopy := p.Homotopy q
 
@@ -242,6 +287,25 @@ lemma comm₁ : ι₁ ≫ (β_ _ _).hom ≫ h.h = const x₁.pt := by
     FunctorToTypes.comp, Subpresheaf.ι_app, Subcomplex.topIso_inv_app_coe] at this
   rw [← cancel_epi (standardSimplex.rightUnitor _).hom, comp_const]
   exact this
+
+@[simps]
+noncomputable def map {Y : SSet.{u}} (f : X ⟶ Y) :
+    (p.pushforward f).Homotopy (q.pushforward f) where
+  h := h.h ≫ f
+  rel := by
+    rw [h.rel_assoc]
+    congr 1
+    apply subcomplexBoundary₁.hom_ext
+    · dsimp
+      rw [assoc, assoc, subcomplexBoundary₁.ι₀_desc_assoc,
+        subcomplexBoundary₁.ι₀_desc_assoc]
+      apply (yonedaEquiv _ _).injective
+      simp
+    · dsimp
+      rw [assoc, assoc, subcomplexBoundary₁.ι₁_desc_assoc,
+        subcomplexBoundary₁.ι₁_desc_assoc]
+      apply (yonedaEquiv _ _).injective
+      simp
 
 end Homotopy
 
@@ -526,6 +590,53 @@ end Path
 def Hom.id (x : FundamentalGroupoid X) : Hom x x :=
   (Path.id x).homotopyClass
 
+def Hom.map {x₀ x₁ : FundamentalGroupoid X}
+    (p : Hom x₀ x₁) {Y : SSet.{u}} (f : X ⟶ Y) :
+    Hom (x₀.map f) (x₁.map f) :=
+  p.postcomp (Subcomplex.RelativeMorphism.ofHom f) (by
+    apply subcomplexBoundary₁.hom_ext
+    · dsimp
+      rw [assoc, subcomplexBoundary₁.ι₀_desc_assoc,
+        subcomplexBoundary₁.ι₀_desc_assoc,
+        yonedaEquiv_symm_zero, yonedaEquiv_symm_zero,
+        Iso.inv_hom_id_assoc, const_comp,
+        FunctorToTypes.comp, const_comp]
+    · dsimp
+      rw [assoc, subcomplexBoundary₁.ι₁_desc_assoc,
+        subcomplexBoundary₁.ι₁_desc_assoc,
+        yonedaEquiv_symm_zero, yonedaEquiv_symm_zero,
+        Iso.inv_hom_id_assoc, const_comp,
+        FunctorToTypes.comp, const_comp])
+
+@[simp]
+lemma Hom.mapHomotopyClass {x₀ x₁ : FundamentalGroupoid X}
+    (p : Path x₀ x₁) {Y : SSet.{u}} (f : X ⟶ Y) :
+    Hom.map p.homotopyClass f = (p.pushforward f).homotopyClass :=
+  rfl
+
+lemma Hom.id_map (x : FundamentalGroupoid X)
+    {Y : SSet.{u}} (f : X ⟶ Y) :
+    (Hom.id x).map f = Hom.id (x.map f) := by
+  simp [Hom.id]
+
+lemma Hom.homotopyClass_surjective
+    {x y : FundamentalGroupoid X} (f : Hom x y) :
+    ∃ (p : Path x y), p.homotopyClass = f :=
+  Quot.mk_surjective f
+
+@[simp]
+lemma Hom.map_id {x y : FundamentalGroupoid X} (f : Hom x y) :
+    Hom.map f (𝟙 X) = f := by
+  obtain ⟨p, rfl⟩ := homotopyClass_surjective f
+  simp
+
+@[simp]
+lemma Hom.map_comp {x y : FundamentalGroupoid X} (f : Hom x y)
+    {Y Z : SSet.{u}} (g : X ⟶ Y) (h : Y ⟶ Z) :
+    Hom.map f (g ≫ h) = Hom.map (Hom.map f g) h := by
+  obtain ⟨p, rfl⟩ := homotopyClass_surjective f
+  simp
+
 variable [IsFibrant X]
 
 noncomputable def Hom.comp {x₀ x₁ x₂ : FundamentalGroupoid X} (f : Hom x₀ x₁) (g : Hom x₁ x₂) :
@@ -555,6 +666,11 @@ lemma homMk_eq_of_homotopy {x₀ x₁ : FundamentalGroupoid X}
     {p q : Path x₀ x₁} (h : p.Homotopy q) :
     homMk p = homMk q :=
   h.eq
+
+@[simp]
+lemma map_homMk {x₀ x₁ : FundamentalGroupoid X} (p : Path x₀ x₁)
+    {Y : SSet.{u}} [IsFibrant Y] (f : X ⟶ Y) :
+    Hom.map (homMk p) f = homMk (p.pushforward f) := rfl
 
 variable {x₀ x₁ x₂ : FundamentalGroupoid X}
 
@@ -598,7 +714,57 @@ noncomputable instance : Groupoid (FundamentalGroupoid X) :=
       rw [← hg', hg]
     exact ⟨g, hg, hg'⟩)
 
+lemma eqToIso_hom {x y : FundamentalGroupoid X} (h : x = y) :
+    (eqToIso h).hom = homMk (Path.ofEq h) := by
+  subst h
+  rfl
+
+lemma eqToIso_inv {x y : FundamentalGroupoid X} (h : x = y) :
+    (eqToIso h).inv = homMk (Path.ofEq h.symm) := by
+  subst h
+  rfl
+
 end FundamentalGroupoid
+
+open FundamentalGroupoid
+
+variable {X} {Y : SSet.{u}} [IsFibrant X] [IsFibrant Y] (f : X ⟶ Y)
+
+@[simps]
+def mapFundamentalGroupoid :
+    FundamentalGroupoid X ⥤ FundamentalGroupoid Y where
+  obj x := x.map f
+  map {x₀ x₁} g := g.map f
+  map_id x := by
+    simp only [← homMk_refl, map_homMk, Path.id_pushforward]
+  map_comp := sorry
+
+variable {f}
+noncomputable def congrMapFundamentalGroupoid {g : X ⟶ Y} (h : f = g) :
+    mapFundamentalGroupoid f ≅ mapFundamentalGroupoid g :=
+  NatIso.ofComponents (fun x ↦ eqToIso (by rw [h]))
+
+variable (X) in
+noncomputable def idMapFundamentalGroupoidIso :
+    mapFundamentalGroupoid (𝟙 X) ≅ 𝟭 _ :=
+  NatIso.ofComponents (fun _ ↦ Iso.refl _)
+
+variable (f) {Z : SSet.{u}} [IsFibrant Z] (g : Y ⟶ Z)
+
+@[simps!]
+noncomputable def compMapFundamentalGroupoidIso'
+    (fg : X ⟶ Z) (hfg : f ≫ g = fg) :
+    mapFundamentalGroupoid fg ≅
+      mapFundamentalGroupoid f ⋙ mapFundamentalGroupoid g :=
+  NatIso.ofComponents
+    (fun _ ↦ eqToIso (by rw [← hfg]; rfl))
+    (fun f ↦ by subst hfg; simp)
+
+@[simps!]
+noncomputable def compMapFundamentalGroupoidIso :
+    mapFundamentalGroupoid (f ≫ g) ≅
+      mapFundamentalGroupoid f ⋙ mapFundamentalGroupoid g :=
+  compMapFundamentalGroupoidIso' f g (f ≫ g) rfl
 
 end KanComplex
 

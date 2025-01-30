@@ -29,6 +29,7 @@ namespace Subcomplex
 variable {X Y Z : SSet.{u}} (A : X.Subcomplex) (B : Y.Subcomplex)
   (φ : (A : SSet) ⟶ (B : SSet))
 
+@[ext]
 structure RelativeMorphism where
   map : X ⟶ Y
   comm : A.ι ≫ map = φ ≫ B.ι := by aesop_cat
@@ -36,6 +37,12 @@ structure RelativeMorphism where
 namespace RelativeMorphism
 
 attribute [reassoc (attr := simp)] comm
+
+@[simps]
+def ofHom (f : X ⟶ Y) :
+    RelativeMorphism (⊤ : X.Subcomplex) (⊤ : Y.Subcomplex)
+      ((topIso X).hom ≫ f ≫ (topIso Y).inv) where
+  map := f
 
 @[simps]
 def ofSimplex₀ (f : X ⟶ Y) (x : X _[0]) (y : Y _[0])

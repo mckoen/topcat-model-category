@@ -8,10 +8,6 @@ namespace SSet
 
 namespace KanComplex
 
-def mapFundamentalGroupoid {X Y : SSet.{u}}
-    (f : X ⟶ Y) [IsFibrant X] [IsFibrant Y] :
-    FundamentalGroupoid X ⥤ FundamentalGroupoid Y := sorry
-
 def W : MorphismProperty SSet.{u} := fun X Y f ↦
   ∃ (_ : IsFibrant X) (_ : IsFibrant Y),
     (mapFundamentalGroupoid f).IsEquivalence ∧
