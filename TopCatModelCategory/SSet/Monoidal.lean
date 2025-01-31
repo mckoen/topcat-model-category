@@ -16,7 +16,6 @@ section
 
 variable {X : SSet.{u}}
 
--- this should be refactored, using `X ⊗ Δ[1]` instead...
 noncomputable abbrev ι₀ {X : SSet.{u}} : X ⟶ X ⊗ Δ[1] :=
   lift (𝟙 X) (const (standardSimplex.obj₀Equiv.{u}.symm 0))
 
@@ -24,12 +23,18 @@ noncomputable abbrev ι₀ {X : SSet.{u}} : X ⟶ X ⊗ Δ[1] :=
 lemma ι₀_comp {X Y : SSet.{u}} (f : X ⟶ Y) :
     ι₀ ≫ f ▷ _ = f ≫ ι₀ := rfl
 
+@[simp]
+lemma ι₀_app_fst {X : SSet.{u}} {m} (x : X.obj m) : (ι₀.app _ x).1 = x := rfl
+
 noncomputable abbrev ι₁ {X : SSet.{u}} : X ⟶ X ⊗ Δ[1] :=
   lift (𝟙 X) (const (standardSimplex.obj₀Equiv.{u}.symm 1))
 
 @[reassoc (attr := simp)]
 lemma ι₁_comp {X Y : SSet.{u}} (f : X ⟶ Y) :
     ι₁ ≫ f ▷ _ = f ≫ ι₁ := rfl
+
+@[simp]
+lemma ι₁_app_fst {X : SSet.{u}} {m} (x : X.obj m) : (ι₁.app _ x).1 = x := rfl
 
 end
 

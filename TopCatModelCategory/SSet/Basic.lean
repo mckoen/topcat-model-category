@@ -2,7 +2,7 @@ import Mathlib.AlgebraicTopology.SimplicialSet.Basic
 
 universe u
 
-open CategoryTheory Simplicial
+open CategoryTheory Simplicial Opposite
 
 namespace SSet
 
@@ -28,6 +28,15 @@ lemma const_comp {X Y Z : SSet.{u}} (y : Y _[0]) (g : Y ⟶ Z) :
 lemma yonedaEquiv_apply_comp {X Y : SSet.{u}} {n : SimplexCategory}
     (f : standardSimplex.obj n ⟶ X) (g : X ⟶ Y) :
     yonedaEquiv _ _ (f ≫ g) = g.app _ (yonedaEquiv _ _ f) := rfl
+
+@[reassoc]
+lemma standardSimplex.map_comp_yonedaEquiv_symm {X : SSet.{u}} {n m : SimplexCategory}
+    (x : X.obj (op n)) (f : m ⟶ n) :
+      standardSimplex.map f ≫ (yonedaEquiv _ _).symm x =
+        (yonedaEquiv _ _).symm (X.map f.op x) := by
+  apply (yonedaEquiv _ _).injective
+  conv_rhs => rw [Equiv.apply_symm_apply, ← Category.id_comp f]
+  rfl
 
 lemma yonedaEquiv_const {X : SSet.{u}} (x : X _[0]) :
     (yonedaEquiv _ _) (const x : Δ[0] ⟶ X) = x := by

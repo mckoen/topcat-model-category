@@ -43,6 +43,7 @@ import TopCatModelCategory.SSet.Monoidal
 import TopCatModelCategory.SSet.NonDegenerateProdSimplex
 import TopCatModelCategory.SSet.Paths
 import TopCatModelCategory.SSet.SimplexCategory
+import TopCatModelCategory.SSet.Square
 import TopCatModelCategory.SSet.StandardSimplex
 import TopCatModelCategory.SSet.StrictSegal
 import TopCatModelCategory.SSet.Subcomplex

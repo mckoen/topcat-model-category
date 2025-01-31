@@ -1,18 +1,19 @@
 import TopCatModelCategory.SSet.FundamentalGroupoid
+import TopCatModelCategory.SSet.Square
 
 universe u
 
-open HomotopicalAlgebra
+open HomotopicalAlgebra CategoryTheory MonoidalCategory Simplicial
 
 namespace SSet
 
-variable {X : SSet.{u}} [IsFibrant X]
+variable {X : SSet.{u}}
 
 namespace KanComplex
 
 namespace FundamentalGroupoid
 
-variable {x₀ x₁ x₂ x₃ : FundamentalGroupoid X}
+variable {x₀ x₁ x₂ : FundamentalGroupoid X}
 
 namespace Path
 
@@ -26,7 +27,7 @@ variable (p q r : Path x₀ x₁)
 def HomotopyL.refl : HomotopyL p p := CompStruct.compId p
 def HomotopyR.refl : HomotopyR p p := CompStruct.idComp p
 
-variable {p q r}
+variable {p q r} [IsFibrant X]
 
 noncomputable def HomotopyL.symm (h : HomotopyL p q) : HomotopyL q p :=
   CompStruct.assoc h (CompStruct.compId _) (CompStruct.compId p)
@@ -52,6 +53,8 @@ end
 
 namespace CompStruct
 
+variable [IsFibrant X]
+
 noncomputable def unique {p₀₁ : Path x₀ x₁} {p₁₂ : Path x₁ x₂} {p₀₂ : Path x₀ x₂}
     (h : CompStruct p₀₁ p₁₂ p₀₂)
     {p₀₁' : Path x₀ x₁} {p₁₂' : Path x₁ x₂} {p₀₂' : Path x₀ x₂}
@@ -61,6 +64,64 @@ noncomputable def unique {p₀₁ : Path x₀ x₁} {p₁₂ : Path x₁ x₂} {
   assoc h (compId p₁₂) (assoc (compId p₀₁) h₁₂.homotopyR (assoc' h₀₁ (idComp p₁₂') h'))
 
 end CompStruct
+
+namespace Homotopy
+
+variable {p q : Path x₀ x₁} (h : Homotopy p q)
+
+lemma h_app_zero_of_fst_zero (x : Δ[1] _[0]) :
+    h.h.app _ (⟨standardSimplex.obj₀Equiv.symm 0, x⟩) = x₀.pt := by
+  have := (standardSimplex.leftUnitor _).inv ≫= subcomplexBoundary₁.ι₀ ▷ _ ≫= h.rel
+  rw [Category.assoc, ChosenFiniteProducts.whiskerRight_fst_assoc,
+    subcomplexBoundary₁.ι₀_desc_assoc, yonedaEquiv_symm_zero, const_comp,
+    FunctorToTypes.comp, Subpresheaf.ι_app, Subcomplex.topIso_inv_app_coe,
+    comp_const, comp_const, ← comp_whiskerRight_assoc,
+    subcomplexBoundary₁.ι₀_ι, standardSimplex.leftUnitor_inv_map_δ_one_assoc] at this
+  replace this := congr_fun (NatTrans.congr_app this _) x
+  dsimp at this
+  rw [SimplexCategory.const_eq_id, op_id, FunctorToTypes.map_id_apply] at this
+  exact this
+
+lemma h_app_zero_of_fst_one (x : Δ[1] _[0]) :
+    h.h.app _ (⟨standardSimplex.obj₀Equiv.symm 1, x⟩) = x₁.pt := by
+  have := (standardSimplex.leftUnitor _).inv ≫= subcomplexBoundary₁.ι₁ ▷ _ ≫= h.rel
+  rw [Category.assoc, ChosenFiniteProducts.whiskerRight_fst_assoc,
+    subcomplexBoundary₁.ι₁_desc_assoc, yonedaEquiv_symm_zero, const_comp,
+    FunctorToTypes.comp, Subpresheaf.ι_app, Subcomplex.topIso_inv_app_coe,
+    comp_const, comp_const, ← comp_whiskerRight_assoc,
+    subcomplexBoundary₁.ι₁_ι, standardSimplex.leftUnitor_inv_map_δ_zero_assoc] at this
+  replace this := congr_fun (NatTrans.congr_app this _) x
+  dsimp at this
+  rw [SimplexCategory.const_eq_id, op_id, FunctorToTypes.map_id_apply] at this
+  exact this
+
+@[simp]
+lemma h_app_obj₀Equiv_zero :
+    h.h.app _ (prodStandardSimplex.obj₀Equiv.symm 0) = x₀.pt := by
+  apply h_app_zero_of_fst_zero
+
+@[simp]
+lemma h_app_obj₀Equiv_one :
+    h.h.app _ (prodStandardSimplex.obj₀Equiv.symm 1) = x₁.pt := by
+  apply h_app_zero_of_fst_one
+
+noncomputable abbrev diagonal : Path x₀ x₁ :=
+  Path.mk (square.diagonal ≫ h.h) (by simp) (by simp)
+
+noncomputable def homotopyLDiagonal : HomotopyL p h.diagonal where
+  map := square.ιTriangle₀ ≫ h.h
+  h₀₁ := by rw [← h.h₀, square.δ₂_ιTriangle₀_assoc]
+
+noncomputable def homotopyRDiagonal : HomotopyR q h.diagonal where
+  map := square.ιTriangle₁ ≫ h.h
+
+noncomputable def homotopyL [IsFibrant X] : HomotopyL p q :=
+  h.homotopyLDiagonal.trans h.homotopyRDiagonal.homotopyL.symm
+
+noncomputable def homotopyR [IsFibrant X] : HomotopyR p q :=
+  h.homotopyL.homotopyR
+
+end Homotopy
 
 end Path
 
