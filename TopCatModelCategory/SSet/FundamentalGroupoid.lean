@@ -388,6 +388,35 @@ noncomputable def assoc {f₀₁ : Path x₀ x₁} {f₁₂ : Path x₁ x₂} {f
       rw [← h.h₀₂, ← hα₂, ← hβ, subcomplexHorn.ι_ι_assoc, ← Functor.map_comp_assoc,
         ← Functor.map_comp_assoc, this] }⟩
 
+noncomputable def assoc' {f₀₁ : Path x₀ x₁} {f₁₂ : Path x₁ x₂} {f₂₃ : Path x₂ x₃}
+    {f₀₂ : Path x₀ x₂} {f₁₃ : Path x₁ x₃} {f₀₃ : Path x₀ x₃}
+    (h₀₂ : CompStruct f₀₁ f₁₂ f₀₂)
+    (h₁₃ : CompStruct f₁₂ f₂₃ f₁₃)
+    (h : CompStruct f₀₂ f₂₃ f₀₃) :
+    CompStruct f₀₁ f₁₃ f₀₃ := by
+  apply Nonempty.some
+  obtain ⟨α, hα₁, hα₂, hα₃⟩ :=
+    subcomplexHorn₃₂.exists_desc h₁₃.map h.map h₀₂.map (by simp) (by simp) (by simp)
+  obtain ⟨β, hβ⟩ := anodyneExtensions.exists_lift_of_isFibrant α
+    (anodyneExtensions.subcomplexHorn_ι_mem 2 2)
+  exact ⟨{
+    map := standardSimplex.map (SimplexCategory.δ 2) ≫ β
+    h₀₁ := by
+      have := SimplexCategory.δ_comp_δ (n := 1) (i := 2) (j := 2) (by simp)
+      dsimp at this
+      rw [← h₀₂.h₀₁, ← hα₃, ← hβ, subcomplexHorn.ι_ι_assoc, ← Functor.map_comp_assoc,
+        ← Functor.map_comp_assoc, this]
+    h₁₂ := by
+      have := SimplexCategory.δ_comp_δ (n := 1) (i := 0) (j := 1) (by simp)
+      dsimp at this
+      rw [← h₁₃.h₀₂, ← hα₁, ← hβ, subcomplexHorn.ι_ι_assoc, ← Functor.map_comp_assoc,
+        ← Functor.map_comp_assoc, this]
+    h₀₂ :=  by
+      have := SimplexCategory.δ_comp_δ_self (n := 1) (i := 1)
+      dsimp at this
+      rw [← h.h₀₂, ← hα₂, ← hβ, subcomplexHorn.ι_ι_assoc, ← Functor.map_comp_assoc,
+        ← Functor.map_comp_assoc, this] }⟩
+
 end CompStruct
 
 variable [IsFibrant X]
@@ -417,6 +446,7 @@ lemma exists_compStruct (p₀₁ : Path x₀ x₁) (p₁₂ : Path x₁ x₂) :
     dsimp at this
     rw [← Functor.map_comp_assoc, this, Functor.map_comp_assoc, h₁₂', p₁₂.comm₁]
 
+-- probably unnecessary, see `CompStruct.unique` in `FundamentalGroupoidHomotopies.lean`
 noncomputable def compUniqueUpToHomotopy
     {p₀₁ p₀₁' : Path x₀ x₁} {p₁₂ p₁₂' : Path x₁ x₂} {p₀₂ p₀₂' : Path x₀ x₂}
     (s : CompStruct p₀₁ p₁₂ p₀₂) (s' : CompStruct p₀₁' p₁₂' p₀₂')

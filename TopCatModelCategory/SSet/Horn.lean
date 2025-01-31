@@ -335,4 +335,78 @@ lemma exists_desc : ∃ (φ : (subcomplexHorn 3 1 : SSet) ⟶ X),
 
 end subcomplexHorn₃₁
 
+namespace subcomplexHorn₃₂
+
+abbrev ι₀ : Δ[2] ⟶ subcomplexHorn.{u} 3 2 := subcomplexHorn.ι 2 0 (by simp)
+abbrev ι₁ : Δ[2] ⟶ subcomplexHorn.{u} 3 2 := subcomplexHorn.ι 2 1 (by simp)
+abbrev ι₃ : Δ[2] ⟶ subcomplexHorn.{u} 3 2 := subcomplexHorn.ι 2 3 (by simp)
+
+variable {X : SSet.{u}} (f₀ f₁ f₃ : Δ[2] ⟶ X)
+  (h₀₂ : standardSimplex.map (SimplexCategory.δ 2) ≫ f₁ =
+    standardSimplex.map (SimplexCategory.δ 1) ≫ f₃)
+  (h₁₂ : standardSimplex.map (SimplexCategory.δ 2) ≫ f₀ =
+    standardSimplex.map (SimplexCategory.δ 0) ≫ f₃)
+  (h₂₃ : standardSimplex.map (SimplexCategory.δ 0) ≫ f₀ =
+    standardSimplex.map (SimplexCategory.δ 0) ≫ f₁)
+
+namespace desc
+
+@[simps!]
+def multicofork :
+    Multicofork ((subcomplexHorn.multicoequalizerDiagram (2 : Fin 4)).multispanIndex'.map
+      Subcomplex.toPresheafFunctor) :=
+  Multicofork.ofπ _ X (fun ⟨(i : Fin 4), hi⟩ ↦ match i with
+    | 0 => (standardSimplex.faceSingletonComplIso 0).inv ≫ f₀
+    | 1 => (standardSimplex.faceSingletonComplIso 1).inv ≫ f₁
+    | 2 => by simp at hi
+    | 3 => (standardSimplex.faceSingletonComplIso 3).inv ≫ f₃) (by
+      dsimp
+      intro x
+      fin_cases x
+      · dsimp
+        simp only [← cancel_epi (standardSimplex.facePairIso.{u} (n := 3) 2 3 (by simp)).hom,
+          ← assoc]
+        convert h₂₃
+        all_goals apply (yonedaEquiv _ _).injective; ext i; fin_cases i <;> rfl
+      · dsimp
+        simp only [← cancel_epi (standardSimplex.facePairIso.{u} (n := 3) 1 2 (by simp)).hom,
+          ← assoc]
+        convert h₁₂
+        all_goals apply (yonedaEquiv _ _).injective; ext i; fin_cases i <;> rfl
+      · dsimp
+        simp only [← cancel_epi (standardSimplex.facePairIso.{u} (n := 3) 0 2 (by simp)).hom,
+          ← assoc]
+        convert h₀₂
+        all_goals apply (yonedaEquiv _ _).injective; ext i; fin_cases i <;> rfl)
+
+end desc
+
+noncomputable def desc : (subcomplexHorn 3 2 : SSet) ⟶ X :=
+  (subcomplexHorn.isColimit (n := 3) 2).desc (desc.multicofork f₀ f₁ f₃ h₀₂ h₁₂ h₂₃)
+
+@[reassoc (attr := simp)]
+lemma ι₀_desc : ι₀ ≫ desc f₀ f₁ f₃ h₀₂ h₁₂ h₂₃ = f₀ := by
+  rw [← cancel_epi (standardSimplex.faceSingletonComplIso 0).inv, ← assoc,
+    subcomplexHorn.faceSingletonComplIso_inv_ι]
+  exact (subcomplexHorn.isColimit 2).fac _ (.right ⟨0, by simp⟩)
+
+@[reassoc (attr := simp)]
+lemma ι₁_desc : ι₁ ≫ desc f₀ f₁ f₃ h₀₂ h₁₂ h₂₃ = f₁ := by
+  rw [← cancel_epi (standardSimplex.faceSingletonComplIso 1).inv, ← assoc,
+    subcomplexHorn.faceSingletonComplIso_inv_ι]
+  exact (subcomplexHorn.isColimit 2).fac _ (.right ⟨1, by simp⟩)
+
+@[reassoc (attr := simp)]
+lemma ι₃_desc : ι₃ ≫ desc f₀ f₁ f₃ h₀₂ h₁₂ h₂₃ = f₃ := by
+  rw [← cancel_epi (standardSimplex.faceSingletonComplIso 3).inv, ← assoc,
+    subcomplexHorn.faceSingletonComplIso_inv_ι]
+  exact (subcomplexHorn.isColimit 2).fac _ (.right ⟨3, by simp⟩)
+
+include h₀₂ h₁₂ h₂₃ in
+lemma exists_desc : ∃ (φ : (subcomplexHorn 3 2 : SSet) ⟶ X),
+    ι₀ ≫ φ = f₀ ∧ ι₁ ≫ φ = f₁ ∧ ι₃ ≫ φ = f₃ :=
+  ⟨desc f₀ f₁ f₃ h₀₂ h₁₂ h₂₃, by simp⟩
+
+end subcomplexHorn₃₂
+
 end SSet
