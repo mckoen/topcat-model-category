@@ -60,10 +60,10 @@ lemma le_preimage : A ≤ B.preimage f.map := by
   simpa only [← image_le_iff] using f.image_le
 
 structure Homotopy where
-  h : Δ[1] ⊗ X ⟶ Y
+  h : X ⊗ Δ[1] ⟶ Y
   h₀ : ι₀ ≫ h = f.map := by aesop_cat
   h₁ : ι₁ ≫ h = g.map := by aesop_cat
-  rel : _ ◁ A.ι ≫ h = snd _ _ ≫ φ ≫ B.ι := by aesop_cat
+  rel : A.ι ▷ _ ≫ h = fst _ _ ≫ φ ≫ B.ι := by aesop_cat
 
 namespace Homotopy
 
@@ -71,7 +71,7 @@ attribute [reassoc (attr := simp)] h₀ h₁ rel
 
 @[simps]
 noncomputable def refl : Homotopy f f where
-  h := snd _ _ ≫ f.map
+  h := fst _ _ ≫ f.map
 
 end Homotopy
 
@@ -114,11 +114,11 @@ noncomputable def Homotopy.precomp
     (f : RelativeMorphism A B φ) {φψ : (A : SSet) ⟶ (C : SSet)}
     (fac : φ ≫ ψ = φψ) :
     Homotopy (f.comp f' fac) (f.comp g' fac) where
-  h := _ ◁ f.map ≫ h.h
+  h := f.map ▷ _ ≫ h.h
   rel := by
-    rw [← fac, assoc, ← MonoidalCategory.whiskerLeft_comp_assoc,
-      f.comm, MonoidalCategory.whiskerLeft_comp_assoc,
-      h.rel, whiskerLeft_snd_assoc]
+    rw [← fac, assoc, ← MonoidalCategory.comp_whiskerRight_assoc, f.comm,
+      MonoidalCategory.comp_whiskerRight_assoc, h.rel,
+      whiskerRight_fst_assoc]
 
 def HomotopyClass.postcomp (h : HomotopyClass A B φ)
     (f' : RelativeMorphism B C ψ) {φψ : (A : SSet) ⟶ (C : SSet)}

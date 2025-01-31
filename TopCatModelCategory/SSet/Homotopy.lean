@@ -52,13 +52,13 @@ noncomputable def equiv {f g : RelativeMorphism A B φ} :
         (.mk (RelativeMorphism.equiv f))
         (.mk (RelativeMorphism.equiv g)) where
   toFun h := KanComplex.FundamentalGroupoid.Path.mk
-      (Subcomplex.lift (MonoidalClosed.curry ((β_ _ _).hom ≫ h.h)) sorry) (by
+      (Subcomplex.lift (MonoidalClosed.curry h.h) sorry) (by
         rw [← cancel_mono (Subpresheaf.ι _), assoc, Subcomplex.lift_ι, const_comp,
           Subpresheaf.ι_app, equiv_apply_coe, ← h.h₀]
         apply (yonedaEquiv _ _).injective
         sorry) sorry
   invFun h :=
-    { h := (β_ _ _).hom ≫ MonoidalClosed.uncurry (h.map ≫ Subpresheaf.ι _)
+    { h := MonoidalClosed.uncurry (h.map ≫ Subpresheaf.ι _)
       h₀ := sorry
       h₁ := sorry
       rel := sorry }

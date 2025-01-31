@@ -227,20 +227,22 @@ variable {p q} (h : p.Homotopy q)
 
 @[reassoc (attr := simp)]
 lemma comm₀ : ι₀ ≫ (β_ _ _).hom ≫ h.h = const x₀.pt := by
-  have := Δ[1] ◁ subcomplexBoundary₁.ι₀ ≫= h.rel
-  rw [assoc, whiskerLeft_snd_assoc, subcomplexBoundary₁.ι₀_desc_assoc,
-    yonedaEquiv_symm_zero, const_comp, comp_const,
-    FunctorToTypes.comp, Subpresheaf.ι_app, Subcomplex.topIso_inv_app_coe] at this
-  rw [← cancel_epi (standardSimplex.rightUnitor _).hom, comp_const]
+  have := subcomplexBoundary₁.ι₀ ▷ Δ[1] ≫= h.rel
+  rw [assoc, whiskerRight_fst_assoc, subcomplexBoundary₁.ι₀_desc_assoc,
+    yonedaEquiv_symm_zero, const_comp, comp_const, FunctorToTypes.comp, Subpresheaf.ι_app,
+    Subcomplex.topIso_inv_app_coe, ← comp_whiskerRight_assoc, subcomplexBoundary₁.ι₀_ι,
+    ← cancel_epi (standardSimplex.leftUnitor _).inv,
+    standardSimplex.leftUnitor_inv_map_δ_one_assoc, comp_const] at this
   exact this
 
 @[reassoc (attr := simp)]
 lemma comm₁ : ι₁ ≫ (β_ _ _).hom ≫ h.h = const x₁.pt := by
-  have := Δ[1] ◁ subcomplexBoundary₁.ι₁ ≫= h.rel
-  rw [assoc, whiskerLeft_snd_assoc, subcomplexBoundary₁.ι₁_desc_assoc,
-    yonedaEquiv_symm_zero, const_comp, comp_const,
-    FunctorToTypes.comp, Subpresheaf.ι_app, Subcomplex.topIso_inv_app_coe] at this
-  rw [← cancel_epi (standardSimplex.rightUnitor _).hom, comp_const]
+  have := subcomplexBoundary₁.ι₁ ▷ Δ[1] ≫= h.rel
+  rw [assoc, whiskerRight_fst_assoc, subcomplexBoundary₁.ι₁_desc_assoc,
+    yonedaEquiv_symm_zero, const_comp, comp_const, FunctorToTypes.comp, Subpresheaf.ι_app,
+    Subcomplex.topIso_inv_app_coe, ← comp_whiskerRight_assoc, subcomplexBoundary₁.ι₁_ι,
+    ← cancel_epi (standardSimplex.leftUnitor _).inv,
+    standardSimplex.leftUnitor_inv_map_δ_zero_assoc, comp_const] at this
   exact this
 
 @[simps]
@@ -421,123 +423,123 @@ noncomputable def compUniqueUpToHomotopy
     (h₀₁ : p₀₁.Homotopy p₀₁') (h₁₂ : p₁₂.Homotopy p₁₂') :
     p₀₂.Homotopy p₀₂' := by
   apply Nonempty.some
-  obtain ⟨α, hα₁, hα₂⟩ := (subcomplexHorn₂₁.isPushout.{u}.map (tensorLeft Δ[1])).exists_desc
+  obtain ⟨α, hα₁, hα₂⟩ := (subcomplexHorn₂₁.isPushout.{u}.map (tensorRight Δ[1])).exists_desc
     (h₀₁.h) (h₁₂.h) (by
       dsimp
-      rw [← cancel_epi (standardSimplex.rightUnitor Δ[1]).inv,
-        standardSimplex.rightUnitor_inv_map_δ_zero_assoc,
-        standardSimplex.rightUnitor_inv_map_δ_one_assoc,
+      rw [← cancel_epi (standardSimplex.leftUnitor Δ[1]).inv,
+        standardSimplex.leftUnitor_inv_map_δ_zero_assoc,
+        standardSimplex.leftUnitor_inv_map_δ_one_assoc,
         h₀₁.comm₁, h₁₂.comm₀])
   obtain ⟨β, hβ₁, hβ₂⟩ :=
-    BinaryCofan.IsColimit.desc' (subcomplexBoundary₁.isColimitRightTensor.{u} Δ[2])
-      (snd _ _ ≫ s.map) (snd _ _ ≫ s'.map)
+    BinaryCofan.IsColimit.desc' (subcomplexBoundary₁.isColimitLeftTensor.{u} Δ[2])
+      (fst _ _ ≫ s.map) (fst _ _ ≫ s'.map)
   dsimp at α hα₁ hα₂ β hβ₁ hβ₂
-  obtain ⟨γ, hγ₁, hγ₂⟩ := (Subcomplex.unionProd.isPushout _ _).exists_desc α β (by
-    apply BinaryCofan.IsColimit.hom_ext (subcomplexBoundary₁.isColimitRightTensor _)
+  obtain ⟨γ, hγ₁, hγ₂⟩ := (Subcomplex.unionProd.isPushout _ _).exists_desc β α (by
+    apply BinaryCofan.IsColimit.hom_ext (subcomplexBoundary₁.isColimitLeftTensor _)
     · dsimp
-      rw [← comp_whiskerRight_assoc, subcomplexBoundary₁.ι₀_ι,
-        ← cancel_epi (standardSimplex.leftUnitor _).inv]
+      rw [← MonoidalCategory.whiskerLeft_comp_assoc, subcomplexBoundary₁.ι₀_ι,
+        ← cancel_epi (standardSimplex.rightUnitor _).inv]
       apply subcomplexHorn₂₁.isPushout.hom_ext
-      · have := (standardSimplex.map (SimplexCategory.δ 1)) ▷ _ ≫= hα₁
-        rw [← cancel_epi (standardSimplex.leftUnitor _).inv,
-          ← whisker_exchange_assoc,
-          standardSimplex.leftUnitor_inv_naturality_assoc,
-          standardSimplex.leftUnitor_inv_map_δ_one_assoc,
-          standardSimplex.leftUnitor_inv_map_δ_one_assoc, h₀₁.h₀] at this
-        rw [standardSimplex.leftUnitor_inv_map_δ_one_assoc, this,
-          ← whisker_exchange_assoc, standardSimplex.leftUnitor_inv_naturality_assoc,
-          subcomplexHorn.ι_ι_assoc, hβ₁, standardSimplex.leftUnitor_inv_snd_assoc,
+      · have := _ ◁ (standardSimplex.map (SimplexCategory.δ 1)) ≫= hα₁
+        rw [← cancel_epi (standardSimplex.rightUnitor _).inv,
+          whisker_exchange_assoc,
+          standardSimplex.rightUnitor_inv_naturality_assoc,
+          standardSimplex.rightUnitor_inv_map_δ_one_assoc,
+          standardSimplex.rightUnitor_inv_map_δ_one_assoc, h₀₁.h₀] at this
+        rw [standardSimplex.rightUnitor_inv_map_δ_one_assoc, this,
+          whisker_exchange_assoc, standardSimplex.rightUnitor_inv_naturality_assoc,
+          subcomplexHorn.ι_ι_assoc, hβ₁, standardSimplex.rightUnitor_inv_fst_assoc,
           CompStruct.h₀₁]
-      · have := (standardSimplex.map (SimplexCategory.δ 1)) ▷ _ ≫= hα₂
-        rw [← cancel_epi (standardSimplex.leftUnitor _).inv,
-          ← whisker_exchange_assoc,
-          standardSimplex.leftUnitor_inv_naturality_assoc,
-          standardSimplex.leftUnitor_inv_map_δ_one_assoc,
-          standardSimplex.leftUnitor_inv_map_δ_one_assoc, h₁₂.h₀] at this
-        rw [standardSimplex.leftUnitor_inv_map_δ_one_assoc, this,
-          ← whisker_exchange_assoc, standardSimplex.leftUnitor_inv_naturality_assoc,
-          subcomplexHorn.ι_ι_assoc, hβ₁, standardSimplex.leftUnitor_inv_snd_assoc,
+      · have := _ ◁ (standardSimplex.map (SimplexCategory.δ 1)) ≫= hα₂
+        rw [← cancel_epi (standardSimplex.rightUnitor _).inv,
+          whisker_exchange_assoc,
+          standardSimplex.rightUnitor_inv_naturality_assoc,
+          standardSimplex.rightUnitor_inv_map_δ_one_assoc,
+          standardSimplex.rightUnitor_inv_map_δ_one_assoc, h₁₂.h₀] at this
+        rw [standardSimplex.rightUnitor_inv_map_δ_one_assoc, this,
+          whisker_exchange_assoc, standardSimplex.rightUnitor_inv_naturality_assoc,
+          subcomplexHorn.ι_ι_assoc, hβ₁, standardSimplex.rightUnitor_inv_fst_assoc,
           CompStruct.h₁₂]
     · dsimp
-      rw [← comp_whiskerRight_assoc, subcomplexBoundary₁.ι₁_ι,
-        ← cancel_epi (standardSimplex.leftUnitor _).inv]
+      rw [← MonoidalCategory.whiskerLeft_comp_assoc, subcomplexBoundary₁.ι₁_ι,
+        ← cancel_epi (standardSimplex.rightUnitor _).inv]
       apply subcomplexHorn₂₁.isPushout.hom_ext
-      · have := (standardSimplex.map (SimplexCategory.δ 0)) ▷ _ ≫= hα₁
-        rw [← cancel_epi (standardSimplex.leftUnitor _).inv,
-          ← whisker_exchange_assoc,
-          standardSimplex.leftUnitor_inv_naturality_assoc,
-          standardSimplex.leftUnitor_inv_map_δ_zero_assoc,
-          standardSimplex.leftUnitor_inv_map_δ_zero_assoc, h₀₁.h₁] at this
-        rw [standardSimplex.leftUnitor_inv_map_δ_zero_assoc, this,
-          ← whisker_exchange_assoc, standardSimplex.leftUnitor_inv_naturality_assoc,
-          subcomplexHorn.ι_ι_assoc, hβ₂, standardSimplex.leftUnitor_inv_snd_assoc,
+      · have := _ ◁ (standardSimplex.map (SimplexCategory.δ 0)) ≫= hα₁
+        rw [← cancel_epi (standardSimplex.rightUnitor _).inv,
+          whisker_exchange_assoc,
+          standardSimplex.rightUnitor_inv_naturality_assoc,
+          standardSimplex.rightUnitor_inv_map_δ_zero_assoc,
+          standardSimplex.rightUnitor_inv_map_δ_zero_assoc, h₀₁.h₁] at this
+        rw [standardSimplex.rightUnitor_inv_map_δ_zero_assoc, this,
+          whisker_exchange_assoc, standardSimplex.rightUnitor_inv_naturality_assoc,
+          subcomplexHorn.ι_ι_assoc, hβ₂, standardSimplex.rightUnitor_inv_fst_assoc,
           CompStruct.h₀₁]
-      · have := (standardSimplex.map (SimplexCategory.δ 0)) ▷ _ ≫= hα₂
-        rw [← cancel_epi (standardSimplex.leftUnitor _).inv,
-          ← whisker_exchange_assoc,
-          standardSimplex.leftUnitor_inv_naturality_assoc,
-          standardSimplex.leftUnitor_inv_map_δ_zero_assoc,
-          standardSimplex.leftUnitor_inv_map_δ_zero_assoc, h₁₂.h₁] at this
-        rw [standardSimplex.leftUnitor_inv_map_δ_zero_assoc, this,
-          ← whisker_exchange_assoc, standardSimplex.leftUnitor_inv_naturality_assoc,
-          subcomplexHorn.ι_ι_assoc, hβ₂, standardSimplex.leftUnitor_inv_snd_assoc,
+      · have := _ ◁ (standardSimplex.map (SimplexCategory.δ 0)) ≫= hα₂
+        rw [← cancel_epi (standardSimplex.rightUnitor _).inv,
+          whisker_exchange_assoc,
+          standardSimplex.rightUnitor_inv_naturality_assoc,
+          standardSimplex.rightUnitor_inv_map_δ_zero_assoc,
+          standardSimplex.rightUnitor_inv_map_δ_zero_assoc, h₁₂.h₁] at this
+        rw [standardSimplex.rightUnitor_inv_map_δ_zero_assoc, this,
+          whisker_exchange_assoc, standardSimplex.rightUnitor_inv_naturality_assoc,
+          subcomplexHorn.ι_ι_assoc, hβ₂, standardSimplex.rightUnitor_inv_fst_assoc,
           CompStruct.h₁₂])
   obtain ⟨h, fac⟩ := anodyneExtensions.exists_lift_of_isFibrant γ
-    (anodyneExtensions.subcomplex_unionProd_mem_of_right.{u} (subcomplexBoundary 1)
-    (subcomplexHorn 2 1) (anodyneExtensions.subcomplexHorn_ι_mem 1 1))
+    (anodyneExtensions.subcomplex_unionProd_mem_of_left.{u} (subcomplexHorn 2 1)
+      (subcomplexBoundary 1) (anodyneExtensions.subcomplexHorn_ι_mem 1 1))
   exact ⟨{
-    h := _ ◁ standardSimplex.map (SimplexCategory.δ 1) ≫ h
+    h := standardSimplex.map (SimplexCategory.δ 1) ▷ _ ≫ h
     h₀ := by
-      have := (standardSimplex.leftUnitor _).inv ≫= hβ₁
-      rw [standardSimplex.leftUnitor_inv_snd_assoc] at this
-      rw [← s.h₀₂, ← this, ← hγ₂, ← fac]
+      have := (standardSimplex.rightUnitor _).inv ≫= hβ₁
+      rw [standardSimplex.rightUnitor_inv_fst_assoc] at this
+      rw [← s.h₀₂, ← this, ← hγ₁, ← fac]
       rfl
     h₁ := by
-      have := (standardSimplex.leftUnitor _).inv ≫= hβ₂
-      rw [standardSimplex.leftUnitor_inv_snd_assoc] at this
-      rw [← s'.h₀₂, ← this, ← hγ₂, ← fac]
+      have := (standardSimplex.rightUnitor _).inv ≫= hβ₂
+      rw [standardSimplex.rightUnitor_inv_fst_assoc] at this
+      rw [← s'.h₀₂, ← this, ← hγ₁, ← fac]
       rfl
     rel := by
-      apply BinaryCofan.IsColimit.hom_ext (subcomplexBoundary₁.isColimitLeftTensor _)
-      · have h₀ := (Δ[1] ◁ subcomplexBoundary₁.ι₀ ≫ Δ[1] ◁ Subpresheaf.ι (subcomplexBoundary 1) ≫
-          Δ[1] ◁ subcomplexHorn₂₁.ι₀₁ ≫ Subcomplex.unionProd.ι₁ _ _) ≫= fac
-        rw [assoc, assoc, assoc, assoc, assoc, assoc, Subcomplex.unionProd.ι₁_ι_assoc,
-          hγ₁, hα₁, h₀₁.rel, assoc, whiskerLeft_snd_assoc,
+      apply BinaryCofan.IsColimit.hom_ext (subcomplexBoundary₁.isColimitRightTensor _)
+      · have h₀ := (subcomplexBoundary₁.ι₀ ▷ Δ[1] ≫ Subpresheaf.ι (subcomplexBoundary 1) ▷ Δ[1] ≫
+          subcomplexHorn₂₁.ι₀₁ ▷ Δ[1] ≫ Subcomplex.unionProd.ι₂ _ _) ≫= fac
+        rw [assoc, assoc, assoc, assoc, assoc, assoc, Subcomplex.unionProd.ι₂_ι_assoc,
+          hγ₂, hα₁, h₀₁.rel, assoc, whiskerRight_fst_assoc,
           subcomplexBoundary₁.ι₀_desc_assoc, yonedaEquiv_symm_zero, const_comp, comp_const,
           FunctorToTypes.comp, Subpresheaf.ι_app, Subcomplex.topIso_inv_app_coe] at h₀
         dsimp
-        rw [assoc, whiskerLeft_snd_assoc, subcomplexBoundary₁.ι₀_desc_assoc,
+        rw [assoc, whiskerRight_fst_assoc, subcomplexBoundary₁.ι₀_desc_assoc,
           yonedaEquiv_symm_zero, const_comp, comp_const,
           FunctorToTypes.comp, Subpresheaf.ι_app, Subcomplex.topIso_inv_app_coe,
-          ← MonoidalCategory.whiskerLeft_comp_assoc,
-          ← MonoidalCategory.whiskerLeft_comp_assoc,
+          ← comp_whiskerRight_assoc,
+          ← comp_whiskerRight_assoc,
           subcomplexBoundary₁.ι₀_ι, ← h₀,
-          ← MonoidalCategory.whiskerLeft_comp_assoc,
-          ← MonoidalCategory.whiskerLeft_comp_assoc, assoc,
-          ← MonoidalCategory.whiskerLeft_comp_assoc, assoc, assoc,
+          ← comp_whiskerRight_assoc,
+          ← comp_whiskerRight_assoc, assoc,
+          ← comp_whiskerRight_assoc, assoc, assoc,
           subcomplexHorn.ι_ι, subcomplexBoundary₁.ι₀_ι_assoc,
           ← Functor.map_comp, ← Functor.map_comp]
         congr 3
         apply SimplexCategory.δ_comp_δ_self
-      · have h₂ := (Δ[1] ◁ subcomplexBoundary₁.ι₁ ≫ Δ[1] ◁ Subpresheaf.ι (subcomplexBoundary 1) ≫
-          Δ[1] ◁ subcomplexHorn₂₁.ι₁₂ ≫ Subcomplex.unionProd.ι₁ _ _) ≫= fac
-        rw [assoc, assoc, assoc, assoc, assoc, assoc, Subcomplex.unionProd.ι₁_ι_assoc,
-          hγ₁, hα₂, h₁₂.rel, assoc, whiskerLeft_snd_assoc,
+      · have h₂ := (subcomplexBoundary₁.ι₁ ▷ Δ[1] ≫ Subpresheaf.ι (subcomplexBoundary 1) ▷ Δ[1] ≫
+          subcomplexHorn₂₁.ι₁₂ ▷ Δ[1] ≫ Subcomplex.unionProd.ι₂ _ _) ≫= fac
+        rw [assoc, assoc, assoc, assoc, assoc, assoc, Subcomplex.unionProd.ι₂_ι_assoc,
+          hγ₂, hα₂, h₁₂.rel, assoc, whiskerRight_fst_assoc,
           subcomplexBoundary₁.ι₁_desc_assoc, yonedaEquiv_symm_zero, const_comp, comp_const,
           FunctorToTypes.comp, Subpresheaf.ι_app, Subcomplex.topIso_inv_app_coe] at h₂
         dsimp
-        rw [assoc, whiskerLeft_snd_assoc, subcomplexBoundary₁.ι₁_desc_assoc,
+        rw [assoc, whiskerRight_fst_assoc, subcomplexBoundary₁.ι₁_desc_assoc,
           yonedaEquiv_symm_zero, const_comp, comp_const,
           FunctorToTypes.comp, Subpresheaf.ι_app, Subcomplex.topIso_inv_app_coe,
-          ← MonoidalCategory.whiskerLeft_comp_assoc,
-          ← MonoidalCategory.whiskerLeft_comp_assoc,
+          ← comp_whiskerRight_assoc,
+          ← comp_whiskerRight_assoc,
           subcomplexBoundary₁.ι₁_ι, ← h₂,
-          ← MonoidalCategory.whiskerLeft_comp_assoc,
-          ← MonoidalCategory.whiskerLeft_comp_assoc, assoc,
-          ← MonoidalCategory.whiskerLeft_comp_assoc, assoc, assoc,
+          ← comp_whiskerRight_assoc,
+          ← comp_whiskerRight_assoc, assoc,
+          ← comp_whiskerRight_assoc, assoc, assoc,
           subcomplexHorn.ι_ι, subcomplexBoundary₁.ι₁_ι_assoc,
           ← Functor.map_comp, ← Functor.map_comp]
-        congr 3 }⟩
+        rfl }⟩
 
 noncomputable def comp (p₀₁ : Path x₀ x₁) (p₁₂ : Path x₁ x₂) :
     Path x₀ x₂ :=

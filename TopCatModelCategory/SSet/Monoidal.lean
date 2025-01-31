@@ -17,19 +17,19 @@ section
 variable {X : SSet.{u}}
 
 -- this should be refactored, using `X ⊗ Δ[1]` instead...
-noncomputable abbrev ι₀ {X : SSet.{u}} : X ⟶ Δ[1] ⊗ X :=
-  lift (const (standardSimplex.obj₀Equiv.{u}.symm 0)) (𝟙 X)
+noncomputable abbrev ι₀ {X : SSet.{u}} : X ⟶ X ⊗ Δ[1] :=
+  lift (𝟙 X) (const (standardSimplex.obj₀Equiv.{u}.symm 0))
 
 @[reassoc (attr := simp)]
 lemma ι₀_comp {X Y : SSet.{u}} (f : X ⟶ Y) :
-    ι₀ ≫ _ ◁ f = f ≫ ι₀ := rfl
+    ι₀ ≫ f ▷ _ = f ≫ ι₀ := rfl
 
-noncomputable abbrev ι₁ {X : SSet.{u}} : X ⟶ Δ[1] ⊗ X :=
-  lift (const (standardSimplex.obj₀Equiv.{u}.symm 1)) (𝟙 X)
+noncomputable abbrev ι₁ {X : SSet.{u}} : X ⟶ X ⊗ Δ[1] :=
+  lift (𝟙 X) (const (standardSimplex.obj₀Equiv.{u}.symm 1))
 
 @[reassoc (attr := simp)]
 lemma ι₁_comp {X Y : SSet.{u}} (f : X ⟶ Y) :
-    ι₁ ≫ _ ◁ f = f ≫ ι₁ := rfl
+    ι₁ ≫ f ▷ _ = f ≫ ι₁ := rfl
 
 end
 
@@ -55,26 +55,34 @@ lemma leftUnitor_inv_naturality (f : X ⟶ Y) :
 @[reassoc (attr := simp)]
 lemma leftUnitor_inv_map_δ_zero :
     (standardSimplex.leftUnitor X).inv ≫ standardSimplex.map (SimplexCategory.δ 0) ▷ X =
-      ι₁ := rfl
+      ι₁ ≫ (β_ _ _).hom := rfl
 
 @[reassoc (attr := simp)]
 lemma leftUnitor_inv_map_δ_one :
     (standardSimplex.leftUnitor X).inv ≫ standardSimplex.map (SimplexCategory.δ 1) ▷ X =
-      ι₀ := rfl
+      ι₀ ≫ (β_ _ _).hom := rfl
 
 noncomputable def rightUnitor : X ⊗ Δ[0] ≅ X where
   hom := fst _ _
   inv := lift (𝟙 X) (isTerminalObj₀.from _)
 
 @[reassoc (attr := simp)]
+lemma rightUnitor_inv_fst : (rightUnitor X).inv ≫ fst _ _ = 𝟙 _ := rfl
+
+variable {X} in
+@[reassoc (attr := simp)]
+lemma rightUnitor_inv_naturality (f : X ⟶ Y) :
+    (rightUnitor X).inv ≫ f ▷ _ = f ≫ (rightUnitor Y).inv := rfl
+
+@[reassoc (attr := simp)]
 lemma rightUnitor_inv_map_δ_zero :
     (standardSimplex.rightUnitor X).inv ≫ X ◁ standardSimplex.map (SimplexCategory.δ 0) =
-      ι₁ ≫ (β_ _ _).hom := rfl
+      ι₁ := rfl
 
 @[reassoc (attr := simp)]
 lemma rightUnitor_inv_map_δ_one :
     (standardSimplex.rightUnitor X).inv ≫ X ◁ standardSimplex.map (SimplexCategory.δ 1) =
-      ι₀ ≫ (β_ _ _).hom := rfl
+      ι₀ := rfl
 
 end standardSimplex
 
