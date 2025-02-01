@@ -15,6 +15,7 @@ variable {X : SSet.{u}} {x : X _[0]} {n : ℕ}
 lemma δ_map (s : Subcomplex.RelativeMorphism (subcomplexBoundary (n + 1)) _
       (const ⟨x, Subcomplex.mem_ofSimplex_obj x⟩)) (i : Fin (n + 2)) :
       standardSimplex.map (SimplexCategory.δ i) ≫ s.map = const x := by
+  have pif := s.comm
   sorry
 
 section
@@ -36,8 +37,8 @@ structure CompStruct
       (const ⟨x, Subcomplex.mem_ofSimplex_obj x⟩))
       (i : Fin (n + 1)) where
   map : Δ[n + 2] ⟶ X
-  h₁ : standardSimplex.map (SimplexCategory.δ (i.succ.succ)) ≫ map = g₁₂.map
-  h₂ : standardSimplex.map (SimplexCategory.δ (i.castSucc.castSucc)) ≫ map = g₁.map
+  h₁ : standardSimplex.map (SimplexCategory.δ (i.succ.succ)) ≫ map = g₁.map
+  h₂ : standardSimplex.map (SimplexCategory.δ (i.castSucc.castSucc)) ≫ map = g₂.map
   h_of_lt (j : Fin (n + 3)) (hj : j < i.castSucc.castSucc) :
     standardSimplex.map (SimplexCategory.δ j) ≫ map = const x
   h_of_gt (j : Fin (n + 3)) (hj : i.succ.succ < j) :
@@ -46,9 +47,9 @@ structure CompStruct
 
 namespace CompStruct
 
-def idComp (g : Subcomplex.RelativeMorphism (subcomplexBoundary (n + 1)) _
+def compId (g : Subcomplex.RelativeMorphism (subcomplexBoundary (n + 1)) _
       (const ⟨x, Subcomplex.mem_ofSimplex_obj x⟩)) (i : Fin (n + 1)) :
-      CompStruct .const g g i where
+      CompStruct g .const g i where
   map := standardSimplex.map (SimplexCategory.σ i.succ) ≫ g.map
   h₁ := by
     rw [← Functor.map_comp_assoc, SimplexCategory.δ_comp_σ_succ,
@@ -56,6 +57,9 @@ def idComp (g : Subcomplex.RelativeMorphism (subcomplexBoundary (n + 1)) _
   h₂ := by
     simp [← Functor.map_comp_assoc,
       SimplexCategory.δ_comp_σ_of_le (i := i.castSucc) (j := i) (by rfl)]
+  h₁₂ := by
+    rw [← Functor.map_comp_assoc, Fin.succ_castSucc, SimplexCategory.δ_comp_σ_self,
+      CategoryTheory.Functor.map_id, Category.id_comp]
   h_of_lt j hj := by
     have hj' : j ≠ Fin.last _ := by
       rintro rfl
@@ -66,15 +70,30 @@ def idComp (g : Subcomplex.RelativeMorphism (subcomplexBoundary (n + 1)) _
     simp [← Functor.map_comp_assoc, this]
   h_of_gt j hj := by
     obtain ⟨j, rfl⟩ := j.eq_succ_of_ne_zero (by rintro rfl; simp at hj)
-    rw [← Functor.map_comp_assoc]
-    sorry
-  h₁₂ := by
-    rw [← Functor.map_comp_assoc, Fin.succ_castSucc, SimplexCategory.δ_comp_σ_self,
-      CategoryTheory.Functor.map_id, Category.id_comp]
+    have := SimplexCategory.δ_comp_σ_of_gt (i := j) (j := i.succ.castPred (fun h ↦ by
+      rw [h, Fin.lt_iff_val_lt_val] at hj
+      dsimp at hj
+      omega))
+      (by simpa using hj)
+    simp only [Fin.castSucc_castPred] at this
+    simp [← Functor.map_comp_assoc, this]
 
-def compId (g : Subcomplex.RelativeMorphism (subcomplexBoundary (n + 1)) _
+def idComp (g : Subcomplex.RelativeMorphism (subcomplexBoundary (n + 1)) _
       (const ⟨x, Subcomplex.mem_ofSimplex_obj x⟩)) (i : Fin (n + 1)) :
-      CompStruct g .const g i := sorry
+      CompStruct .const g g i where
+  map := standardSimplex.map (SimplexCategory.σ i.castSucc) ≫ g.map
+  h₁ := by
+    rw [← Functor.map_comp_assoc, SimplexCategory.δ_comp_σ_of_gt (by simp)]
+    simp
+  h₂ := by
+    rw [← Functor.map_comp_assoc, SimplexCategory.δ_comp_σ_self]
+    simp
+  h₁₂ := by
+    rw [← Functor.map_comp_assoc, SimplexCategory.δ_comp_σ_succ]
+    simp
+  h_of_lt j hj := by
+    sorry
+  h_of_gt j hj := sorry
 
 end CompStruct
 

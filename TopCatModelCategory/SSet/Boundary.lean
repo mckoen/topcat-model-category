@@ -4,7 +4,7 @@ import TopCatModelCategory.SSet.HasDimensionLT
 
 universe u
 
-open Simplicial Opposite
+open CategoryTheory Simplicial Opposite
 
 namespace SSet
 
@@ -83,5 +83,31 @@ instance : HasDimensionLT (subcomplexBoundary.{u} n) n := by
   simpa [h] using non_mem_subcomplexBoundary.{u} n
 
 end standardSimplex
+
+namespace subcomplexBoundary
+
+def faceι (i : Fin (n + 1)) :
+    (standardSimplex.face {i}ᶜ : SSet.{u}) ⟶ (subcomplexBoundary n : SSet.{u}) :=
+  Subcomplex.homOfLE (face_le_subcomplexBoundary i)
+
+def ι (i : Fin (n + 2)) :
+    Δ[n] ⟶ subcomplexBoundary.{u} (n + 1) :=
+  Subcomplex.lift ((standardSimplex.{u}.map (SimplexCategory.δ i)))
+    (le_antisymm (by simp) (by
+      rw [← Subcomplex.image_le_iff, Subcomplex.image_top,
+        Subcomplex.range_eq_ofSimplex]
+      refine le_trans ?_ (face_le_subcomplexBoundary i)
+      rw [standardSimplex.face_singleton_compl]
+      rfl))
+
+variable (i : Fin (n + 2))
+
+@[reassoc (attr := simp)]
+lemma faceSingletonComplIso_inv_ι (i : Fin (n + 2)) :
+    (standardSimplex.faceSingletonComplIso i).inv ≫ ι i = subcomplexBoundary.faceι i := by
+  rw [← cancel_epi (standardSimplex.faceSingletonComplIso i).hom, Iso.hom_inv_id_assoc]
+  rfl
+
+end subcomplexBoundary
 
 end SSet
