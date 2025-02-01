@@ -54,6 +54,7 @@ lemma subcomplex_hasDimensionLT_of_neq_top (h : A ≠ ⊤) :
     obtain hi | rfl := hi.lt_or_eq
     · simp [Δ[n].degenerate_eq_top_of_hasDimensionLT (n + 1) i (by omega)]
     · rw [mem_degenerate_iff_non_mem_nondegenerate, non_degenerate_top_dim]
+      change a ∉ {objMk .id}
       rintro rfl
       apply h
       ext ⟨m⟩ x
@@ -89,6 +90,11 @@ namespace subcomplexBoundary
 def faceι (i : Fin (n + 1)) :
     (standardSimplex.face {i}ᶜ : SSet.{u}) ⟶ (subcomplexBoundary n : SSet.{u}) :=
   Subcomplex.homOfLE (face_le_subcomplexBoundary i)
+
+@[reassoc (attr := simp)]
+lemma faceι_ι (i : Fin (n + 2)) :
+    faceι i ≫ (subcomplexBoundary.{u} (n + 1)).ι = (standardSimplex.face {i}ᶜ).ι := by
+  simp [faceι]
 
 def ι (i : Fin (n + 2)) :
     Δ[n] ⟶ subcomplexBoundary.{u} (n + 1) :=

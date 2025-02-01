@@ -153,6 +153,15 @@ def π (n : ℕ) (X : SSet.{u}) (x : X _[0]) : Type u :=
     (subcomplexBoundary n) (Subcomplex.ofSimplex x)
       (const ⟨x, Subcomplex.mem_ofSimplex_obj x⟩)
 
+def π.mk {n : ℕ} {X : SSet.{u}} {x : X _[0]}
+  (f : Subcomplex.RelativeMorphism
+    (subcomplexBoundary n) (Subcomplex.ofSimplex x)
+      (const ⟨x, Subcomplex.mem_ofSimplex_obj x⟩)) : π n X x := f.homotopyClass
+
+lemma π.mk_surjective {n : ℕ} {X : SSet.{u}} {x : X _[0]} :
+    Function.Surjective (π.mk : _ → π n X x) :=
+  Quot.mk_surjective
+
 instance (n : ℕ) (X : SSet.{u}) (x : X _[0]) : One (π n X x) where
   one := Subcomplex.RelativeMorphism.const.homotopyClass
 

@@ -365,7 +365,7 @@ lemma nonDegenerateEquiv_symm_mem_iff_face_le {m : ℕ}
   rw [face_nonDegenerateEquiv x, Equiv.symm_apply_apply, Subcomplex.ofSimplex_le_iff]
 
 lemma non_degenerate_top_dim :
-    (Δ[n] : SSet.{u}).NonDegenerate n = {objMk .id} := by
+    (Δ[n] : SSet.{u}).NonDegenerate n = {standardSimplex.id n} := by
   ext x
   obtain ⟨f, rfl⟩ := (objEquiv _ _).symm.surjective x
   simp only [Set.mem_singleton_iff, mem_non_degenerate_iff_mono, Equiv.apply_symm_apply]
