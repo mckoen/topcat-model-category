@@ -37,6 +37,7 @@ import TopCatModelCategory.SSet.FundamentalGroupoidHomotopies
 import TopCatModelCategory.SSet.HasDimensionLT
 import TopCatModelCategory.SSet.Homotopy
 import TopCatModelCategory.SSet.HomotopyBasic
+import TopCatModelCategory.SSet.HomotopySequence
 import TopCatModelCategory.SSet.Horn
 import TopCatModelCategory.SSet.KanComplexW
 import TopCatModelCategory.SSet.Monoidal

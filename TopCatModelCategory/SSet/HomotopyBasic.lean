@@ -25,6 +25,13 @@ namespace RelativeMorphism
 
 attribute [reassoc (attr := simp)] comm
 
+variable {A} in
+@[simps]
+def const {y : Y _[0]} {φ : (A : SSet) ⟶ (ofSimplex y : SSet)} :
+    RelativeMorphism A (ofSimplex y) φ where
+  map := SSet.const y
+  comm := by rw [ofSimplex_ι, comp_const, comp_const]
+
 @[simps]
 def ofHom (f : X ⟶ Y) :
     RelativeMorphism (⊤ : X.Subcomplex) (⊤ : Y.Subcomplex)
@@ -139,28 +146,15 @@ end RelativeMorphism
 
 end Subcomplex
 
-/-section
-
-variable (X : SSet.{u})
-
-def π₀ := Quot (α := X _[0]) (fun x y ↦ ∃ (p : X _[1]), X.δ 1 p = x ∧ X.δ 0 p = y)
-
-def toπ₀ (x : X _[0]) : π₀ X := Quot.mk _ x
-
-lemma toπ₀_surjective : Function.Surjective X.toπ₀ := by
-  apply Quot.mk_surjective
-
-lemma toπ₀_congr (p : X _[1]) : X.toπ₀ (X.δ 1 p) = X.toπ₀ (X.δ 0 p) :=
-  Quot.sound ⟨p, rfl, rfl⟩
-
-end-/
-
 namespace KanComplex
 
 def π (n : ℕ) (X : SSet.{u}) (x : X _[0]) : Type u :=
   Subcomplex.RelativeMorphism.HomotopyClass
     (subcomplexBoundary n) (Subcomplex.ofSimplex x)
       (const ⟨x, Subcomplex.mem_ofSimplex_obj x⟩)
+
+instance (n : ℕ) (X : SSet.{u}) (x : X _[0]) : One (π n X x) where
+  one := Subcomplex.RelativeMorphism.const.homotopyClass
 
 variable {X Y : SSet.{u}} (f : X ⟶ Y) (n : ℕ)
   (x : X _[0]) (y : Y _[0]) (h : f.app _ x = y)
