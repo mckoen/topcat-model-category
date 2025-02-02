@@ -196,6 +196,16 @@ lemma face_le_face_iff (S₁ S₂ : Finset (Fin (n + 1))) :
     dsimp [face] at ha ⊢
     exact ha.trans h
 
+@[simp]
+lemma face_emptySet (n : ℕ) : (face (∅ : Finset (Fin (n + 1)))) = ⊥ := by
+  ext ⟨k⟩
+  simp only [face, SimplexCategory.len_mk, Finset.top_eq_univ, Finset.le_eq_subset,
+    Finset.subset_empty, Finset.image_eq_empty, Set.mem_setOf_eq, Subpresheaf.bot_obj,
+    Set.bot_eq_empty, Set.mem_empty_iff_false, iff_false]
+  intro h
+  have := Finset.mem_univ (0 : Fin (k.len + 1))
+  simp [h] at this
+
 lemma face_eq_ofSimplex (S : Finset (Fin (n + 1))) (m : ℕ) (e : Fin (m + 1) ≃o S) :
     face.{u} S = Subcomplex.ofSimplex (n := m)
         (by exact objMk ((OrderHom.Subtype.val S.toSet).comp e.toOrderEmbedding.toOrderHom)) := by
@@ -387,6 +397,18 @@ instance : (Δ[n] : SSet.{u}).HasDimensionLT (n + 1) where
     intro hf
     have := SimplexCategory.le_of_mono (f := f) inferInstance
     omega
+
+lemma face_hasDimensionLT (S : Finset (Fin (n + 1))) (k : ℕ)
+    (hk : S.card ≤ k) :
+    HasDimensionLT (face.{u} S) k := by
+  generalize h : S.card = d
+  obtain _ | d := d
+  · obtain rfl : S = ∅ := by rwa [← Finset.card_eq_zero]
+    simp only [face_emptySet]
+    infer_instance
+  · have pif := isoOfRepresentableBy (faceRepresentableBy.{u} S d (S.orderIsoOfFin h))
+    rw [← hasDimensionLT_iff_of_iso pif]
+    exact hasDimensionLT_of_le _ (d + 1) _ (by omega)
 
 end standardSimplex
 

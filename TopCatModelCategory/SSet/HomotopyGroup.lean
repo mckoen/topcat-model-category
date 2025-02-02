@@ -54,9 +54,15 @@ lemma exists_subcomplexHorn_desc :
         simp only [Set.mem_setOf_eq] at hjj'
         dsimp
         rw [← Category.assoc, ← Category.assoc]
+        let S : Finset (Fin (n + 2)) := {j.1, j'.1}
+        have hS : S.card = 2 := Finset.card_pair (fun h ↦ by
+          rw [← Subtype.ext_iff] at h
+          simp [h] at hjj')
         have : HasDimensionLT (Subpresheaf.toPresheaf (standardSimplex.face.{u}
-            ({j.1, j'.1}ᶜ : Finset (Fin (n + 2))))) n := by
-          sorry
+            (Sᶜ : Finset (Fin (n + 2))))) n := by
+          apply standardSimplex.face_hasDimensionLT
+          rw [← Nat.add_le_add_iff_right (n := S.card),
+            Finset.card_compl_add_card, Fintype.card_fin, hS]
         rw [comp_map_eq_const, comp_map_eq_const])),
     fun j ↦ (subcomplexHorn.isColimit i).fac _ (.right j)⟩
 

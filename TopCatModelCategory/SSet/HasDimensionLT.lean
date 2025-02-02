@@ -77,6 +77,10 @@ lemma hasDimensionLT_of_epi {X Y : SSet.{u}} (f : X ⟶ Y) [Epi f] (d : ℕ)
     apply degenerate_map
     simp [X.degenerate_eq_top_of_hasDimensionLT d n hn]
 
+lemma hasDimensionLT_iff_of_iso {X Y : SSet.{u}} (e : X ≅ Y) (d : ℕ) :
+    X.HasDimensionLT d ↔ Y.HasDimensionLT d :=
+  ⟨fun _ ↦ hasDimensionLT_of_epi e.hom d, fun _ ↦ hasDimensionLT_of_epi e.inv d⟩
+
 instance {X Y : SSet.{u}} (f : X ⟶ Y) (d : ℕ) [X.HasDimensionLT d] :
     HasDimensionLT (Subcomplex.range f) d := by
   exact hasDimensionLT_of_epi (toRangeSubcomplex f) d
@@ -94,5 +98,10 @@ lemma hasDimensionLT_iff_subcomplex_top (X : SSet.{u}) (d : ℕ) :
   · intro h
     simp only [hasDimensionLT_iff, Subcomplex.degenerate_eq_top_iff] at h
     simpa [hasDimensionLT_iff] using h
+
+instance {X : SSet.{u}} (n : ℕ) : HasDimensionLT ((⊥ : X.Subcomplex)) n where
+  degenerate_eq_top k hk := by
+    ext ⟨x, hx⟩
+    simp at hx
 
 end SSet
