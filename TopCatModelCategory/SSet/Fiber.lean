@@ -103,6 +103,20 @@ variable (f : X ⟶ Y) (y : Y _[0])
 
 def fiber : X.Subcomplex := (Subcomplex.ofSimplex y).preimage f
 
+@[simp]
+lemma range_le_fiber_iff {Z : SSet.{u}} (g : Z ⟶ X) :
+    Subcomplex.range g ≤ fiber f y ↔ g ≫ f = const y := by
+  dsimp only [fiber]
+  rw [← image_le_iff, le_ofSimplex_iff, ← range_comp,
+    ← cancel_epi (toRangeSubcomplex (g ≫ f)),
+    toRangeSubcomplex_ι, comp_const]
+
+lemma le_fiber_iff (A : X.Subcomplex) :
+    A ≤ fiber f y ↔ A.ι ≫ f = const y := by
+  dsimp only [fiber]
+  rw [← image_le_iff, le_ofSimplex_iff,
+    ← cancel_epi (A.toImage f), comp_const, toImage_ι]
+
 instance [Fibration f] : IsFibrant (C := SSet.{u}) (fiber f y) :=
   (isFibrant_iff_of_isTerminal (C := SSet.{u})
     ((Subcomplex.ofSimplex y).fromPreimage f) (isTerminal _)).2 inferInstance

@@ -16,6 +16,11 @@ def I : MorphismProperty SSet.{u} :=
 def J : MorphismProperty SSet.{u} :=
   ⨆ n, .ofHoms (fun i ↦ (subcomplexHorn.{u} (n + 1) i).ι)
 
+lemma subcomplexHorn_ι_mem_J {n : ℕ} (i : Fin (n + 2)) :
+    J (subcomplexHorn.{u} (n + 1) i).ι := by
+  simp [J]
+  exact ⟨n, ⟨_⟩⟩
+
 lemma I_le_monomorphisms : I.{u} ≤ monomorphisms _ := by
   rintro _ _ _ ⟨n⟩
   simp only [monomorphisms.iff]
@@ -53,6 +58,11 @@ lemma cofibration_iff : Cofibration f ↔ Mono f := by
 lemma fibration_iff : Fibration f ↔ J.rlp f := by
   rw [HomotopicalAlgebra.fibration_iff]
   rfl
+
+instance (n : ℕ) (i : Fin (n + 2)) [hf : Fibration f] :
+    HasLiftingProperty (C := SSet.{u}) (subcomplexHorn (n + 1) i).ι f := by
+  rw [fibration_iff] at hf
+  exact hf _ (subcomplexHorn_ι_mem_J i)
 
 end
 

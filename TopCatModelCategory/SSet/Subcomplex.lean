@@ -8,6 +8,7 @@ import Mathlib.CategoryTheory.Sites.Subsheaf
 import Mathlib.CategoryTheory.MorphismProperty.Limits
 import TopCatModelCategory.ColimitsType
 import TopCatModelCategory.CommSq
+import TopCatModelCategory.SSet.Basic
 
 
 /-!
@@ -281,6 +282,16 @@ lemma subcomplexHorn_toSSet (n : ℕ) (i : Fin (n + 1)) :
 lemma subcomplexHorn_ι (n : ℕ) (i : Fin (n + 1)) :
     (subcomplexHorn.{u} n i).ι = hornInclusion n i := rfl
 
+@[simp]
+lemma subcomplexBoundary_zero : subcomplexBoundary.{u} 0 = ⊥ := by
+  ext m x
+  simp [subcomplexBoundary]
+  apply not_not.2
+  intro x
+  fin_cases x
+  refine ⟨0, ?_⟩
+  apply Subsingleton.elim
+
 section
 
 variable {X Y}
@@ -433,6 +444,19 @@ lemma ofSimplex_le_iff {n : ℕ} (x : X _[n]) (A : X.Subcomplex) :
     obtain ⟨f, rfl⟩ := (standardSimplex.objEquiv _ _).symm.surjective y
     exact A.map f.op h
 
+lemma le_ofSimplex_iff (x : X _[0]) (A : X.Subcomplex) :
+    A ≤ ofSimplex x ↔ A.ι = const x := by
+  constructor
+  · intro h
+    ext m ⟨x, hx⟩
+    obtain ⟨f, rfl⟩ := h _ hx
+    simp
+  · intro h
+    rw [← A.range_ι, h]
+    rintro m _ ⟨y, rfl⟩
+    rw [const_app]
+    exact Subpresheaf.map _ _ (mem_ofSimplex_obj x)
+
 end
 
 section
@@ -471,6 +495,18 @@ lemma image_ofSimplex {n : ℕ} (x : X _[n]) (f : X ⟶ Y) :
     apply mem_ofSimplex_obj
   · rw [ofSimplex_le_iff]
     exact ⟨x, mem_ofSimplex_obj _, rfl⟩
+
+def toImage : (S : SSet) ⟶ (S.image f : SSet) :=
+  (S.image f).lift (S.ι ≫ f) (by aesop)
+
+@[reassoc (attr := simp)]
+lemma toImage_ι : S.toImage f ≫ (S.image f).ι = S.ι ≫ f := rfl
+
+instance : Epi (S.toImage f) := by
+  rw [← range_eq_top_iff]
+  apply le_antisymm (by simp)
+  rintro m ⟨_, ⟨y, hy, rfl⟩⟩ _
+  exact ⟨⟨y, hy⟩, rfl⟩
 
 end
 
