@@ -106,13 +106,25 @@ def ι (i : Fin (n + 2)) :
       rw [standardSimplex.face_singleton_compl]
       rfl))
 
-variable (i : Fin (n + 2))
+@[reassoc (attr := simp)]
+lemma ι_ι (i : Fin (n + 2)) :
+    ι.{u} i ≫ (subcomplexBoundary.{u} (n + 1)).ι =
+      standardSimplex.{u}.map (SimplexCategory.δ i) := rfl
 
 @[reassoc (attr := simp)]
 lemma faceSingletonComplIso_inv_ι (i : Fin (n + 2)) :
     (standardSimplex.faceSingletonComplIso i).inv ≫ ι i = subcomplexBoundary.faceι i := by
   rw [← cancel_epi (standardSimplex.faceSingletonComplIso i).hom, Iso.hom_inv_id_assoc]
   rfl
+
+@[ext]
+lemma hom_ext {n : ℕ} {X : SSet.{u}} {f g : (subcomplexBoundary (n + 1) : SSet) ⟶ X}
+    (h : ∀ (i : Fin (n + 2)), ι i ≫ f = ι i ≫ g) :
+    f = g := by
+  ext m ⟨x, hx⟩
+  simp [subcomplexBoundary_eq_iSup, standardSimplex.face_singleton_compl] at hx
+  obtain ⟨i, ⟨y, rfl⟩⟩ := hx
+  exact congr_fun ((congr_app (h i)) _) y
 
 end subcomplexBoundary
 

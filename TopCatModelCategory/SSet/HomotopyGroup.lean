@@ -40,7 +40,7 @@ lemma δ_map (s : Subcomplex.RelativeMorphism (subcomplexBoundary (n + 1)) _
 
 section
 
-variable (i : Fin (n + 2))
+variable {i : Fin (n + 2)}
   (φ : ({i}ᶜ : Set _) → Subcomplex.RelativeMorphism (subcomplexBoundary n) _
       (const ⟨x, Subcomplex.mem_ofSimplex_obj x⟩))
 
@@ -147,11 +147,116 @@ def oneMul (g : Subcomplex.RelativeMorphism (subcomplexBoundary (n + 1)) _
 
 end MulStruct
 
+variable [IsFibrant X]
+
 lemma exists_mulStruct
     (g₁ g₂ : Subcomplex.RelativeMorphism (subcomplexBoundary (n + 1)) _
       (const ⟨x, Subcomplex.mem_ofSimplex_obj x⟩)) (i : Fin (n + 1)) :
     ∃ g₁₂, Nonempty (MulStruct g₁ g₂ g₁₂ i) := by
-  sorry
+  let φ (j : ({i.castSucc.succ}ᶜ : Set _)) :
+    (subcomplexBoundary (n + 1)).RelativeMorphism _
+      (const ⟨x, Subcomplex.mem_ofSimplex_obj x⟩) :=
+    if j.1 = i.succ.succ then g₁ else
+      if j.1 = i.castSucc.castSucc then g₂ else .const
+  obtain ⟨f, hf⟩ := exists_subcomplexHorn_desc φ
+  obtain ⟨α, hα⟩ := anodyneExtensions.exists_lift_of_isFibrant f
+    (anodyneExtensions.subcomplexHorn_ι_mem _ _)
+  have hα' (j : Fin (n + 3)) (hj : j ≠ i.castSucc.succ) :
+      standardSimplex.map (SimplexCategory.δ j) ≫ α = (φ ⟨j, hj⟩).map := by
+    rw [← cancel_epi (standardSimplex.faceSingletonComplIso j).inv]
+    replace hf := hf ⟨j, hj⟩
+    rw [← subcomplexHorn.faceSingletonComplIso_inv_ι] at hf
+    dsimp at hf
+    rw [← hf, ← hα]
+    rfl
+  let g₁₂ : (subcomplexBoundary (n + 1)).RelativeMorphism _
+    (const ⟨x, Subcomplex.mem_ofSimplex_obj x⟩) :=
+    { map := standardSimplex.map (SimplexCategory.δ (i.castSucc.succ)) ≫ α
+      comm := by
+        ext j : 1
+        rw [Subcomplex.ofSimplex_ι, comp_const, comp_const,
+          subcomplexBoundary.ι_ι_assoc, ← Functor.map_comp_assoc]
+        by_cases h : j ≤ i.castSucc
+        · rw [SimplexCategory.δ_comp_δ h, Functor.map_comp_assoc, hα', δ_map]
+          rw [Fin.succ_castSucc]
+          rintro hj
+          simp only [Fin.castSucc_inj] at hj
+          simp [hj] at h
+        · simp only [not_le, Fin.castSucc_lt_iff_succ_le] at h
+          rw [Fin.succ_castSucc, ← SimplexCategory.δ_comp_δ h,
+            Functor.map_comp_assoc, hα', δ_map]
+          simp only [ne_eq, Fin.succ_inj]
+          rintro rfl
+          simp at h }
+  refine ⟨g₁₂, ⟨{
+    map := α
+    h₁ := by
+      rw [hα' i.succ.succ (by simp [Fin.ext_iff])]
+      dsimp [φ]
+      rw [if_pos rfl]
+    h₂ := by
+      rw [hα' i.castSucc.castSucc (by simp [Fin.ext_iff])]
+      dsimp [φ]
+      rw [if_neg, if_pos rfl]
+      simp [Fin.ext_iff]
+      omega
+    h₁₂ := rfl
+    h_of_lt j hj := by
+      rw [hα' j (by rintro rfl; simp [Fin.lt_iff_val_lt_val] at hj)]
+      dsimp [φ]
+      rw [if_neg, if_neg, Subcomplex.RelativeMorphism.const_map]
+      · rintro rfl
+        simp [Fin.lt_iff_val_lt_val] at hj
+      · rintro rfl
+        simp [Fin.lt_iff_val_lt_val] at hj
+        omega
+    h_of_gt j hj := by
+      rw [hα' j (by rintro rfl; simp [Fin.lt_iff_val_lt_val] at hj)]
+      dsimp [φ]
+      rw [if_neg, if_neg, Subcomplex.RelativeMorphism.const_map]
+      · rintro rfl
+        simp [Fin.lt_iff_val_lt_val] at hj
+        omega
+      · rintro rfl
+        simp [Fin.lt_iff_val_lt_val] at hj }⟩⟩
+
+lemma mk_eq_mk_iff
+    (g₁ g₂ : Subcomplex.RelativeMorphism (subcomplexBoundary (n + 1)) _
+      (const ⟨x, Subcomplex.mem_ofSimplex_obj x⟩)) :
+    π.mk g₁ = π.mk g₂ ↔ Nonempty (MulStruct .const g₁ g₂ 0) := sorry
+
+lemma mk_eq_one_iff
+    (g : Subcomplex.RelativeMorphism (subcomplexBoundary (n + 1)) _
+      (const ⟨x, Subcomplex.mem_ofSimplex_obj x⟩)) :
+    π.mk g = 1 ↔ Nonempty (MulStruct .const g .const 0) := by
+  apply mk_eq_mk_iff
+
+lemma mk_eq_one_iff'
+    (g : Subcomplex.RelativeMorphism (subcomplexBoundary (n + 1)) _
+      (const ⟨x, Subcomplex.mem_ofSimplex_obj x⟩)) :
+    π.mk g = 1 ↔
+      ∃ (f : Δ[n + 2] ⟶ X), standardSimplex.map (SimplexCategory.δ 0) ≫ f = g.map ∧
+        ∀ (i : Fin (n + 2)),
+          standardSimplex.map (SimplexCategory.δ i.succ) ≫ f = const x := by
+  rw [mk_eq_one_iff]
+  constructor
+  · rintro ⟨h⟩
+    refine ⟨h.map, h.h₂, fun i ↦ ?_⟩
+    obtain rfl | ⟨i, rfl⟩ := i.eq_zero_or_eq_succ
+    · exact h.h₁₂
+    · obtain rfl | ⟨i, rfl⟩ := i.eq_zero_or_eq_succ
+      · exact h.h₁
+      · exact h.h_of_gt _ (by simp [Fin.lt_iff_val_lt_val])
+  · rintro ⟨f, hf₁, hf₂⟩
+    exact ⟨{
+      map := f
+      h₁ := hf₂ 1
+      h₂ := hf₁
+      h₁₂ := hf₂ 0
+      h_of_lt j hj := by simp at hj
+      h_of_gt j hj := by
+        obtain ⟨j, rfl⟩ := j.eq_succ_of_ne_zero (by rintro rfl; simp at hj)
+        exact hf₂ j }⟩
 
 noncomputable def mul'
     (g₁ g₂ : Subcomplex.RelativeMorphism (subcomplexBoundary (n + 1)) _
