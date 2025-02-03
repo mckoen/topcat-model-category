@@ -2,6 +2,7 @@ import TopCatModelCategory.SSet.Homotopy
 
 open HomotopicalAlgebra CategoryTheory Simplicial Limits Opposite
 
+-- shall be dissolved by `PtSimplex`
 universe u
 
 namespace SSet

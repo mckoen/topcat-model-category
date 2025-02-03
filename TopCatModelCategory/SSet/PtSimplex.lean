@@ -1,8 +1,9 @@
+import TopCatModelCategory.SSet.Horn
 import TopCatModelCategory.SSet.HomotopyBasic
 
 universe u
 
-open CategoryTheory Simplicial
+open CategoryTheory Simplicial Limits
 
 namespace SSet
 
@@ -155,6 +156,22 @@ def oneMul (f : X.PtSimplex (n + 1) x) (i : Fin (n + 1)) :
 def mulOne (f : X.PtSimplex (n + 1) x) (i : Fin (n + 1)) :
     MulStruct f .const f i :=
   relStructSuccEquivMulStruct (RelStruct.refl f i.succ)
+
+end MulStruct
+
+namespace MulStruct
+
+noncomputable def assoc {f₀₁ f₁₂ f₂₃ f₀₂ f₁₃ f₀₃ : X.PtSimplex (n + 1) x} (i : Fin (n + 1))
+    (h₀₂ : MulStruct f₀₁ f₁₂ f₀₂ i)
+    (h₁₃ : MulStruct f₁₂ f₂₃ f₁₃ i)
+    (h : MulStruct f₀₁ f₁₃ f₀₃ i) :
+    MulStruct f₀₂ f₂₃ f₀₃ i := by
+  apply Nonempty.some
+  sorry
+  --obtain ⟨α, hα₁, hα₂, hα₃⟩ :=
+  --  subcomplexHorn₃₁.exists_desc h₁₃.map h.map h₀₂.map (by simp) (by simp) (by simp)
+  --obtain ⟨β, hβ⟩ := anodyneExtensions.exists_lift_of_isFibrant α
+  --  (anodyneExtensions.subcomplexHorn_ι_mem 2 1)
 
 end MulStruct
 

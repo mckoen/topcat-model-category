@@ -98,13 +98,13 @@ lemma standardSimplex.subcomplex_le_horn_iff
 
 namespace subcomplexHorn
 
-def faceι (i : Fin (n + 2)) (j : Fin (n + 2)) (hij : j ≠ i) :
-    (standardSimplex.face {j}ᶜ : SSet.{u}) ⟶ (subcomplexHorn (n + 1) i : SSet.{u}) :=
+def faceι (i : Fin (n + 1)) (j : Fin (n + 1)) (hij : j ≠ i) :
+    (standardSimplex.face {j}ᶜ : SSet.{u}) ⟶ (subcomplexHorn n i : SSet.{u}) :=
   Subcomplex.homOfLE (face_le_subcomplexHorn j i hij)
 
 @[reassoc (attr := simp)]
-lemma faceι_ι (i : Fin (n + 2)) (j : Fin (n + 2)) (hij : j ≠ i) :
-    faceι i j hij ≫ (subcomplexHorn.{u} (n + 1) i).ι = (standardSimplex.face {j}ᶜ).ι := by
+lemma faceι_ι (i : Fin (n + 1)) (j : Fin (n + 1)) (hij : j ≠ i) :
+    faceι i j hij ≫ (subcomplexHorn.{u} n i).ι = (standardSimplex.face {j}ᶜ).ι := by
   simp [faceι]
 
 def ι (i : Fin (n + 2)) (j : Fin (n + 2)) (hij : j ≠ i) :
@@ -243,6 +243,8 @@ end subcomplexHorn₂₂
 
 namespace subcomplexHorn
 
+section
+
 variable (i : Fin (n + 1))
 
 lemma multicoequalizerDiagram :
@@ -258,6 +260,35 @@ lemma multicoequalizerDiagram :
 noncomputable def isColimit :
     IsColimit ((multicoequalizerDiagram i).multicofork'.map Subcomplex.toPresheafFunctor) :=
   Subcomplex.multicoforkIsColimit' (multicoequalizerDiagram i)
+
+def exists_desc {X : SSet.{u}}
+    (f : ∀ (j : ({i}ᶜ : Set _)), (standardSimplex.face {j.1}ᶜ : SSet) ⟶ X)
+    (hf : ∀ (j k : ({i}ᶜ : Set _)) (_ : j.1 < k.1),
+      Subcomplex.homOfLE (show standardSimplex.face {j.1, k.1}ᶜ ≤ _ by
+        simp [standardSimplex.face_le_face_iff]) ≫ f j =
+      Subcomplex.homOfLE (show standardSimplex.face {j.1, k.1}ᶜ ≤ _ by
+        simp [standardSimplex.face_le_face_iff]) ≫ f k) :
+    ∃ (φ : Λ[n, i] ⟶ X),
+      ∀ j, faceι i j.1 (by simpa only [Finset.mem_compl, Finset.mem_singleton] using j.2) ≫
+        φ = f j :=
+  ⟨(isColimit i).desc (Multicofork.ofπ _ _ f (fun s ↦ hf _ _ s.2)),
+    fun j ↦ (isColimit i).fac _ (.right j)⟩
+
+end
+
+lemma exists_desc' {i : Fin (n + 3)} {X : SSet.{u}} (f : ({i}ᶜ : Set _) → ((Δ[n + 1] : SSet) ⟶ X))
+    (hf : ∀ (j k : ({i}ᶜ : Set _)) (hjk : j.1 < k.1),
+      standardSimplex.map (SimplexCategory.δ (k.1.pred (Fin.ne_zero_of_lt hjk))) ≫ f j =
+        standardSimplex.map (SimplexCategory.δ (j.1.castPred (Fin.ne_last_of_lt hjk))) ≫ f k) :
+    ∃ (φ : Λ[n + 2, i] ⟶ X), ∀ j, ι i j.1 j.2 ≫ φ = f j := by
+  obtain ⟨φ, hφ⟩ := exists_desc (i := i)
+    (f := fun j ↦
+      (standardSimplex.faceSingletonComplIso j.1).inv ≫ f j) (fun j k hjk ↦ by
+        dsimp
+        sorry)
+  exact ⟨φ, fun j ↦ by
+    rw [← cancel_epi (standardSimplex.faceSingletonComplIso j.1).inv, ← hφ,
+      faceSingletonComplIso_inv_ι_assoc]⟩
 
 end subcomplexHorn
 
