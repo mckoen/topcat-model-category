@@ -180,14 +180,31 @@ lemma filtration₂_last (b : Fin n) :
 -- for `b < n`, `Y(b) ↪ Y(b + 1)` factors as `Y(b,0) ↪ Y(b,1) ↪ ... ↪ Y(b,b) ↪ Y(b + 1)`
 -- e.g. `Y(n - 1) ↪ Y(n)` factors as `Y(n - 1,0) ↪ Y(n - 1,1) ↪ ... ↪ Y(n - 1,n - 1) ↪ Y(n)`
 
-/-- `Y(b,a) ↪ Y(b, a + 1)` for `a < b` is just the union of  `Y(b,a)` with σab. -/
-lemma filtration₂_succ (b : Fin (n + 1)) (a : Fin b.1) :
-    filtration₂ b a.succ = (filtration₂ b a.castSucc) ⊔ (σ a b (sorry)) := by
+/-- `Y(b,a) ↪ Y(b, a + 1)` for `a < b ≤ n` is just the union of `Y(b,a+1)` with σab. -/
+lemma filtration₂_succ (b : Fin n) (a : Fin b.1) :
+    filtration₂ b a.succ = (filtration₂ b a.castSucc) ⊔
+      (σ (a + 1) b (by
+        refine Fin.add_one_le_of_lt ?_
+        refine (Fin.natCast_lt_natCast (a.2.trans b.2).le b.2.le).mpr a.2
+        )) := by
   simp [filtration₂]
   apply le_antisymm
-  ·
+  · apply sup_le (le_sup_of_le_left le_sup_left)
     sorry
-  · sorry
+  · apply sup_le
+    · apply sup_le le_sup_left
+      apply le_sup_of_le_left
+      apply le_sup_of_le_right
+      apply iSup_le
+      intro i
+      apply le_iSup₂_of_le a i
+      apply le_of_eq
+      congr
+      all_goals refine Fin.eq_mk_iff_val_eq.mpr ?_
+      all_goals simp only [Fin.val_natCast, Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one]
+      · exact (i.2.trans (Nat.add_lt_add_right a.2 1)).trans (Nat.add_lt_add_right b.2 1)
+      · exact a.2.trans (Nat.lt_add_right 1 b.2)
+    · sorry
 
 -- the image of Λ[n + 1, a + 1] under σab : Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2]
 noncomputable
