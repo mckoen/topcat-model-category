@@ -247,6 +247,84 @@ def faceSingletonComplIso (i : Fin (n + 2)) :
           right_inv _ := rfl }
       map_rel_iff' := (Fin.succAboveOrderEmb i).map_rel_iff }
 
+@[simps! apply]
+noncomputable def _root_.Finset.orderIsoOfOrderEmbedding
+    {α β : Type*} [Preorder α] [Preorder β] [DecidableEq β] [Fintype α]
+    (f : α ↪o β) (S : Finset β) (hS : Finset.image f ⊤ = S) : α ≃o S where
+  toEquiv := Equiv.ofBijective (f := fun a ↦ ⟨f a, by simp [← hS]⟩)
+    ⟨fun _ _ _ ↦ by aesop, fun _ ↦ by aesop⟩
+  map_rel_iff' := by simp
+
+lemma _root_.Fin.eq_castSucc_of_ne_last {n : ℕ} {i : Fin (n + 1)} (hi : i ≠ Fin.last n) :
+    ∃ (j : Fin n), i = j.castSucc := by
+  obtain ⟨j, rfl⟩ | rfl := i.eq_castSucc_or_eq_last
+  · exact ⟨j, rfl⟩
+  · simp at hi
+
+noncomputable def _root_.Fin.orderIsoPairCompl (i j : Fin (n + 3)) (h : i < j) :
+    Fin (n + 1) ≃o ({i, j}ᶜ : Finset _) :=
+  let φ :=
+    (Fin.succAboveOrderEmb (i.castPred (Fin.ne_last_of_lt h))).trans
+      (Fin.succAboveOrderEmb j)
+  Finset.orderIsoOfOrderEmbedding φ _ (by
+    apply Finset.eq_of_subset_of_card_le
+    · intro _ h
+      simp only [Finset.top_eq_univ, Finset.mem_image, Finset.mem_univ, true_and] at h
+      obtain ⟨x, rfl⟩ := h
+      simp only [Finset.compl_insert, Finset.mem_erase, ne_eq, Finset.mem_compl,
+        Finset.mem_singleton]
+      constructor
+      · intro hi
+        obtain ⟨i, rfl⟩ := Fin.eq_castSucc_of_ne_last (Fin.ne_last_of_lt h)
+        dsimp [φ] at hi
+        by_cases hx : x.castSucc < i
+        · rw [Fin.succAbove_of_castSucc_lt _ _ hx,
+            Fin.succAbove_of_castSucc_lt _ _ (lt_trans (by simpa) h),
+            Fin.castSucc_inj] at hi
+          omega
+        · rw [not_lt] at hx
+          rw [Fin.succAbove_of_le_castSucc _ _ hx] at hi
+          by_cases hx' : x.succ.castSucc < j
+          · rw [Fin.succAbove_of_castSucc_lt _ _ hx', Fin.castSucc_inj] at hi
+            simp only [← hi, Fin.succ_le_castSucc_iff, lt_self_iff_false] at hx
+          · rw [not_lt] at hx'
+            rw [Fin.succAbove_of_le_castSucc _ _ hx'] at hi
+            rw [← Fin.castSucc_le_castSucc_iff, ← hi,
+              Fin.le_iff_val_le_val, Fin.val_succ, Fin.coe_castSucc,
+              Fin.val_succ, Fin.coe_castSucc] at hx
+            omega
+      · apply Fin.succAbove_ne
+    · rw [Finset.card_image_of_injective _ φ.injective,
+        Finset.top_eq_univ, Finset.card_univ, Fintype.card_fin,
+        ← Nat.add_le_add_iff_right (n := Finset.card {i, j}),
+        Finset.card_compl_add_card,
+        Finset.card_pair h.ne, Fintype.card_fin])
+
+noncomputable def facePairComplIso (i j : Fin (n + 3)) (h : i < j) :
+    Δ[n] ≅ (face {i, j}ᶜ : SSet.{u}) := by
+  apply isoOfRepresentableBy
+  apply faceRepresentableBy
+  apply Fin.orderIsoPairCompl i j h
+
+lemma facePairComplIso_hom_ι (i j : Fin (n + 3)) (h : i < j) :
+    (facePairComplIso.{u} i j h).hom ≫ (face {i, j}ᶜ).ι =
+      standardSimplex.map (SimplexCategory.δ (i.castPred (Fin.ne_last_of_lt h))) ≫
+        standardSimplex.map (SimplexCategory.δ j) :=
+  rfl
+
+lemma facePairComplIso_hom_ι' (i j : Fin (n + 3)) (h : i < j) :
+    (facePairComplIso.{u} i j h).hom ≫ (face {i, j}ᶜ).ι =
+      standardSimplex.map (SimplexCategory.δ (j.pred (Fin.ne_zero_of_lt h))) ≫
+        standardSimplex.map (SimplexCategory.δ i) := by
+  obtain ⟨j, rfl⟩ := j.eq_succ_of_ne_zero (Fin.ne_zero_of_lt h)
+  obtain rfl | ⟨i, rfl⟩ := i.eq_last_or_eq_castSucc
+  · have := j.succ.le_last
+    omega
+  · rw [facePairComplIso_hom_ι, ← Functor.map_comp, ← Functor.map_comp,
+      Fin.pred_succ, Fin.castPred_castSucc, SimplexCategory.δ_comp_δ]
+    rw [← Fin.succ_le_succ_iff, ← Fin.castSucc_lt_iff_succ_le]
+    exact h
+
 noncomputable def faceSingletonIso (i : Fin (n + 1)) :
     Δ[0] ≅ (face {i} : SSet.{u}) :=
   standardSimplex.isoOfRepresentableBy
