@@ -1,6 +1,5 @@
 import TopCatModelCategory.SSet.Horn
 import TopCatModelCategory.SSet.HomotopyBasic
-import TopCatModelCategory.SSet.AnodyneExtensions
 import TopCatModelCategory.SSet.FundamentalGroupoid
 
 universe u

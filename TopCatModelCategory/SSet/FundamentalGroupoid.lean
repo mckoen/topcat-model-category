@@ -2,7 +2,7 @@ import TopCatModelCategory.CommSq
 import TopCatModelCategory.IsFibrant
 import TopCatModelCategory.SSet.Horn
 import TopCatModelCategory.SSet.HomotopyBasic
-import TopCatModelCategory.SSet.AnodyneExtensions
+import TopCatModelCategory.SSet.AnodyneExtensions -- TODO: remove this dependency
 import TopCatModelCategory.SSet.Monoidal
 
 universe u
