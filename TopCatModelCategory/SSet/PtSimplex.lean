@@ -1,6 +1,7 @@
 import TopCatModelCategory.SSet.Horn
 import TopCatModelCategory.SSet.HomotopyBasic
 import TopCatModelCategory.SSet.AnodyneExtensions
+import TopCatModelCategory.SSet.FundamentalGroupoid
 
 universe u
 
@@ -27,6 +28,16 @@ def mk (f : Δ[n + 1] ⟶ X)
   comm := by
     ext i : 1
     rw [Subcomplex.ofSimplex_ι, subcomplexBoundary.ι_ι_assoc, hf _, comp_const, comp_const]
+
+def equiv₀ : X.PtSimplex 0 x ≃ X _[0] where
+  toFun f := yonedaEquiv _ _ f.map
+  invFun y :=
+    { map := (yonedaEquiv _ _).symm y
+      comm := by
+        ext _ ⟨x, hx⟩
+        simp at hx }
+  left_inv f := by simp
+  right_inv y := by simp only [Equiv.apply_symm_apply]
 
 section
 
@@ -56,8 +67,6 @@ lemma δ_map (f : X.PtSimplex (n + 1) x) (i : Fin (n + 2)) :
 
 end
 
--- In case `X` is fibrant, this define an equivalence relation for each `i`,
--- but they are all equivalent
 structure RelStruct (f g : X.PtSimplex n x) (i : Fin (n + 1)) where
   map : Δ[n + 1] ⟶ X
   δ_castSucc_map : standardSimplex.map (SimplexCategory.δ i.castSucc) ≫ map = f.map := by aesop_cat
@@ -68,6 +77,14 @@ structure RelStruct (f g : X.PtSimplex n x) (i : Fin (n + 1)) where
     standardSimplex.map (SimplexCategory.δ j) ≫ map = const x := by aesop_cat
 
 def RelStruct₀ (f g : X.PtSimplex n x) := RelStruct f g 0
+
+namespace RelStruct₀
+
+def equiv₀ {f g : X.PtSimplex 0 x} :
+    RelStruct₀ f g ≃
+  KanComplex.FundamentalGroupoid.Path (X := X) ⟨equiv₀ g⟩ ⟨equiv₀ f⟩ := sorry
+
+end RelStruct₀
 
 structure MulStruct (f g fg : X.PtSimplex n x) (i : Fin n) where
   map : Δ[n + 1] ⟶ X
@@ -441,13 +458,13 @@ def refl (p : X.PtSimplex n x) : RelStruct₀ p p := RelStruct.refl _ _
 
 noncomputable def symm {p q : X.PtSimplex n x} (h : RelStruct₀ p q) : RelStruct₀ q p := by
   obtain _ | n := n
-  · sorry
+  · exact RelStruct₀.equiv₀.symm ((RelStruct₀.equiv₀ h).inv)
   · exact RelStruct.symm h
 
 noncomputable def trans {p q r : X.PtSimplex n x} (h : RelStruct₀ p q) (h' : RelStruct₀ q r) :
   RelStruct₀ p r := by
   obtain _ | n := n
-  · sorry
+  · exact RelStruct₀.equiv₀.symm ((RelStruct₀.equiv₀ h').comp (RelStruct₀.equiv₀ h))
   · exact RelStruct.trans h h'
 
 end RelStruct₀
@@ -524,6 +541,7 @@ lemma nonempty (i : Fin (n + 1)) :
         simp [Fin.lt_iff_val_lt_val] at hj
     }
 
+-- these two are similar to `nonempty` above
 lemma exists_left_inverse (i : Fin (n + 1)) :
     ∃ (q : X.PtSimplex (n + 1) x), Nonempty (MulStruct q p .const i) := by
   sorry

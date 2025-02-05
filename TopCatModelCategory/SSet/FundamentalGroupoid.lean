@@ -579,6 +579,12 @@ noncomputable def compStruct (p₀₁ : Path x₀ x₁) (p₁₂ : Path x₁ x�
     CompStruct p₀₁ p₁₂ (p₀₁.comp p₁₂) :=
   (exists_compStruct p₀₁ p₁₂).choose_spec.some
 
+noncomputable def inv (p : Path x₀ x₁) : Path x₁ x₀ :=
+  (CompStruct.right_inverse p).choose
+
+noncomputable def CompStruct.mulInv (p : Path x₀ x₁) : CompStruct p p.inv (id x₀) :=
+  (CompStruct.right_inverse p).choose_spec.some
+
 end Path
 
 def Hom.id (x : FundamentalGroupoid X) : Hom x x :=
@@ -691,6 +697,11 @@ noncomputable instance : Category (FundamentalGroupoid X) where
     exact (Path.CompStruct.assoc (Path.compStruct p₀₁ p₁₂)
       (Path.compStruct p₁₂ p₂₃) (Path.compStruct p₀₁ (p₁₂.comp p₂₃))).fac
 
+@[reassoc (attr := simp)]
+lemma homMk_comp_homMk_inv (p : Path x₀ x₁) :
+    homMk p ≫ homMk p.inv = 𝟙 _ :=
+  (Path.CompStruct.mulInv p).fac
+
 noncomputable instance : Groupoid (FundamentalGroupoid X) :=
   Groupoid.ofIsIso (fun {x₀ x₁} f ↦ by
     obtain ⟨p, hp⟩ := homMk_surjective f
@@ -707,6 +718,27 @@ noncomputable instance : Groupoid (FundamentalGroupoid X) :=
       rw [assoc, id_comp] at hg'
       rw [← hg', hg]
     exact ⟨g, hg, hg'⟩)
+
+-- why is not this automatic...???
+instance {x y : FundamentalGroupoid X} (f : x ⟶ y) : IsIso f :=
+  ((Groupoid.isoEquivHom _ _).symm f).isIso_hom
+
+instance {x y : FundamentalGroupoid X} (f : x ⟶ y) : Epi f where
+  left_cancellation g₁ g₂ h := by
+    have : 𝟙 _ ≫ g₁ = 𝟙 _ ≫ g₂ := by
+      rw [← IsIso.inv_hom_id f, Category.assoc, Category.assoc, h]
+    simpa using this
+
+instance {x y : FundamentalGroupoid X} (f : x ⟶ y) : Mono f where
+  right_cancellation g₁ g₂ h := by
+    have : g₁ ≫ 𝟙 _ = g₂ ≫ 𝟙 _ := by
+      rw [← IsIso.hom_inv_id f, reassoc_of% h]
+    simpa using this
+
+@[reassoc (attr := simp)]
+lemma homMk_inv_comp_homMk (p : Path x₀ x₁) :
+    homMk p.inv ≫ homMk p = 𝟙 _ := by
+  rw [← cancel_epi (homMk p), homMk_comp_homMk_inv_assoc, comp_id]
 
 @[simp]
 lemma Hom.ofEq_map {x y : FundamentalGroupoid X} (h : x = y) {Y : SSet.{u}} [IsFibrant Y]
