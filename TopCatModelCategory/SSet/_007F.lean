@@ -8,37 +8,55 @@ open CategoryTheory Simplicial MorphismProperty MonoidalCategory SSet
 -- `0 ≤ a ≤ b ≤ n`
 variable (n : ℕ)
 
+/-
 /-- `[n + 1 + 1] → [n]`, defined for each `0 ≤ a ≤ b < n`. -/
 -- might need to up the index by `1` since `n` could be `0`
-def f₁ (a b : Fin (n + 1)) (hab : a ≤ b) : Fin (n + 2) →o Fin (n + 1) where
-  toFun k :=
-    if k ≤ a.castSucc.castSucc then k
-    else Fin.pred k (sorry)
+def f₁ (a : Fin (n + 1)) : Fin (n + 2) →o Fin (n + 1) where
+  toFun := Fin.predAbove a
   monotone' := sorry
+-/
 
 /-- `[n + 2] → [n]`, defined for each `0 ≤ a ≤ b ≤ n`. -/
-def g₁ (a b : Fin (n + 1)) (hab : a ≤ b) : Fin (n + 3) →o Fin (n + 1) where
-  toFun k :=
-    if k ≤ (a : Fin (n + 3)) then k
-    else if k ≤ b.succ then k - 1
-    else k - 2
-  monotone' := sorry
+def g₁ (a b : Fin (n + 1)) : Fin (n + 3) →o Fin (n + 1) where
+  toFun := (Fin.predAbove a) ∘ (Fin.predAbove b.succ) -- should be the right definition
+  monotone' := (Fin.predAbove_right_monotone _).comp (Fin.predAbove_right_monotone _)
 
 /-- `[n + 1 + 1] → [2]`. -/
-def f₂ (a b : Fin (n + 1)) : Fin (n + 2) →o Fin 3 where
+-- needs to be reworked
+def f₂ (a b : Fin (n + 1)) (hab : a ≤ b) : Fin (n + 2) →o Fin 3 where
   toFun k :=
-    if (k : ℕ) ≤ a then 0
-    else if (k : ℕ) ≤ b + 1 then 1
+    if k ≤ a.castSucc then 0
+    else if k ≤ b.succ then 1
     else 2
-  monotone' := sorry
+  monotone' := by
+    refine Fin.monotone_iff_le_succ.mpr ?_
+    intro i
+    rcases i with ⟨i, hi⟩
+    rcases a with ⟨a, ha⟩
+    rcases b with ⟨b, hb⟩
+    by_cases i ≤ a
+    · aesop
+    · rename_i h
+      by_cases i ≤ b + 1
+      · rename_i h'
+        simp [h, h']
+        by_cases (i + 1 ≤ a)
+        · linarith
+        · rename_i h''
+          simp [h'']
+          aesop
+      · rename_i h'
+        have p : ¬(i + 1 ≤ a) := by linarith
+        have q : ¬(i ≤ b) := by linarith
+        simp [h, h', p, q]
 
 /-- `[n + 2] → [2]`. -/
-abbrev g₂ (a b : Fin (n + 1)) : Fin (n + 3) →o Fin 3 := f₂ (n + 1) a b
+abbrev g₂ (a b : Fin (n + 1)) (hab : a ≤ b) : Fin (n + 3) →o Fin 3 := f₂ (n + 1) a b (by simp [hab])
 
 open standardSimplex SimplexCategory in
 noncomputable
 def f {n} (a b : Fin (n + 1)) (hab : a ≤ b) : Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2] :=
-  ((Δ[n] ⊗ Δ[2]).yonedaEquiv _).symm ⟨objMk (f₁ n a b hab), objMk (f₂ n a b)⟩
+  ((Δ[n] ⊗ Δ[2]).yonedaEquiv _).symm ⟨⟨σ a⟩, objMk (f₂ n a b hab)⟩
 
 open standardSimplex Subcomplex in
 noncomputable
@@ -51,7 +69,7 @@ def σ {n} (a b : Fin (n + 1)) (hab : a ≤ b) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
 open standardSimplex in
 noncomputable
 def τ {n} (a b : Fin (n + 1)) (hab : a ≤ b) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
-  Subcomplex.ofSimplexProd (objMk (g₁ n a b hab)) (objMk (g₂ n a b))
+  Subcomplex.ofSimplexProd (objMk (g₁ n a b)) (objMk (g₂ n a b hab))
   /-
   FunctorToTypes.prod.lift (standardSimplex.map <| mkHom (f₁ n a b hab))
     (standardSimplex.map <| mkHom (f₂ n a b))
@@ -65,8 +83,8 @@ instance (a b : Fin (n + 1)) (hab : a ≤ b) : Mono (f a b hab) := by
 
 open SimplexCategory in
 def g' (a b : Fin (n + 1)) (hab : a ≤ b) : Δ[n + 2] ⟶ Δ[n] ⊗ Δ[2] :=
-  FunctorToTypes.prod.lift (standardSimplex.map <| mkHom (g₁ n a b hab))
-    (standardSimplex.map <| mkHom (g₂ n a b))
+  FunctorToTypes.prod.lift (standardSimplex.map <| mkHom (g₁ n a b))
+    (standardSimplex.map <| mkHom (g₂ n a b hab))
 
 open SimplexCategory in
 instance : Mono (g' n a b hab) := by
@@ -130,7 +148,7 @@ lemma filtration₁_succ (b : Fin n) :
 -- `Y(b,a) = Y(b) ⊔ ... ⊔ σ a b` for `0 ≤ a ≤ b < n`. if k : Fin.a.succ.1
 noncomputable
 def filtration₂ {n} (b : Fin n) (a : Fin b.succ.1) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
-  (filtration₁ b) ⊔ (⨆ (k : Fin a.succ.1), σ k a sorry)
+  (filtration₁ b) ⊔ (⨆ (k : Fin a.succ.1), σ k a (sorry))
 
   /-
   (by
@@ -145,7 +163,6 @@ lemma filtration₂_zero (b : Fin n) :
     filtration₂ b ⟨0, Nat.zero_lt_succ b⟩ = filtration₁ b ⊔ (σ 0 0 le_rfl) := by
   simp [filtration₂]
   rfl
-
 
 -- `Y(b,b) = Y(b) ⊔ σ0b ... ⊔ σbb`
 -- `Y(b,b) = Y(b + 1)` for `0 ≤ b < n`
@@ -184,8 +201,14 @@ lemma filtration₂_last (b : Fin n) :
 lemma filtration₂_succ (b : Fin n) (a : Fin b.1) :
     filtration₂ b a.succ = (filtration₂ b a.castSucc) ⊔
       (σ (a + 1) b (by
-        refine Fin.add_one_le_of_lt ?_
-        refine (Fin.natCast_lt_natCast (a.2.trans b.2).le b.2.le).mpr a.2
+        rcases a with ⟨a, ha⟩
+        rcases b with ⟨b, hb⟩
+        dsimp at ha hb ⊢
+        try linarith
+        try omega
+        sorry
+        --refine Fin.add_one_le_of_lt ?_
+        --refine (Fin.natCast_lt_natCast (a.2.trans b.2).le b.2.le).mpr a.2
         )) := by
   simp [filtration₂]
   apply le_antisymm
@@ -210,6 +233,8 @@ lemma filtration₂_succ (b : Fin n) (a : Fin b.1) :
 noncomputable
 def hornProdSubcomplex {n} (a b : Fin (n + 1)) (hab : a ≤ b) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
   Subcomplex.image (subcomplexHorn (n + 1) (a.succ)) (f a b hab)
+
+-- linarith, omega
 
 lemma hornProdSubcomplex_le₁ {n} (a b : Fin (n + 1)) (hab : a ≤ b) :
     hornProdSubcomplex a b hab ≤
