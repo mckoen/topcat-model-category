@@ -395,7 +395,8 @@ open MulStruct
 noncomputable def symm {p q : X.PtSimplex n x} {i : Fin (n + 1)} (h : RelStruct p q i) :
     RelStruct q p i := by
   obtain _ | n  := n
-  · sorry
+  · obtain rfl : i = 0 := by fin_cases i; rfl
+    exact RelStruct₀.equiv₀.symm ((RelStruct₀.equiv₀ h).inv)
   · apply Nonempty.some
     obtain rfl | ⟨i, rfl⟩ := i.eq_zero_or_eq_succ
     · exact ⟨relStructCastSuccEquivMulStruct.symm
@@ -406,7 +407,8 @@ noncomputable def symm {p q : X.PtSimplex n x} {i : Fin (n + 1)} (h : RelStruct 
 noncomputable def trans {p q r : X.PtSimplex n x} {i : Fin (n + 1)} (h : RelStruct p q i)
     (h' : RelStruct q r i) : RelStruct p r i := by
   obtain _ | n := n
-  · sorry
+  · obtain rfl : i = 0 := by fin_cases i; rfl
+    exact RelStruct₀.equiv₀.symm ((RelStruct₀.equiv₀ h').comp (RelStruct₀.equiv₀ h))
   · apply Nonempty.some
     obtain rfl | ⟨i, rfl⟩ := i.eq_zero_or_eq_succ
     · exact ⟨relStructCastSuccEquivMulStruct.symm
@@ -456,16 +458,12 @@ noncomputable def relStruct {p q : X.PtSimplex n x}
 
 def refl (p : X.PtSimplex n x) : RelStruct₀ p p := RelStruct.refl _ _
 
-noncomputable def symm {p q : X.PtSimplex n x} (h : RelStruct₀ p q) : RelStruct₀ q p := by
-  obtain _ | n := n
-  · exact RelStruct₀.equiv₀.symm ((RelStruct₀.equiv₀ h).inv)
-  · exact RelStruct.symm h
+noncomputable def symm {p q : X.PtSimplex n x} (h : RelStruct₀ p q) : RelStruct₀ q p :=
+  RelStruct.symm h
 
 noncomputable def trans {p q r : X.PtSimplex n x} (h : RelStruct₀ p q) (h' : RelStruct₀ q r) :
-  RelStruct₀ p r := by
-  obtain _ | n := n
-  · exact RelStruct₀.equiv₀.symm ((RelStruct₀.equiv₀ h').comp (RelStruct₀.equiv₀ h))
-  · exact RelStruct.trans h h'
+    RelStruct₀ p r :=
+  RelStruct.trans h h'
 
 end RelStruct₀
 
@@ -482,6 +480,12 @@ noncomputable def unique {p₀₁ p₁₂ p₀₂ p₀₁' p₁₂' p₀₂' : X
     (relStructSuccEquivMulStruct.symm
       (assoc h' (relStructSuccEquivMulStruct (h₁₂.relStruct i.succ))
         (assoc (relStructSuccEquivMulStruct (h₀₁.symm.relStruct i.succ)) (oneMul p₁₂ i) h)))
+
+noncomputable def unique' {p₀₁ p₁₂ p₀₂ p₀₂' : X.PtSimplex (n + 1) x}
+    (h : MulStruct p₀₁ p₁₂ p₀₂ i) (h₀₂ : RelStruct₀ p₀₂ p₀₂') :
+    MulStruct p₀₁ p₁₂ p₀₂' i :=
+  MulStruct.assoc' h (mulOne p₁₂ i)
+    (relStructSuccEquivMulStruct (h₀₂.symm.relStruct i.succ))
 
 variable (p q) in
 lemma nonempty (i : Fin (n + 1)) :
@@ -541,13 +545,10 @@ lemma nonempty (i : Fin (n + 1)) :
         simp [Fin.lt_iff_val_lt_val] at hj
     }
 
--- these two are similar to `nonempty` above
+-- this should be similar to `nonempty` above
+variable (p) in
 lemma exists_left_inverse (i : Fin (n + 1)) :
     ∃ (q : X.PtSimplex (n + 1) x), Nonempty (MulStruct q p .const i) := by
-  sorry
-
-lemma exists_right_inverse (i : Fin (n + 1)) :
-    ∃ (q : X.PtSimplex (n + 1) x), Nonempty (MulStruct p q .const i) := by
   sorry
 
 end MulStruct

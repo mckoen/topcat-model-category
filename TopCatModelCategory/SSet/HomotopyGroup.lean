@@ -63,12 +63,26 @@ namespace π
 
 variable {X : SSet.{u}}  {x : X _[0]} {n : ℕ} [IsFibrant X]
 
-lemma mk_eq_mk_iff (p q : X.PtSimplex n x) :
-    mk p = mk q ↔ Nonempty (p.RelStruct₀ q) := sorry
+-- assume we do not already not that the general homotopy relation
+-- is an equivalence relation
+lemma mk_eq_mk_iff {p q : X.PtSimplex n x} :
+    mk p = mk q ↔ Nonempty (p.RelStruct₀ q) := by
+  apply Quot.eq.trans
+  constructor
+  · intro r
+    induction r with
+    | rel p q h =>
+      change Nonempty (p.Homotopy q) at h
+      exact ⟨h.some.relStruct₀⟩
+    | refl p => exact ⟨.refl _⟩
+    | symm _ _ _ h => exact ⟨h.some.symm⟩
+    | trans _ _ _ _ _ h₁ h₂ => exact ⟨h₁.some.trans h₂.some⟩
+  · rintro ⟨h⟩
+    exact Relation.EqvGen.rel _ _ ⟨h.homotopy⟩
 
 lemma mk_eq_one_iff (p : X.PtSimplex n x) :
     mk p = 1 ↔ Nonempty (p.RelStruct₀ .const) :=
-  mk_eq_mk_iff _ _
+  mk_eq_mk_iff
 
 noncomputable def mul' (p q : X.PtSimplex (n + 1) x) (i : Fin (n + 1)) :
     X.PtSimplex (n + 1) x :=
@@ -81,21 +95,30 @@ noncomputable def mulStruct (p q : X.PtSimplex (n + 1) x) (i : Fin (n + 1)) :
 noncomputable def mul (i : Fin (n + 1)) (g₁ g₂ : π (n + 1) X x) : π (n + 1) X x := by
   refine Quot.lift₂ (fun p q ↦ mk (mul' p q i)) ?_ ?_ g₁ g₂
   · rintro p q q' ⟨h : q.Homotopy q'⟩
-    dsimp
-    sorry
+    rw [mk_eq_mk_iff]
+    exact ⟨PtSimplex.MulStruct.unique (mulStruct p q i) (mulStruct p q' i)
+      (.refl p) h.relStruct₀⟩
   · rintro p p' q ⟨h : p.Homotopy p'⟩
-    dsimp
-    sorry
+    rw [mk_eq_mk_iff]
+    exact ⟨PtSimplex.MulStruct.unique (mulStruct p q i) (mulStruct p' q i)
+      h.relStruct₀ (.refl q)⟩
+
+lemma mul_eq_of_mulStruct {g₁ g₂ g₁₂ : X.PtSimplex (n + 1) x} {i : Fin (n + 1)}
+    (h : PtSimplex.MulStruct g₁ g₂ g₁₂ i) : mul i (mk g₁) (mk g₂) = mk g₁₂ := by
+  change mk _ = mk _
+  rw [mk_eq_mk_iff]
+  exact ⟨PtSimplex.MulStruct.unique (mulStruct g₁ g₂ i) h (.refl g₁) (.refl g₂)⟩
 
 lemma mul_mk_eq_iff {g₁ g₂ g₁₂ : X.PtSimplex (n + 1) x} {i : Fin (n + 1)} :
     mul i (mk g₁) (mk g₂) = mk g₁₂ ↔
       Nonempty (PtSimplex.MulStruct g₁ g₂ g₁₂ i) := by
-  sorry
-
-lemma mul_eq_of_mulStruct {g₁ g₂ g₁₂ : X.PtSimplex (n + 1) x} {i : Fin (n + 1)}
-    (h : PtSimplex.MulStruct g₁ g₂ g₁₂ i) : mul i (mk g₁) (mk g₂) = mk g₁₂ := by
-  rw [mul_mk_eq_iff]
-  exact ⟨h⟩
+  constructor
+  · intro h
+    change mk _ = mk _ at h
+    rw [mk_eq_mk_iff] at h
+    exact ⟨PtSimplex.MulStruct.unique' (mulStruct g₁ g₂ i) h.some⟩
+  · rintro ⟨h⟩
+    exact mul_eq_of_mulStruct h
 
 lemma mul_assoc (i : Fin (n + 1)) (g₁ g₂ g₃ : π (n + 1) X x) :
     mul i (mul i g₁ g₂) g₃ = mul i g₁ (mul i g₂ g₃) := by
@@ -118,13 +141,28 @@ lemma mul_one (i : Fin (n + 1)) (g : π (n + 1) X x) :
   obtain ⟨p, rfl⟩ := g.mk_surjective
   exact mul_eq_of_mulStruct (PtSimplex.MulStruct.mulOne p i)
 
+lemma exists_left_inverse (i : Fin (n + 1)) (f : π (n + 1) X x) :
+    ∃ g, mul i g f = 1 := by
+  obtain ⟨p, rfl⟩ := f.mk_surjective
+  obtain ⟨q, ⟨h⟩⟩ := PtSimplex.MulStruct.exists_left_inverse p i
+  exact ⟨_, mul_eq_of_mulStruct h⟩
+
+noncomputable def inv (i : Fin (n + 1)) (f : π (n + 1) X x) : π (n + 1) X x :=
+  (exists_left_inverse i f).choose
+
+@[simp]
+lemma inv_mul (i : Fin (n + 1)) (f : π (n + 1) X x) :
+    mul i (inv i f) f = 1 := (exists_left_inverse i f).choose_spec
+
 noncomputable instance : Mul (π (n + 1) X x) where
   mul := mul 0
 
-noncomputable instance : Monoid (π (n + 1) X x) where
+noncomputable instance : Group (π (n + 1) X x) where
   mul_assoc := mul_assoc 0
   one_mul := one_mul 0
   mul_one := mul_one 0
+  inv := inv 0
+  inv_mul_cancel _ := inv_mul _ _
 
 end π
 
