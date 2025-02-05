@@ -1,5 +1,5 @@
 import TopCatModelCategory.SSet.FundamentalGroupoid
-import TopCatModelCategory.SSet.HomotopyBasic
+import TopCatModelCategory.SSet.HomotopyGroup
 
 universe u
 

@@ -1,4 +1,4 @@
-import TopCatModelCategory.SSet.Homotopy
+--import TopCatModelCategory.SSet.Homotopy
 import TopCatModelCategory.SSet.Fiber
 import TopCatModelCategory.SSet.HomotopyGroup
 
@@ -27,12 +27,8 @@ def map₂ (n : ℕ) : π n E e → π n B b := mapπ p n e b he
 variable {p he}
 
 structure DeltaStruct {n : ℕ}
-    (s : Subcomplex.RelativeMorphism
-      (subcomplexBoundary (n + 1)) _
-        (const ⟨b, Subcomplex.mem_ofSimplex_obj b⟩))
-    (t : Subcomplex.RelativeMorphism
-      (subcomplexBoundary n) _
-        (const ⟨_, Subcomplex.mem_ofSimplex_obj (basePoint p he)⟩)) where
+    (s : B.PtSimplex (n + 1) b)
+    (t : PtSimplex _ n (basePoint p he)) where
   map : Δ[n + 1] ⟶ E
   map_p : map ≫ p = s.map
   δ_succ (i : Fin (n + 1)) :
@@ -44,12 +40,8 @@ section
 
 variable (he) {n : ℕ}
 
-lemma exists_deltaStruct [Fibration p] (s : Subcomplex.RelativeMorphism
-    (subcomplexBoundary (n + 1)) _
-      (const ⟨b, Subcomplex.mem_ofSimplex_obj b⟩)) :
-    ∃ (t : Subcomplex.RelativeMorphism
-      (subcomplexBoundary n) _
-        (const ⟨_, Subcomplex.mem_ofSimplex_obj (basePoint p he)⟩)),
+lemma exists_deltaStruct [Fibration p] (s : B.PtSimplex (n + 1) b) :
+    ∃ (t : PtSimplex _ n (basePoint p he)),
           Nonempty (DeltaStruct s t) := by
   have sq : CommSq (const e) (subcomplexHorn (n + 1) 0).ι p s.map := ⟨by
     have := Subcomplex.homOfLE (subcomplexHorn_le_subcomplexBoundary (0 : Fin (n + 2))) ≫=
@@ -65,7 +57,7 @@ lemma exists_deltaStruct [Fibration p] (s : Subcomplex.RelativeMorphism
   · apply le_antisymm (by simp)
     rw [← Subcomplex.image_le_iff, Subcomplex.image_top,
       Subcomplex.range_le_fiber_iff,
-      Category.assoc, sq.fac_right, π.δ_map]
+      Category.assoc, sq.fac_right, PtSimplex.δ_map]
   · rw [← cancel_mono (Subpresheaf.ι _),
       Subcomplex.ofSimplex_ι, comp_const, const_comp, Subpresheaf.ι_app, basePoint_coe,
       Category.assoc, Subcomplex.lift_ι]
@@ -83,17 +75,11 @@ lemma exists_deltaStruct [Fibration p] (s : Subcomplex.RelativeMorphism
       rw [subcomplexHorn.ι_ι_assoc] at this
       rw [this, comp_const, comp_const]
 
-noncomputable def δ' [Fibration p] (s : Subcomplex.RelativeMorphism
-    (subcomplexBoundary (n + 1)) _
-      (const ⟨b, Subcomplex.mem_ofSimplex_obj b⟩)) :
-    Subcomplex.RelativeMorphism
-      (subcomplexBoundary n) _
-        (const ⟨_, Subcomplex.mem_ofSimplex_obj (basePoint p he)⟩) :=
+noncomputable def δ' [Fibration p] (s : B.PtSimplex (n + 1) b) :
+    PtSimplex _ n (basePoint p he) :=
   (exists_deltaStruct he s).choose
 
-noncomputable def deltaStruct [Fibration p] (s : Subcomplex.RelativeMorphism
-    (subcomplexBoundary (n + 1)) _
-      (const ⟨b, Subcomplex.mem_ofSimplex_obj b⟩)) :
+noncomputable def deltaStruct [Fibration p] (s : B.PtSimplex (n + 1) b) :
     DeltaStruct s (δ' he s) :=
   (exists_deltaStruct he s).choose_spec.some
 

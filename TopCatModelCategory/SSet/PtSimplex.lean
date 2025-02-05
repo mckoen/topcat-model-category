@@ -69,17 +69,17 @@ structure RelStruct (f g : X.PtSimplex n x) (i : Fin (n + 1)) where
 
 def RelStruct₀ (f g : X.PtSimplex n x) := RelStruct f g 0
 
-structure MulStruct (f g fg : X.PtSimplex (n + 1) x) (i : Fin (n + 1)) where
-  map : Δ[n + 2] ⟶ X
+structure MulStruct (f g fg : X.PtSimplex n x) (i : Fin n) where
+  map : Δ[n + 1] ⟶ X
   δ_succ_succ_map : standardSimplex.map (SimplexCategory.δ (i.succ.succ)) ≫ map = f.map :=
     by aesop_cat
   δ_castSucc_castSucc_map : standardSimplex.map
     (SimplexCategory.δ (i.castSucc.castSucc)) ≫ map = g.map := by aesop_cat
   δ_castSucc_succ_map : standardSimplex.map (SimplexCategory.δ (i.castSucc.succ)) ≫ map =
     fg.map := by aesop_cat
-  δ_map_of_lt (j : Fin (n + 3)) (hj : j < i.castSucc.castSucc) :
+  δ_map_of_lt (j : Fin (n + 2)) (hj : j < i.castSucc.castSucc) :
     standardSimplex.map (SimplexCategory.δ j) ≫ map = const x := by aesop_cat
-  δ_map_of_gt (j : Fin (n + 3)) (hj : i.succ.succ < j) :
+  δ_map_of_gt (j : Fin (n + 2)) (hj : i.succ.succ < j) :
     standardSimplex.map (SimplexCategory.δ j) ≫ map = const x := by aesop_cat
 
 namespace RelStruct
@@ -128,7 +128,7 @@ attribute [reassoc (attr := simp)] δ_succ_succ_map δ_castSucc_castSucc_map
 
 end MulStruct
 
-def relStructCastSuccEquivMulStruct {f g : X.PtSimplex (n + 1) x} {i : Fin (n + 1)} :
+def relStructCastSuccEquivMulStruct {f g : X.PtSimplex n x} {i : Fin n} :
     RelStruct f g i.castSucc ≃ MulStruct .const f g i where
   toFun h :=
     { map := h.map
@@ -144,7 +144,7 @@ def relStructCastSuccEquivMulStruct {f g : X.PtSimplex (n + 1) x} {i : Fin (n + 
   left_inv _ := rfl
   right_inv _ := rfl
 
-def relStructSuccEquivMulStruct {f g : X.PtSimplex (n + 1) x} {i : Fin (n + 1)} :
+def relStructSuccEquivMulStruct {f g : X.PtSimplex n x} {i : Fin n} :
     RelStruct f g i.succ ≃ MulStruct g .const f i where
   toFun h :=
     { map := h.map
@@ -174,17 +174,17 @@ def mulOne (f : X.PtSimplex (n + 1) x) (i : Fin (n + 1)) :
 variable [IsFibrant X]
 
 noncomputable def assoc
-    {f₀₁ f₁₂ f₂₃ f₀₂ f₁₃ f₀₃ : X.PtSimplex (n + 1) x} {i : Fin (n + 1)}
+    {f₀₁ f₁₂ f₂₃ f₀₂ f₁₃ f₀₃ : X.PtSimplex n x} {i : Fin n}
     (h₀₂ : MulStruct f₀₁ f₁₂ f₀₂ i) (h₁₃ : MulStruct f₁₂ f₂₃ f₁₃ i)
     (h : MulStruct f₀₁ f₁₃ f₀₃ i) :
     MulStruct f₀₂ f₂₃ f₀₃ i := by
   apply Nonempty.some
-  let α (j : ({i.succ.castSucc.castSucc}ᶜ : Set (Fin (n + 4)))) : Δ[n + 2] ⟶ X :=
+  let α (j : ({i.succ.castSucc.castSucc}ᶜ : Set (Fin (n + 3)))) : Δ[n + 1] ⟶ X :=
     if j.1 = i.castSucc.castSucc.castSucc then h₁₃.map else
       if j.1 = i.castSucc.succ.succ then h.map else
         if j.1 = i.succ.succ.succ then h₀₂.map else
           const x
-  have hα₀ (j : ({i.succ.castSucc.castSucc}ᶜ : Set (Fin (n + 4))))
+  have hα₀ (j : ({i.succ.castSucc.castSucc}ᶜ : Set (Fin (n + 3))))
       (hα : j.1 < i.castSucc.castSucc.castSucc) : α j = const x := by
     dsimp [α]
     rw [if_neg, if_neg, if_neg]
@@ -200,7 +200,7 @@ noncomputable def assoc
   have hα₃ : α ⟨i.succ.succ.succ, by simp [Fin.ext_iff]; omega⟩ = h₀₂.map := by
     dsimp [α]
     rw [if_neg, if_neg, if_pos rfl] <;> simp [Fin.ext_iff]; omega
-  have hα₄ (j : ({i.succ.castSucc.castSucc}ᶜ : Set (Fin (n + 4))))
+  have hα₄ (j : ({i.succ.castSucc.castSucc}ᶜ : Set (Fin (n + 3))))
       (hα : i.succ.succ.succ < j) : α j = const x := by
     dsimp [α]
     rw [if_neg, if_neg, if_neg]
@@ -278,11 +278,11 @@ noncomputable def assoc
                       · rw [hα₀ _ hj₁, comp_const])
   obtain ⟨γ, hγ⟩ := anodyneExtensions.exists_lift_of_isFibrant β
     (anodyneExtensions.subcomplexHorn_ι_mem _ _)
-  replace hγ (j : Fin (n + 4)) (hj : j ≠ i.succ.castSucc.castSucc) :
+  replace hγ (j : Fin (n + 3)) (hj : j ≠ i.succ.castSucc.castSucc) :
       standardSimplex.map (SimplexCategory.δ j) ≫ γ = α ⟨j, hj⟩ := by
     rw [← hβ ⟨j, hj⟩, ← hγ, subcomplexHorn.ι_ι_assoc]
   let μ := standardSimplex.map (SimplexCategory.δ i.succ.castSucc.castSucc) ≫ γ
-  have hμ (j : Fin (n + 3)) (hj : j ≤ i.castSucc.castSucc) :
+  have hμ (j : Fin (n + 2)) (hj : j ≤ i.castSucc.castSucc) :
       standardSimplex.map (SimplexCategory.δ j) ≫ μ =
         standardSimplex.map (SimplexCategory.δ i.castSucc.castSucc) ≫
           α ⟨j.castSucc, by
@@ -297,7 +297,7 @@ noncomputable def assoc
           simp only [ne_eq, Fin.castSucc_inj, μ]
           rintro rfl
           simp at hj)]
-  have hμ' (j : Fin (n + 3)) (hj : i.succ.castSucc ≤ j) :
+  have hμ' (j : Fin (n + 2)) (hj : i.succ.castSucc ≤ j) :
       standardSimplex.map (SimplexCategory.δ j) ≫ μ =
         standardSimplex.map (SimplexCategory.δ i.succ.castSucc) ≫
           α ⟨j.succ, by
@@ -329,7 +329,7 @@ noncomputable def assoc
   }⟩
 
 noncomputable def assoc'
-    {f₀₁ f₁₂ f₂₃ f₀₂ f₁₃ f₀₃ : X.PtSimplex (n + 1) x} {i : Fin (n + 1)}
+    {f₀₁ f₁₂ f₂₃ f₀₂ f₁₃ f₀₃ : X.PtSimplex n x} {i : Fin n}
     (h₀₂ : MulStruct f₀₁ f₁₂ f₀₂ i) (h₁₃ : MulStruct f₁₂ f₂₃ f₁₃ i)
     (h : MulStruct f₀₂ f₂₃ f₀₃ i) :
     MulStruct f₀₁ f₁₃ f₀₃ i :=
@@ -371,42 +371,52 @@ end MulStruct
 
 namespace RelStruct
 
-variable {p q r : X.PtSimplex (n + 1) x} [IsFibrant X]
+variable [IsFibrant X]
 
 open MulStruct
 
-noncomputable def symm {i : Fin (n + 2)} (h : RelStruct p q i) :
+noncomputable def symm {p q : X.PtSimplex n x} {i : Fin (n + 1)} (h : RelStruct p q i) :
     RelStruct q p i := by
-  apply Nonempty.some
-  obtain rfl | ⟨i, rfl⟩ := i.eq_zero_or_eq_succ
-  · exact ⟨relStructCastSuccEquivMulStruct.symm
-      (oneMulEqSymm ((relStructCastSuccEquivMulStruct (i := 0) h)))⟩
-  · exact ⟨relStructSuccEquivMulStruct.symm
-      (mulOneEqSymm (relStructSuccEquivMulStruct h))⟩
+  obtain _ | n  := n
+  · sorry
+  · apply Nonempty.some
+    obtain rfl | ⟨i, rfl⟩ := i.eq_zero_or_eq_succ
+    · exact ⟨relStructCastSuccEquivMulStruct.symm
+        (oneMulEqSymm ((relStructCastSuccEquivMulStruct (i := 0) h)))⟩
+    · exact ⟨relStructSuccEquivMulStruct.symm
+        (mulOneEqSymm (relStructSuccEquivMulStruct h))⟩
 
-noncomputable def trans {i : Fin (n + 2)} (h : RelStruct p q i)
+noncomputable def trans {p q r : X.PtSimplex n x} {i : Fin (n + 1)} (h : RelStruct p q i)
     (h' : RelStruct q r i) : RelStruct p r i := by
-  apply Nonempty.some
-  obtain rfl | ⟨i, rfl⟩ := i.eq_zero_or_eq_succ
-  · exact ⟨relStructCastSuccEquivMulStruct.symm
-      (oneMulEqTrans
-      ((relStructCastSuccEquivMulStruct (i := 0) h))
-      ((relStructCastSuccEquivMulStruct (i := 0) h')))⟩
-  · exact ⟨relStructSuccEquivMulStruct.symm
-      (mulOneEqTrans (relStructSuccEquivMulStruct h')
-      (relStructSuccEquivMulStruct h))⟩
+  obtain _ | n := n
+  · sorry
+  · apply Nonempty.some
+    obtain rfl | ⟨i, rfl⟩ := i.eq_zero_or_eq_succ
+    · exact ⟨relStructCastSuccEquivMulStruct.symm
+        (oneMulEqTrans
+        ((relStructCastSuccEquivMulStruct (i := 0) h))
+        ((relStructCastSuccEquivMulStruct (i := 0) h')))⟩
+    · exact ⟨relStructSuccEquivMulStruct.symm
+        (mulOneEqTrans (relStructSuccEquivMulStruct h')
+        (relStructSuccEquivMulStruct h))⟩
 
-noncomputable def succ {i : Fin (n + 1)} (h : RelStruct p q i.castSucc) :
-    RelStruct p q i.succ :=
-  relStructSuccEquivMulStruct.symm
-    (mulOneEqOfOneMulEq (relStructCastSuccEquivMulStruct h.symm))
+noncomputable def succ {p q : X.PtSimplex n x} {i : Fin n} (h : RelStruct p q i.castSucc) :
+    RelStruct p q i.succ := by
+  obtain _ | n := n
+  · exfalso
+    fin_cases i
+  · exact relStructSuccEquivMulStruct.symm
+      (mulOneEqOfOneMulEq (relStructCastSuccEquivMulStruct h.symm))
 
-noncomputable def ofSucc {i : Fin (n + 1)} (h : RelStruct p q i.succ) :
-    RelStruct p q i.castSucc :=
-  relStructCastSuccEquivMulStruct.symm
-    ((oneMulEqOfMulOneEq (relStructSuccEquivMulStruct h.symm)))
+noncomputable def ofSucc {p q : X.PtSimplex n x} {i : Fin n} (h : RelStruct p q i.succ) :
+    RelStruct p q i.castSucc := by
+  obtain _ | n := n
+  · exfalso
+    fin_cases i
+  · exact relStructCastSuccEquivMulStruct.symm
+      ((oneMulEqOfMulOneEq (relStructSuccEquivMulStruct h.symm)))
 
-noncomputable def relStruct₀ {i : Fin (n + 2)} (h : RelStruct p q i) :
+noncomputable def relStruct₀ {p q : X.PtSimplex n x} {i : Fin (n + 1)} (h : RelStruct p q i) :
     RelStruct₀ p q := by
   induction i using Fin.induction  with
   | zero => exact h
@@ -416,26 +426,35 @@ end RelStruct
 
 namespace RelStruct₀
 
-variable {p q r : X.PtSimplex (n + 1) x} [IsFibrant X]
+variable [IsFibrant X]
 
-noncomputable def relStruct (h : RelStruct₀ p q) (i : Fin (n + 2)) : RelStruct p q i := by
-  induction i using Fin.induction  with
-  | zero => exact h
-  | succ i hi => exact hi.succ
+noncomputable def relStruct {p q : X.PtSimplex n x}
+    (h : RelStruct₀ p q) (i : Fin (n + 1)) : RelStruct p q i := by
+  obtain _ | n := n
+  · obtain rfl : i = 0 := by aesop
+    exact h
+  · induction i using Fin.induction  with
+    | zero => exact h
+    | succ i hi => exact hi.succ
 
-variable (p) in
-def refl : RelStruct₀ p p := RelStruct.refl _ _
+def refl (p : X.PtSimplex n x) : RelStruct₀ p p := RelStruct.refl _ _
 
-noncomputable def symm (h : RelStruct₀ p q) : RelStruct₀ q p := RelStruct.symm h
+noncomputable def symm {p q : X.PtSimplex n x} (h : RelStruct₀ p q) : RelStruct₀ q p := by
+  obtain _ | n := n
+  · sorry
+  · exact RelStruct.symm h
 
-noncomputable def trans (h : RelStruct₀ p q) (h' : RelStruct₀ q r) :
-  RelStruct₀ p r := RelStruct.trans h h'
+noncomputable def trans {p q r : X.PtSimplex n x} (h : RelStruct₀ p q) (h' : RelStruct₀ q r) :
+  RelStruct₀ p r := by
+  obtain _ | n := n
+  · sorry
+  · exact RelStruct.trans h h'
 
 end RelStruct₀
 
 namespace MulStruct
 
-variable [IsFibrant X] {p q r : X.PtSimplex (n + 1) x} {i : Fin (n + 1)}
+variable [IsFibrant X] {i : Fin (n + 1)}
 
 noncomputable def unique {p₀₁ p₁₂ p₀₂ p₀₁' p₁₂' p₀₂' : X.PtSimplex (n + 1) x}
     (h : MulStruct p₀₁ p₁₂ p₀₂ i)
@@ -505,11 +524,17 @@ lemma nonempty (i : Fin (n + 1)) :
         simp [Fin.lt_iff_val_lt_val] at hj
     }
 
--- existence of left/right inverses are similar to `nonmepty` (but hold only in Kan complexes)
+lemma exists_left_inverse (i : Fin (n + 1)) :
+    ∃ (q : X.PtSimplex (n + 1) x), Nonempty (MulStruct q p .const i) := by
+  sorry
+
+lemma exists_right_inverse (i : Fin (n + 1)) :
+    ∃ (q : X.PtSimplex (n + 1) x), Nonempty (MulStruct p q .const i) := by
+  sorry
 
 end MulStruct
 
-variable [IsFibrant X] (p q : X.PtSimplex (n + 1) x)
+variable [IsFibrant X] (p q : X.PtSimplex n x)
 
 abbrev Homotopy := Subcomplex.RelativeMorphism.Homotopy p q
 
@@ -519,7 +544,7 @@ noncomputable def Homotopy.relStruct₀ (h : p.Homotopy q) : RelStruct₀ p q :=
 
 noncomputable def RelStruct₀.homotopy (h : RelStruct₀ p q) : p.Homotopy q := sorry
 
-noncomputable def RelStruct.homotopy {i : Fin (n + 2)} (h : RelStruct p q i) : p.Homotopy q :=
+noncomputable def RelStruct.homotopy {i : Fin (n + 1)} (h : RelStruct p q i) : p.Homotopy q :=
   h.relStruct₀.homotopy
 
 end PtSimplex
