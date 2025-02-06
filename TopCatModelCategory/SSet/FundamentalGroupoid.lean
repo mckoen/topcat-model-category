@@ -557,7 +557,21 @@ section
 
 variable {p q : Path x₀ x₁}
 
-noncomputable def HomotopyL.homotopy (h : p.HomotopyL q) : Homotopy p q := sorry
+noncomputable def HomotopyL.homotopy (h : p.HomotopyL q) : Homotopy p q where
+  h := square.isPushout.desc h.map
+      (standardSimplex.map (SimplexCategory.σ 0) ≫ q.map) (by
+        have := SimplexCategory.δ_comp_σ_succ (i := (0 : Fin 2))
+        dsimp at this
+        rw [h.h₀₂, ← Functor.map_comp_assoc, this,
+          CategoryTheory.Functor.map_id, id_comp])
+  h₀ := by simp [← square.δ₂_ιTriangle₀]
+  h₁ := by
+    have := SimplexCategory.δ_comp_σ_self (i := (0 : Fin 2))
+    dsimp at this
+    rw [← square.δ₀_ιTriangle₁, assoc, IsPushout.inr_desc,
+      ← Functor.map_comp_assoc, this, CategoryTheory.Functor.map_id, id_comp]
+  rel := by
+    sorry
 
 noncomputable def HomotopyR.homotopy (h : p.Homotopy q) : Homotopy p q :=
   h.homotopyL.homotopy

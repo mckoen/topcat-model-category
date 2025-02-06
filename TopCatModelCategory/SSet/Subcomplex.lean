@@ -589,6 +589,16 @@ instance : Epi (toOfSimplex x) := by
     Set.mem_univ, iff_true]
   exact ⟨u, by simp; rfl⟩
 
+lemma isIso_toOfSimplex_iff :
+    IsIso (toOfSimplex x) ↔ Mono ((yonedaEquiv _ _).symm x) := by
+  constructor
+  · intro
+    rw [← toOfSimplex_ι]
+    infer_instance
+  · intro h
+    have := mono_of_mono_fac (toOfSimplex_ι x)
+    apply isIso_of_mono_of_epi
+
 end
 
 section

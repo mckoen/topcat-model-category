@@ -448,6 +448,15 @@ lemma subcomplex_eq_top_iff (A : (Δ[p] ⊗ Δ[q] : SSet.{u}).Subcomplex)
     obtain ⟨y, hy⟩ := nondegenerate_mem_ofSimplex ⟨x, hx⟩ hn
     exact (Subcomplex.ofSimplex_le_iff _ _).2 (h y.2) _ hy
 
+instance {k : ℕ} (x : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonDegenerate k) :
+    Mono ((yonedaEquiv _ _).symm x.1) := sorry
+
+noncomputable def isoOfNonDegenerate
+    {k : ℕ} (x : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonDegenerate k) :
+    Δ[k] ≅ Subcomplex.ofSimplex x.1 :=
+  standardSimplex.isoOfRepresentableBy
+    (Subcomplex.ofSimplexRepresentableBy x.1)
+
 namespace nonDegenerateEquiv₁
 
 def toFun (i : Fin (q + 1)) : (Δ[1] ⊗ Δ[q]).NonDegenerate (q + 1) :=

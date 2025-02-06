@@ -97,6 +97,30 @@ lemma δ₂_ιTriangle₁ :
   rw [Equiv.apply_symm_apply]
   ext x : 3 <;> fin_cases x <;> rfl
 
+open Subcomplex
+
+lemma sq : Sq (ofSimplex.{u} (yonedaEquiv _ _ diagonal))
+  (ofSimplex (prodStandardSimplex.nonDegenerateEquiv₁ 0).1)
+  (ofSimplex (prodStandardSimplex.nonDegenerateEquiv₁ 1).1)
+  (⊤ : (Δ[1] ⊗ Δ[1]).Subcomplex) := sorry
+
+lemma isPushout :
+    IsPushout (standardSimplex.{u}.map (SimplexCategory.δ 1))
+      (standardSimplex.map (SimplexCategory.δ 1)) square.ιTriangle₀
+      square.ιTriangle₁ := by
+  fapply sq.{u}.isPushout.of_iso'
+    (by
+      sorry)
+    (prodStandardSimplex.isoOfNonDegenerate.{u}
+        (prodStandardSimplex.nonDegenerateEquiv₁ (q := 1) 0))
+    (prodStandardSimplex.isoOfNonDegenerate.{u}
+        (prodStandardSimplex.nonDegenerateEquiv₁ (q := 1) 1))
+    (topIso (Δ[1] ⊗ Δ[1])).symm
+  · sorry
+  · sorry
+  · sorry
+  · sorry
+
 end square
 
 end SSet

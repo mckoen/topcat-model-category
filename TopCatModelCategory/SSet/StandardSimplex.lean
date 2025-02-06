@@ -531,4 +531,27 @@ lemma face_hasDimensionLT (S : Finset (Fin (n + 1))) (k : ℕ)
 
 end standardSimplex
 
+namespace Subcomplex
+
+variable {X : SSet.{u}} {n : ℕ} (x : X _[n]) [Mono ((yonedaEquiv _ _).symm x)]
+
+noncomputable def ofSimplexRepresentableBy :
+    (Subcomplex.ofSimplex x : SSet).RepresentableBy [n] :=
+  have := (isIso_toOfSimplex_iff x).2 inferInstance
+  let e := asIso (toOfSimplex x)
+  { homEquiv {m} :=
+      ((standardSimplex.objEquiv _ _).symm.trans (yonedaEquiv _ _).symm).trans
+        ((Iso.homCongr (α := Iso.refl (standardSimplex.obj m)) (β := e)).trans (yonedaEquiv _ _ ))
+    homEquiv_comp {m m'} f g := by
+      dsimp
+      simp
+      sorry }
+
+lemma isoOfRepresentableBy_ofSimplexRepresentableBy_hom :
+    (standardSimplex.isoOfRepresentableBy (ofSimplexRepresentableBy x)).hom ≫
+      (ofSimplex x).ι = (yonedaEquiv _ _).symm x := by
+  sorry
+
+end Subcomplex
+
 end SSet
