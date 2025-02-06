@@ -449,7 +449,17 @@ lemma subcomplex_eq_top_iff (A : (Δ[p] ⊗ Δ[q] : SSet.{u}).Subcomplex)
     exact (Subcomplex.ofSimplex_le_iff _ _).2 (h y.2) _ hy
 
 instance {k : ℕ} (x : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonDegenerate k) :
-    Mono ((yonedaEquiv _ _).symm x.1) := sorry
+    Mono ((yonedaEquiv _ _).symm x.1) := by
+  obtain ⟨x, hx⟩ := x
+  rw [objEquiv_non_degenerate_iff] at hx
+  rw [NatTrans.mono_iff_mono_app]
+  intro m
+  rw [mono_iff_injective]
+  intro a b h
+  replace h : (objEquiv x).comp (asOrderHom a) = (objEquiv x).comp (asOrderHom b) :=
+    objEquiv.symm.injective h
+  ext i : 4
+  exact hx (DFunLike.congr_fun h i)
 
 noncomputable def isoOfNonDegenerate
     {k : ℕ} (x : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonDegenerate k) :

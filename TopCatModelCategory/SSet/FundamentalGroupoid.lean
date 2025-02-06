@@ -564,7 +564,7 @@ noncomputable def HomotopyL.homotopy (h : p.HomotopyL q) : Homotopy p q where
         dsimp at this
         rw [h.h₀₂, ← Functor.map_comp_assoc, this,
           CategoryTheory.Functor.map_id, id_comp])
-  h₀ := by simp [← square.δ₂_ιTriangle₀]
+  h₀ := by rw [← square.δ₂_ιTriangle₀, assoc, IsPushout.inl_desc, h.h₀₁]
   h₁ := by
     have := SimplexCategory.δ_comp_σ_self (i := (0 : Fin 2))
     dsimp at this
