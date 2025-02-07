@@ -13,6 +13,42 @@ theorem Finset.image_comp (f : β → γ) (g : α → β) [DecidableEq β] [Deci
 
 namespace SSet
 
+lemma yonedaEquiv_comp {X Y : SSet.{u}} {n : SimplexCategory}
+    (g : standardSimplex.obj n ⟶ X) (f : X ⟶ Y) :
+    yonedaEquiv _ _ (g ≫ f) = f.app _ (yonedaEquiv _ _ g) := rfl
+
+lemma yonedaEquiv_map_comp {n m : SimplexCategory} (f : n ⟶ m) {X : SSet.{u}}
+    (g : standardSimplex.obj m ⟶ X) :
+    yonedaEquiv _ _ (standardSimplex.map f ≫ g) =
+      X.map f.op (yonedaEquiv _ _ g) := by
+  dsimp [yonedaEquiv, yonedaCompUliftFunctorEquiv]
+  rw [← FunctorToTypes.naturality]
+  rfl
+
+@[simp]
+lemma yonedaEquiv_symm_comp {X Y : SSet.{u}} {n : SimplexCategory} (x : X.obj (op n))
+    (f : X ⟶ Y) :
+    (yonedaEquiv _ _).symm x ≫ f = (yonedaEquiv _ _).symm (f.app _ x) := by
+  apply (yonedaEquiv _ _).injective
+  simp only [Equiv.apply_symm_apply, yonedaEquiv_comp]
+
+lemma yonedaEquiv_symm_map {X : SSet.{u}} {n m : SimplexCategory} (f : n ⟶ m)
+    (x : X.obj (op m)) :
+    (yonedaEquiv _ _).symm (X.map f.op x) =
+      standardSimplex.map f ≫ (yonedaEquiv _ _).symm x := by
+  apply (yonedaEquiv _ _).injective
+  rw [Equiv.apply_symm_apply, yonedaEquiv_map_comp, Equiv.apply_symm_apply]
+
+lemma yonedaEquiv_symm_δ {X : SSet.{u}} {n : ℕ} (i : Fin (n + 2)) (x : X _[n + 1]) :
+    (yonedaEquiv _ _).symm (X.δ i x) =
+      standardSimplex.map (SimplexCategory.δ i) ≫ (yonedaEquiv _ _).symm x := by
+  apply yonedaEquiv_symm_map
+
+lemma yonedaEquiv_symm_σ {X : SSet.{u}} {n : ℕ} (i : Fin (n + 1)) (x : X _[n]) :
+    (yonedaEquiv _ _).symm (X.σ i x) =
+      standardSimplex.map (SimplexCategory.σ i) ≫ (yonedaEquiv _ _).symm x := by
+  apply yonedaEquiv_symm_map
+
 namespace standardSimplex
 
 instance (n : ℕ) {m : SimplexCategoryᵒᵖ} : Finite ((Δ[n] : SSet.{u}).obj m) := by
@@ -177,6 +213,11 @@ def isoOfRepresentableBy {X : SSet.{u}} {m : ℕ} (h : X.RepresentableBy (.mk m)
     intros
     ext x
     apply h.homEquiv_comp)
+
+@[simp]
+lemma yonedaEquiv_isoOfRepresentableBy_hom
+    {X : SSet.{u}} {m : ℕ} (h : X.RepresentableBy (.mk m)) :
+    yonedaEquiv _ _ (isoOfRepresentableBy h).hom = h.homEquiv (𝟙 _) := rfl
 
 lemma obj₀Equiv_symm_mem_face_iff (S : Finset (Fin (n + 1))) (i : Fin (n + 1)) :
     (obj₀Equiv.symm i) ∈ (face S).obj (op (.mk 0)) ↔ i ∈ S := by
@@ -544,13 +585,33 @@ noncomputable def ofSimplexRepresentableBy :
         ((Iso.homCongr (α := Iso.refl (standardSimplex.obj m)) (β := e)).trans (yonedaEquiv _ _ ))
     homEquiv_comp {m m'} f g := by
       dsimp
-      simp
-      sorry }
+      rw [Category.id_comp, Category.id_comp]
+      rw [yonedaEquiv_symm_comp]
+      erw [Equiv.apply_symm_apply]
+      rw [yonedaEquiv_symm_comp]
+      conv_rhs => erw [Equiv.apply_symm_apply]
+      rw [← FunctorToTypes.naturality]
+      rfl }
+
+@[simp]
+lemma ofSimplexRepresentableBy_id :
+    (ofSimplexRepresentableBy x).homEquiv (𝟙 _) = x := by
+  dsimp [ofSimplexRepresentableBy]
+  rw [Category.id_comp, yonedaEquiv_symm_comp]
+  erw [Equiv.apply_symm_apply]
+  apply FunctorToTypes.map_id_apply
+
+@[simp]
+lemma yonedaEquiv_isoOfRepresentableBy_ofSimplexRepresentableBy_hom :
+    yonedaEquiv _ _ ((standardSimplex.isoOfRepresentableBy (ofSimplexRepresentableBy x)).hom ≫
+      (ofSimplex x).ι) = x := by
+  rw [yonedaEquiv_comp, standardSimplex.yonedaEquiv_isoOfRepresentableBy_hom,
+    Subpresheaf.ι_app, ofSimplexRepresentableBy_id]
 
 lemma isoOfRepresentableBy_ofSimplexRepresentableBy_hom :
     (standardSimplex.isoOfRepresentableBy (ofSimplexRepresentableBy x)).hom ≫
-      (ofSimplex x).ι = (yonedaEquiv _ _).symm x := by
-  sorry
+      (ofSimplex x).ι = (yonedaEquiv _ _).symm x :=
+  (yonedaEquiv _ _).injective (by simp)
 
 end Subcomplex
 

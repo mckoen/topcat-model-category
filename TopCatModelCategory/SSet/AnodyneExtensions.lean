@@ -120,7 +120,7 @@ lemma ιSimplex_app_objEquiv_symm_δ (j : Fin (n + 1)) (i : Fin (n + 2)) :
 
 instance (j : Fin (n + 1)) : Mono (ιSimplex.{u} j) := by
   rw [standardSimplex.mono_iff]
-  exact (prodStandardSimplex.objEquiv_non_degenerate_iff' _).1
+  exact (prodStandardSimplex.non_degenerate_iff' _).1
     (prodStandardSimplex.nonDegenerateEquiv₁.{u} j).2
 
 noncomputable def filtration₁ (i : Fin (n + 2)) :

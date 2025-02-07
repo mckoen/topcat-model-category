@@ -221,7 +221,7 @@ lemma objEquiv_non_degenerate_iff {n : ℕ} (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[
       · simpa [h₂] using h₁.symm
       · rw [Fin.succAbove_predAbove h₂]
 
-lemma objEquiv_non_degenerate_iff' (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) :
+lemma non_degenerate_iff' (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) :
     z ∈ (Δ[p] ⊗ Δ[q]).NonDegenerate n ↔
       Function.Injective (((SSet.yonedaEquiv _ _ ).symm z).app (op [0])) := by
   have this : ((((Δ[p] ⊗ Δ[q]).yonedaEquiv [n]).symm z).app (op [0])) =
@@ -284,7 +284,7 @@ instance : (Δ[p] ⊗ Δ[q] : SSet.{u}).HasDimensionLT (p + q + 1) where
     simp only [Fintype.card_fin, add_le_add_iff_right] at this
     omega
 
-lemma objEquiv_non_degenerate_iff'' {n : ℕ} (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) (hn : p + q = n) :
+lemma non_degenerate_iff {n : ℕ} (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) (hn : p + q = n) :
     z ∈ (Δ[p] ⊗ Δ[q]).NonDegenerate n ↔ orderHomOfSimplex z hn = .id := by
   constructor
   · intro h
@@ -307,7 +307,7 @@ lemma nonDegenerate_ext {n : ℕ} {z₁ z₂ : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonD
   · exact DFunLike.congr_fun h i
   · have h₁ := z₁.2
     have h₂ := z₂.2
-    rw [objEquiv_non_degenerate_iff'' _ hn] at h₁ h₂
+    rw [non_degenerate_iff _ hn] at h₁ h₂
     simpa only [orderHomOfSimplex_coe, h, Fin.ext_iff, add_right_inj]
       using DFunLike.congr_fun (h₁.trans h₂.symm) i
 
@@ -467,6 +467,11 @@ noncomputable def isoOfNonDegenerate
   standardSimplex.isoOfRepresentableBy
     (Subcomplex.ofSimplexRepresentableBy x.1)
 
+@[reassoc (attr := simp)]
+lemma isoOfNonDegenerate_hom_ι {k : ℕ} (x : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonDegenerate k) :
+    (isoOfNonDegenerate x).hom ≫ (Subcomplex.ofSimplex x.1).ι =
+      (yonedaEquiv _ _).symm x.1 := rfl
+
 namespace nonDegenerateEquiv₁
 
 def toFun (i : Fin (q + 1)) : (Δ[1] ⊗ Δ[q]).NonDegenerate (q + 1) :=
@@ -513,7 +518,7 @@ noncomputable def nonDegenerateEquiv₁ :
       simpa using standardSimplex.objMk₁_injective (congr_arg (Prod.fst ∘ Subtype.val) h)
     · intro x
       obtain ⟨i, hi⟩ := standardSimplex.objMk₁_surjective x.1.1
-      have hx := (objEquiv_non_degenerate_iff'' _ (add_comm 1 q)).1 x.2
+      have hx := (non_degenerate_iff _ (add_comm 1 q)).1 x.2
       obtain ⟨i, rfl⟩ := Fin.eq_succ_of_ne_zero (i := i) (by
         rintro rfl
         replace hi : x.1.1 0 = 1 := DFunLike.congr_fun hi.symm 0

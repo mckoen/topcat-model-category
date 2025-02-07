@@ -5,6 +5,24 @@ universe u
 
 open CategoryTheory Simplicial MonoidalCategory
 
+lemma Fin.range₁ {α : Type*} (f : Fin 1 → α) :
+    Set.range f = {f 0} := Set.range_unique
+
+lemma Fin.range_next {α : Type*} (f : Fin (n + 1) → α) :
+    Set.range f =
+      (Set.range (fun (i : Fin n) ↦ f i.succ)).insert (f 0) := by
+  sorry
+
+lemma Fin.range₂ {α : Type*} (f : Fin 2 → α) :
+    Set.range f = {f 0, f 1} := by
+  rw [Fin.range_next, Fin.range₁]
+  rfl
+
+lemma Fin.range₃ {α : Type*} (f : Fin 3 → α) :
+    Set.range f = {f 0, f 1, f 2} := by
+  rw [Fin.range_next, Fin.range₂]
+  rfl
+
 namespace SSet
 
 namespace square
@@ -97,29 +115,96 @@ lemma δ₂_ιTriangle₁ :
   rw [Equiv.apply_symm_apply]
   ext x : 3 <;> fin_cases x <;> rfl
 
+noncomputable abbrev diagonalSimplex : (Δ[1] ⊗ Δ[1] : SSet.{u}).NonDegenerate 1 :=
+  ⟨yonedaEquiv _ _ diagonal, by
+    rw [prodStandardSimplex.non_degenerate_iff']
+    intro x y h
+    simpa using congr_arg Prod.fst h⟩
+
+lemma range_objEquiv_nonDegenerateEquiv₁_zero :
+    Set.range (prodStandardSimplex.objEquiv
+      (prodStandardSimplex.nonDegenerateEquiv₁ (q := 1) 0).1) =
+        {(0,0), (1, 0), (1, 1)} :=
+  Fin.range₃ _
+
+lemma range_objEquiv_nonDegenerateEquiv₁_one :
+    Set.range (prodStandardSimplex.objEquiv
+      (prodStandardSimplex.nonDegenerateEquiv₁ (q := 1) 1).1) =
+        {(0,0), (0, 1), (1, 1)} :=
+  Fin.range₃ _
+
+lemma range_objEquiv_diagonalSimplex :
+    Set.range (prodStandardSimplex.objEquiv diagonalSimplex.1) = {(0, 0), (1, 1)} := by
+  rw [Fin.range₂]
+  rfl
+
+lemma range_objEquiv_diagonalSimplex_eq_inter :
+    Set.range (prodStandardSimplex.objEquiv diagonalSimplex.1) =
+    Set.range (prodStandardSimplex.objEquiv
+      (prodStandardSimplex.nonDegenerateEquiv₁ (q := 1) 0).1) ∩
+    Set.range (prodStandardSimplex.objEquiv
+      (prodStandardSimplex.nonDegenerateEquiv₁ (q := 1) 1).1) := by
+  rw [range_objEquiv_nonDegenerateEquiv₁_zero,
+    range_objEquiv_nonDegenerateEquiv₁_one,
+    range_objEquiv_diagonalSimplex]
+  ext x
+  fin_cases x <;> simp
+
 open Subcomplex
 
 lemma sq : Sq (ofSimplex.{u} (yonedaEquiv _ _ diagonal))
-  (ofSimplex (prodStandardSimplex.nonDegenerateEquiv₁ 0).1)
-  (ofSimplex (prodStandardSimplex.nonDegenerateEquiv₁ 1).1)
-  (⊤ : (Δ[1] ⊗ Δ[1]).Subcomplex) := sorry
+    (ofSimplex (prodStandardSimplex.nonDegenerateEquiv₁ 0).1)
+    (ofSimplex (prodStandardSimplex.nonDegenerateEquiv₁ 1).1)
+    (⊤ : (Δ[1] ⊗ Δ[1]).Subcomplex) where
+  max_eq := by
+    rw [prodStandardSimplex.subcomplex_eq_top_iff _ rfl]
+    intro x hx
+    obtain ⟨i, hi⟩ := prodStandardSimplex.nonDegenerateEquiv₁.surjective ⟨x, hx⟩
+    rw [Subtype.ext_iff] at hi
+    dsimp at hi
+    subst hi
+    rw [Subpresheaf.max_obj, Set.mem_union]
+    fin_cases i
+    · exact Or.inl (mem_ofSimplex_obj _)
+    · exact Or.inr (mem_ofSimplex_obj _)
+  min_eq := by
+    ext ⟨k⟩ x
+    induction' k using SimplexCategory.rec with k
+    obtain ⟨x, rfl⟩ := prodStandardSimplex.objEquiv.symm.surjective x
+    dsimp
+    simp only [Set.mem_inter_iff, prodStandardSimplex.mem_ofSimplex_iff,
+      Equiv.apply_symm_apply]
+    rw [range_objEquiv_diagonalSimplex_eq_inter, Set.subset_inter_iff]
 
 lemma isPushout :
     IsPushout (standardSimplex.{u}.map (SimplexCategory.δ 1))
       (standardSimplex.map (SimplexCategory.δ 1)) square.ιTriangle₀
       square.ιTriangle₁ := by
   fapply sq.{u}.isPushout.of_iso'
-    (by
-      sorry)
+    (prodStandardSimplex.isoOfNonDegenerate.{u} diagonalSimplex)
     (prodStandardSimplex.isoOfNonDegenerate.{u}
         (prodStandardSimplex.nonDegenerateEquiv₁ (q := 1) 0))
     (prodStandardSimplex.isoOfNonDegenerate.{u}
         (prodStandardSimplex.nonDegenerateEquiv₁ (q := 1) 1))
     (topIso (Δ[1] ⊗ Δ[1])).symm
-  · sorry
-  · sorry
-  · sorry
-  · sorry
+  · apply Subcomplex.hom_ext
+    dsimp
+    rw [Category.assoc, Category.assoc, homOfLE_ι,
+      prodStandardSimplex.isoOfNonDegenerate_hom_ι,
+      prodStandardSimplex.isoOfNonDegenerate_hom_ι,
+      ← yonedaEquiv_symm_δ]
+    congr 1
+    apply Prod.ext <;> ext i <;> fin_cases i <;> rfl
+  · apply Subcomplex.hom_ext
+    dsimp
+    rw [Category.assoc, Category.assoc, homOfLE_ι,
+      prodStandardSimplex.isoOfNonDegenerate_hom_ι,
+      prodStandardSimplex.isoOfNonDegenerate_hom_ι,
+      ← yonedaEquiv_symm_δ]
+    congr 1
+    apply Prod.ext <;> ext i <;> fin_cases i <;> rfl
+  · exact Subcomplex.hom_ext _ rfl
+  · exact Subcomplex.hom_ext _ rfl
 
 end square
 

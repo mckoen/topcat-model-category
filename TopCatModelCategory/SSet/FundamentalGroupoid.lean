@@ -66,7 +66,7 @@ lemma ι₁_ι : ι₁.{u} ≫ (subcomplexBoundary 1).ι =
   rfl
 
 lemma isPushout : IsPushout (initial.to _) (initial.to _) ι₀.{u} ι₁.{u} :=
-  sq.{u}.isPushout.of_iso' (initialIsoIsInitial Subcomplex.isInitialBot)
+  sq.{u}.isPushout.of_iso' (initialIsoIsInitial (Subcomplex.isInitialBot _))
     (standardSimplex.isoOfRepresentableBy
       (standardSimplex.faceRepresentableBy.{u} ({1}ᶜ : Finset (Fin 2)) 0
       (Fin.orderIsoSingleton 0)))

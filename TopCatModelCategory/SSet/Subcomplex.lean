@@ -147,16 +147,22 @@ variable (S : X.Subcomplex) (T : Y.Subcomplex)
 instance : CoeOut X.Subcomplex SSet.{u} where
   coe := fun S ↦ S.toPresheaf
 
-variable (X) in
+variable (X)
+
 @[simps!]
 def topIso : ((⊤ : X.Subcomplex) : SSet) ≅ X :=
   NatIso.ofComponents (fun n ↦ (Equiv.Set.univ (X.obj n)).toIso)
+
+@[reassoc (attr := simp)]
+lemma topIso_inv_ι : (topIso X).inv ≫ Subpresheaf.ι _ = 𝟙 _ := rfl
 
 def isInitialBot : IsInitial ((⊥ : X.Subcomplex) : SSet.{u}) :=
   IsInitial.ofUniqueHom (fun P ↦
     { app i := fun ⟨x, hx⟩ ↦ by simp at hx
       naturality i j f := by ext ⟨x, hx⟩; simp at hx })
     (fun _ _ ↦ by ext _ ⟨x, hx⟩; simp at hx)
+
+variable {X}
 
 variable {S} in
 @[ext]
@@ -567,6 +573,10 @@ def lift : X ⟶ B :=
 @[reassoc (attr := simp)]
 lemma lift_ι : lift f hf ≫ B.ι = f := rfl
 
+@[simp]
+lemma lift_app_coe {n : SimplexCategoryᵒᵖ} (x : X.obj n) :
+    ((lift f g).app _ x).1 = f.app _ x := rfl
+
 end
 
 section
@@ -750,6 +760,11 @@ noncomputable def multicoforkIsColimit' [LinearOrder ι] :
     exact (isColimitMapMulticoforkEquiv _ _).2 (Types.isColimitMulticoforkMapSetToTypes' h'))
 
 end multicoequalizer
+
+variable {Y}
+
+lemma hom_ext (B : Y.Subcomplex) {f g : X ⟶ B} (h : f ≫ B.ι = g ≫ B.ι): f = g := by
+  simpa only [cancel_mono] using h
 
 end Subcomplex
 
