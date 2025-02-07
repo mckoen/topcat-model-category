@@ -81,7 +81,7 @@ namespace RelStruct₀
 
 def equiv₀ {f g : X.PtSimplex 0 x} :
     RelStruct₀ f g ≃
-  KanComplex.FundamentalGroupoid.Path (X := X) ⟨equiv₀ g⟩ ⟨equiv₀ f⟩ := sorry
+  KanComplex.FundamentalGroupoid.Edge (X := X) ⟨equiv₀ g⟩ ⟨equiv₀ f⟩ := sorry
 
 end RelStruct₀
 

@@ -133,21 +133,21 @@ def Hom (x₀ x₁ : FundamentalGroupoid X) :=
   Subcomplex.RelativeMorphism.HomotopyClass.{u} _ _
     (subcomplexBoundary₁.desc x₀.pt x₁.pt ≫ (Subcomplex.topIso X).inv)
 
-abbrev Path (x₀ x₁ : FundamentalGroupoid X) :=
+abbrev Edge (x₀ x₁ : FundamentalGroupoid X) :=
   Subcomplex.RelativeMorphism.{u} _ _
     (subcomplexBoundary₁.desc x₀.pt x₁.pt ≫ (Subcomplex.topIso X).inv)
 
 @[ext]
-lemma Path.ext {x₀ x₁ : FundamentalGroupoid X} {p q : Path x₀ x₁}
+lemma Edge.ext {x₀ x₁ : FundamentalGroupoid X} {p q : Edge x₀ x₁}
     (h : p.map = q.map) :
     p = q :=
   Subcomplex.RelativeMorphism.ext h
 
 @[simps]
-def Path.mk {x₀ x₁ : FundamentalGroupoid X} (f : Δ[1] ⟶ X)
+def Edge.mk {x₀ x₁ : FundamentalGroupoid X} (f : Δ[1] ⟶ X)
     (h₀ : standardSimplex.map (SimplexCategory.δ 1) ≫ f = const x₀.pt := by simp)
     (h₁ : standardSimplex.map (SimplexCategory.δ 0) ≫ f = const x₁.pt := by simp) :
-    Path x₀ x₁ where
+    Edge x₀ x₁ where
   map := f
   comm := by
     apply subcomplexBoundary₁.hom_ext
@@ -160,12 +160,12 @@ def Path.mk {x₀ x₁ : FundamentalGroupoid X} (f : Δ[1] ⟶ X)
         subcomplexBoundary₁.ι₁_ι_assoc, h₁, FunctorToTypes.comp,
         Subpresheaf.ι_app, Subcomplex.topIso_inv_app_coe]
 
-def Path.ofEq {x₀ x₁ : FundamentalGroupoid X} (h : x₀ = x₁) :
-    Path x₀ x₁ :=
-  Path.mk (const x₀.pt) rfl (by rw [h]; rfl)
+def Edge.ofEq {x₀ x₁ : FundamentalGroupoid X} (h : x₀ = x₁) :
+    Edge x₀ x₁ :=
+  Edge.mk (const x₀.pt) rfl (by rw [h]; rfl)
 
 @[reassoc]
-lemma Path.comm₀ {x₀ x₁ : FundamentalGroupoid X} (p : Path x₀ x₁) :
+lemma Edge.comm₀ {x₀ x₁ : FundamentalGroupoid X} (p : Edge x₀ x₁) :
     standardSimplex.map (SimplexCategory.δ 1) ≫ p.map = const x₀.pt := by
   have := subcomplexBoundary₁.ι₀ ≫= p.comm
   rw [assoc, subcomplexBoundary₁.ι₀_ι_assoc, subcomplexBoundary₁.ι₀_desc_assoc,
@@ -174,7 +174,7 @@ lemma Path.comm₀ {x₀ x₁ : FundamentalGroupoid X} (p : Path x₀ x₁) :
   exact this
 
 @[reassoc]
-lemma Path.comm₁ {x₀ x₁ : FundamentalGroupoid X} (p : Path x₀ x₁) :
+lemma Edge.comm₁ {x₀ x₁ : FundamentalGroupoid X} (p : Edge x₀ x₁) :
     standardSimplex.map (SimplexCategory.δ 0) ≫ p.map = const x₁.pt := by
   have := subcomplexBoundary₁.ι₁ ≫= p.comm
   rw [assoc, subcomplexBoundary₁.ι₁_ι_assoc, subcomplexBoundary₁.ι₁_desc_assoc,
@@ -183,42 +183,42 @@ lemma Path.comm₁ {x₀ x₁ : FundamentalGroupoid X} (p : Path x₀ x₁) :
   exact this
 
 @[simps! map]
-def Path.id (x : FundamentalGroupoid X) : Path x x :=
-  Path.mk (const x.pt)
+def Edge.id (x : FundamentalGroupoid X) : Edge x x :=
+  Edge.mk (const x.pt)
 
 @[simp]
-lemma Path.ofEq_refl (x : FundamentalGroupoid x) :
-    Path.ofEq (rfl : x = x) = Path.id x := rfl
+lemma Edge.ofEq_refl (x : FundamentalGroupoid x) :
+    Edge.ofEq (rfl : x = x) = Edge.id x := rfl
 
-namespace Path
+namespace Edge
 
 section
 
 variable {x₀ x₁ : FundamentalGroupoid X}
 
 @[simps! map]
-def pushforward (p : Path x₀ x₁) {Y : SSet.{u}} (f : X ⟶ Y) :
-    Path (x₀.map f) (x₁.map f) :=
-  Path.mk (p.map ≫ f) (by simp [p.comm₀_assoc])
+def pushforward (p : Edge x₀ x₁) {Y : SSet.{u}} (f : X ⟶ Y) :
+    Edge (x₀.map f) (x₁.map f) :=
+  Edge.mk (p.map ≫ f) (by simp [p.comm₀_assoc])
     (by simp [p.comm₁_assoc])
 
 @[simp]
 lemma id_pushforward (x : FundamentalGroupoid X) {Y : SSet.{u}} (f : X ⟶ Y) :
-    (Path.id x).pushforward f = Path.id (map f x) := by
+    (Edge.id x).pushforward f = Edge.id (map f x) := by
   aesop
 
 @[simp]
-lemma pushforward_id (p : Path x₀ x₁) :
+lemma pushforward_id (p : Edge x₀ x₁) :
     p.pushforward (𝟙 X) = p := by
   aesop
 
 @[simp]
-lemma pushforward_comp (p : Path x₀ x₁) {Y Z : SSet.{u}} (f : X ⟶ Y)
+lemma pushforward_comp (p : Edge x₀ x₁) {Y Z : SSet.{u}} (f : X ⟶ Y)
     (g : Y ⟶ Z) :
     p.pushforward (f ≫ g) = (p.pushforward f).pushforward g := by
   aesop
 
-variable (p q : Path x₀ x₁)
+variable (p q : Edge x₀ x₁)
 
 nonrec abbrev Homotopy := p.Homotopy q
 
@@ -271,7 +271,7 @@ end
 
 variable {x₀ x₁ x₂ x₃ : FundamentalGroupoid X}
 
-structure CompStruct (p₀₁ : Path x₀ x₁) (p₁₂ : Path x₁ x₂) (p₀₂ : Path x₀ x₂) where
+structure CompStruct (p₀₁ : Edge x₀ x₁) (p₁₂ : Edge x₁ x₂) (p₀₂ : Edge x₀ x₂) where
   map : Δ[2] ⟶ X
   h₀₁ : standardSimplex.map (SimplexCategory.δ 2) ≫ map = p₀₁.map := by aesop_cat
   h₁₂ : standardSimplex.map (SimplexCategory.δ 0) ≫ map = p₁₂.map := by aesop_cat
@@ -282,13 +282,13 @@ namespace CompStruct
 attribute [reassoc (attr := simp)] h₀₁ h₁₂ h₀₂
 
 @[simps]
-def pushforward {p₀₁ : Path x₀ x₁} {p₁₂ : Path x₁ x₂} {p₀₂ : Path x₀ x₂}
+def pushforward {p₀₁ : Edge x₀ x₁} {p₁₂ : Edge x₁ x₂} {p₀₂ : Edge x₀ x₂}
     (h : CompStruct p₀₁ p₁₂ p₀₂)
     {Y : SSet.{u}} (f : X ⟶ Y) :
     CompStruct (p₀₁.pushforward f) (p₁₂.pushforward f) (p₀₂.pushforward f) where
   map := h.map ≫ f
 
-def idComp (p : Path x₀ x₁) : CompStruct (Path.id x₀) p p where
+def idComp (p : Edge x₀ x₁) : CompStruct (Edge.id x₀) p p where
   map := standardSimplex.map (SimplexCategory.σ 0) ≫ p.map
   h₀₁ := by
     have := SimplexCategory.δ_comp_σ_of_gt (n := 0) (i := 1) (j := 0) (by simp)
@@ -305,7 +305,7 @@ def idComp (p : Path x₀ x₁) : CompStruct (Path.id x₀) p p where
     rw [← Functor.map_comp_assoc, this, CategoryTheory.Functor.map_id,
       CategoryTheory.Category.id_comp]
 
-def compId (p : Path x₀ x₁) : CompStruct p (Path.id x₁) p where
+def compId (p : Edge x₀ x₁) : CompStruct p (Edge.id x₁) p where
   map := standardSimplex.map (SimplexCategory.σ 1) ≫ p.map
   h₀₁ := by
     have := SimplexCategory.δ_comp_σ_succ (n := 1) (i := 1)
@@ -322,8 +322,8 @@ def compId (p : Path x₀ x₁) : CompStruct p (Path.id x₁) p where
 
 variable [IsFibrant X]
 
-lemma left_inverse (p : Path x₀ x₁) :
-    ∃ (q : Path x₁ x₀), Nonempty (CompStruct q p (Path.id x₁)) := by
+lemma left_inverse (p : Edge x₀ x₁) :
+    ∃ (q : Edge x₁ x₀), Nonempty (CompStruct q p (Edge.id x₁)) := by
   obtain ⟨α, h₀₂, h₁₂⟩ := subcomplexHorn₂₂.isPushout.exists_desc (const x₁.pt) p.map
     (by rw [p.comm₁, comp_const])
   obtain ⟨β, hβ⟩ := anodyneExtensions.exists_lift_of_isFibrant α
@@ -332,7 +332,7 @@ lemma left_inverse (p : Path x₀ x₁) :
   rw [subcomplexHorn.ι_ι_assoc, h₀₂] at h₀₂'
   have h₁₂' := subcomplexHorn₂₂.ι₁₂ ≫= hβ
   rw [subcomplexHorn.ι_ι_assoc, h₁₂] at h₁₂'
-  refine ⟨Path.mk (standardSimplex.map (SimplexCategory.δ 2) ≫ β) ?_ ?_,
+  refine ⟨Edge.mk (standardSimplex.map (SimplexCategory.δ 2) ≫ β) ?_ ?_,
     ⟨{ map := β, h₀₁ := rfl, h₁₂ := h₁₂', h₀₂ := h₀₂' }⟩⟩
   · have := SimplexCategory.δ_comp_δ_self (n := 0) (i := 1)
     dsimp at this
@@ -341,8 +341,8 @@ lemma left_inverse (p : Path x₀ x₁) :
     dsimp at this
     rw [← Functor.map_comp_assoc, this, Functor.map_comp_assoc, h₁₂', p.comm₀]
 
-lemma right_inverse (p : Path x₀ x₁) :
-    ∃ (q : Path x₁ x₀), Nonempty (CompStruct p q (Path.id x₀)) := by
+lemma right_inverse (p : Edge x₀ x₁) :
+    ∃ (q : Edge x₁ x₀), Nonempty (CompStruct p q (Edge.id x₀)) := by
   obtain ⟨α, h₀₁, h₁₂⟩ := subcomplexHorn₂₀.isPushout.exists_desc p.map (const x₀.pt)
     (by rw [p.comm₀, comp_const])
   obtain ⟨β, hβ⟩ := anodyneExtensions.exists_lift_of_isFibrant α
@@ -351,7 +351,7 @@ lemma right_inverse (p : Path x₀ x₁) :
   rw [subcomplexHorn.ι_ι_assoc, h₀₁] at h₀₁'
   have h₀₂' := subcomplexHorn₂₀.ι₀₂ ≫= hβ
   rw [subcomplexHorn.ι_ι_assoc, h₁₂] at h₀₂'
-  refine ⟨Path.mk (standardSimplex.map (SimplexCategory.δ 0) ≫ β) ?_ ?_,
+  refine ⟨Edge.mk (standardSimplex.map (SimplexCategory.δ 0) ≫ β) ?_ ?_,
     ⟨{ map := β, h₀₁ := h₀₁', h₁₂ := rfl, h₀₂ := h₀₂' }⟩⟩
   · have := SimplexCategory.δ_comp_δ (n := 0) (i := 0) (j := 1) (by simp)
     dsimp at this
@@ -360,8 +360,8 @@ lemma right_inverse (p : Path x₀ x₁) :
     dsimp at this
     rw [← Functor.map_comp_assoc, this, Functor.map_comp_assoc, h₀₂', comp_const]
 
-noncomputable def assoc {f₀₁ : Path x₀ x₁} {f₁₂ : Path x₁ x₂} {f₂₃ : Path x₂ x₃}
-    {f₀₂ : Path x₀ x₂} {f₁₃ : Path x₁ x₃} {f₀₃ : Path x₀ x₃}
+noncomputable def assoc {f₀₁ : Edge x₀ x₁} {f₁₂ : Edge x₁ x₂} {f₂₃ : Edge x₂ x₃}
+    {f₀₂ : Edge x₀ x₂} {f₁₃ : Edge x₁ x₃} {f₀₃ : Edge x₀ x₃}
     (h₀₂ : CompStruct f₀₁ f₁₂ f₀₂)
     (h₁₃ : CompStruct f₁₂ f₂₃ f₁₃)
     (h : CompStruct f₀₁ f₁₃ f₀₃) :
@@ -389,8 +389,8 @@ noncomputable def assoc {f₀₁ : Path x₀ x₁} {f₁₂ : Path x₁ x₂} {f
       rw [← h.h₀₂, ← hα₂, ← hβ, subcomplexHorn.ι_ι_assoc, ← Functor.map_comp_assoc,
         ← Functor.map_comp_assoc, this] }⟩
 
-noncomputable def assoc' {f₀₁ : Path x₀ x₁} {f₁₂ : Path x₁ x₂} {f₂₃ : Path x₂ x₃}
-    {f₀₂ : Path x₀ x₂} {f₁₃ : Path x₁ x₃} {f₀₃ : Path x₀ x₃}
+noncomputable def assoc' {f₀₁ : Edge x₀ x₁} {f₁₂ : Edge x₁ x₂} {f₂₃ : Edge x₂ x₃}
+    {f₀₂ : Edge x₀ x₂} {f₁₃ : Edge x₁ x₃} {f₀₃ : Edge x₀ x₃}
     (h₀₂ : CompStruct f₀₁ f₁₂ f₀₂)
     (h₁₃ : CompStruct f₁₂ f₂₃ f₁₃)
     (h : CompStruct f₀₂ f₂₃ f₀₃) :
@@ -420,8 +420,8 @@ noncomputable def assoc' {f₀₁ : Path x₀ x₁} {f₁₂ : Path x₁ x₂} {
 
 end CompStruct
 
-lemma exists_compStruct [IsFibrant X] (p₀₁ : Path x₀ x₁) (p₁₂ : Path x₁ x₂) :
-    ∃ (p₀₂ : Path x₀ x₂), Nonempty (CompStruct p₀₁ p₁₂ p₀₂) := by
+lemma exists_compStruct [IsFibrant X] (p₀₁ : Edge x₀ x₁) (p₁₂ : Edge x₁ x₂) :
+    ∃ (p₀₂ : Edge x₀ x₂), Nonempty (CompStruct p₀₁ p₁₂ p₀₂) := by
   obtain ⟨α, h₀₁, h₁₂⟩ := subcomplexHorn₂₁.isPushout.exists_desc p₀₁.map p₁₂.map (by
     have h₀ := subcomplexBoundary₁.ι₁ ≫= p₀₁.comm
     have h₁ := subcomplexBoundary₁.ι₀ ≫= p₁₂.comm
@@ -436,7 +436,7 @@ lemma exists_compStruct [IsFibrant X] (p₀₁ : Path x₀ x₁) (p₁₂ : Path
   rw [subcomplexHorn.ι_ι_assoc, h₀₁] at h₀₁'
   have h₁₂' := subcomplexHorn₂₁.ι₁₂ ≫= hβ
   rw [subcomplexHorn.ι_ι_assoc, h₁₂] at h₁₂'
-  refine ⟨Path.mk (standardSimplex.map (SimplexCategory.δ 1) ≫ β) ?_ ?_,
+  refine ⟨Edge.mk (standardSimplex.map (SimplexCategory.δ 1) ≫ β) ?_ ?_,
     ⟨{ map := β, h₀₁ := h₀₁', h₁₂ := h₁₂', h₀₂ := rfl }⟩⟩
   · have := SimplexCategory.δ_comp_δ_self (n := 0) (i := 1)
     dsimp at this
@@ -445,12 +445,12 @@ lemma exists_compStruct [IsFibrant X] (p₀₁ : Path x₀ x₁) (p₁₂ : Path
     dsimp at this
     rw [← Functor.map_comp_assoc, this, Functor.map_comp_assoc, h₁₂', p₁₂.comm₁]
 
-def HomotopyL (p q : Path x₀ x₁) := CompStruct p (Path.id x₁) q
-def HomotopyR (p q : Path x₀ x₁) := CompStruct (Path.id x₀) p q
+def HomotopyL (p q : Edge x₀ x₁) := CompStruct p (Edge.id x₁) q
+def HomotopyR (p q : Edge x₀ x₁) := CompStruct (Edge.id x₀) p q
 
 section
 
-variable (p q r : Path x₀ x₁)
+variable (p q r : Edge x₀ x₁)
 
 def HomotopyL.refl : HomotopyL p p := CompStruct.compId p
 def HomotopyR.refl : HomotopyR p p := CompStruct.idComp p
@@ -483,9 +483,9 @@ namespace CompStruct
 
 variable [IsFibrant X]
 
-noncomputable def unique {p₀₁ : Path x₀ x₁} {p₁₂ : Path x₁ x₂} {p₀₂ : Path x₀ x₂}
+noncomputable def unique {p₀₁ : Edge x₀ x₁} {p₁₂ : Edge x₁ x₂} {p₀₂ : Edge x₀ x₂}
     (h : CompStruct p₀₁ p₁₂ p₀₂)
-    {p₀₁' : Path x₀ x₁} {p₁₂' : Path x₁ x₂} {p₀₂' : Path x₀ x₂}
+    {p₀₁' : Edge x₀ x₁} {p₁₂' : Edge x₁ x₂} {p₀₂' : Edge x₀ x₂}
     (h' : CompStruct p₀₁' p₁₂' p₀₂')
     (h₀₁ : HomotopyL p₀₁ p₀₁') (h₁₂ : HomotopyL p₁₂ p₁₂') :
     HomotopyL p₀₂ p₀₂' :=
@@ -495,7 +495,7 @@ end CompStruct
 
 namespace Homotopy
 
-variable {p q : Path x₀ x₁} (h : Homotopy p q)
+variable {p q : Edge x₀ x₁} (h : Homotopy p q)
 
 lemma h_app_zero_of_fst_zero (x : Δ[1] _[0]) :
     h.h.app _ (⟨standardSimplex.obj₀Equiv.symm 0, x⟩) = x₀.pt := by
@@ -533,8 +533,8 @@ lemma h_app_obj₀Equiv_one :
     h.h.app _ (prodStandardSimplex.obj₀Equiv.symm 1) = x₁.pt := by
   apply h_app_zero_of_fst_one
 
-noncomputable abbrev diagonal : Path x₀ x₁ :=
-  Path.mk (square.diagonal ≫ h.h) (by simp) (by simp)
+noncomputable abbrev diagonal : Edge x₀ x₁ :=
+  Edge.mk (square.diagonal ≫ h.h) (by simp) (by simp)
 
 noncomputable def homotopyLDiagonal : HomotopyL p h.diagonal where
   map := square.ιTriangle₀ ≫ h.h
@@ -555,7 +555,7 @@ variable [IsFibrant X]
 
 section
 
-variable {p q : Path x₀ x₁}
+variable {p q : Edge x₀ x₁}
 
 noncomputable def HomotopyL.homotopy (h : p.HomotopyL q) : Homotopy p q where
   h := square.isPushout.desc h.map
@@ -579,30 +579,30 @@ noncomputable def HomotopyR.homotopy (h : p.Homotopy q) : Homotopy p q :=
 end
 
 noncomputable def compUniqueUpToHomotopy [IsFibrant X]
-    {p₀₁ p₀₁' : Path x₀ x₁} {p₁₂ p₁₂' : Path x₁ x₂} {p₀₂ p₀₂' : Path x₀ x₂}
+    {p₀₁ p₀₁' : Edge x₀ x₁} {p₁₂ p₁₂' : Edge x₁ x₂} {p₀₂ p₀₂' : Edge x₀ x₂}
     (s : CompStruct p₀₁ p₁₂ p₀₂) (s' : CompStruct p₀₁' p₁₂' p₀₂')
     (h₀₁ : p₀₁.Homotopy p₀₁') (h₁₂ : p₁₂.Homotopy p₁₂') :
     p₀₂.Homotopy p₀₂' :=
   (CompStruct.unique s s' h₀₁.homotopyL h₁₂.homotopyL).homotopy
 
-noncomputable def comp (p₀₁ : Path x₀ x₁) (p₁₂ : Path x₁ x₂) :
-    Path x₀ x₂ :=
+noncomputable def comp (p₀₁ : Edge x₀ x₁) (p₁₂ : Edge x₁ x₂) :
+    Edge x₀ x₂ :=
   (exists_compStruct p₀₁ p₁₂).choose
 
-noncomputable def compStruct (p₀₁ : Path x₀ x₁) (p₁₂ : Path x₁ x₂) :
+noncomputable def compStruct (p₀₁ : Edge x₀ x₁) (p₁₂ : Edge x₁ x₂) :
     CompStruct p₀₁ p₁₂ (p₀₁.comp p₁₂) :=
   (exists_compStruct p₀₁ p₁₂).choose_spec.some
 
-noncomputable def inv (p : Path x₀ x₁) : Path x₁ x₀ :=
+noncomputable def inv (p : Edge x₀ x₁) : Edge x₁ x₀ :=
   (CompStruct.right_inverse p).choose
 
-noncomputable def CompStruct.mulInv (p : Path x₀ x₁) : CompStruct p p.inv (id x₀) :=
+noncomputable def CompStruct.mulInv (p : Edge x₀ x₁) : CompStruct p p.inv (id x₀) :=
   (CompStruct.right_inverse p).choose_spec.some
 
-end Path
+end Edge
 
 def Hom.id (x : FundamentalGroupoid X) : Hom x x :=
-  (Path.id x).homotopyClass
+  (Edge.id x).homotopyClass
 
 def Hom.map {x₀ x₁ : FundamentalGroupoid X}
     (p : Hom x₀ x₁) {Y : SSet.{u}} (f : X ⟶ Y) :
@@ -624,7 +624,7 @@ def Hom.map {x₀ x₁ : FundamentalGroupoid X}
 
 @[simp]
 lemma Hom.mapHomotopyClass {x₀ x₁ : FundamentalGroupoid X}
-    (p : Path x₀ x₁) {Y : SSet.{u}} (f : X ⟶ Y) :
+    (p : Edge x₀ x₁) {Y : SSet.{u}} (f : X ⟶ Y) :
     Hom.map p.homotopyClass f = (p.pushforward f).homotopyClass :=
   rfl
 
@@ -635,7 +635,7 @@ lemma Hom.id_map (x : FundamentalGroupoid X)
 
 lemma Hom.homotopyClass_surjective
     {x y : FundamentalGroupoid X} (f : Hom x y) :
-    ∃ (p : Path x y), p.homotopyClass = f :=
+    ∃ (p : Edge x y), p.homotopyClass = f :=
   Quot.mk_surjective f
 
 @[simp]
@@ -655,12 +655,12 @@ variable [IsFibrant X]
 
 noncomputable def Hom.comp {x₀ x₁ x₂ : FundamentalGroupoid X} (f : Hom x₀ x₁) (g : Hom x₁ x₂) :
     Hom x₀ x₂ := by
-  refine Quot.lift₂ (fun p₀₁ p₁₂ ↦ (Path.comp p₀₁ p₁₂).homotopyClass) ?_ ?_ f g
+  refine Quot.lift₂ (fun p₀₁ p₁₂ ↦ (Edge.comp p₀₁ p₁₂).homotopyClass) ?_ ?_ f g
   · rintro p₀₁ p₁₂ p₁₂' ⟨h⟩
-    exact (Path.compUniqueUpToHomotopy (p₀₁.compStruct p₁₂)
+    exact (Edge.compUniqueUpToHomotopy (p₀₁.compStruct p₁₂)
       (p₀₁.compStruct p₁₂') (.refl _) h).eq
   · rintro p₀₁ p₀₁' p₁₂ ⟨h⟩
-    exact (Path.compUniqueUpToHomotopy (p₀₁.compStruct p₁₂)
+    exact (Edge.compUniqueUpToHomotopy (p₀₁.compStruct p₁₂)
       (p₀₁'.compStruct p₁₂) h (.refl _)).eq
 
 noncomputable instance : CategoryStruct (FundamentalGroupoid X) where
@@ -668,21 +668,21 @@ noncomputable instance : CategoryStruct (FundamentalGroupoid X) where
   id := Hom.id
   comp := Hom.comp
 
-def homMk {x₀ x₁ : FundamentalGroupoid X} (p : Path x₀ x₁) :
+def homMk {x₀ x₁ : FundamentalGroupoid X} (p : Edge x₀ x₁) :
     x₀ ⟶ x₁ :=
   p.homotopyClass
 
 @[simp]
 lemma homMk_refl (x : FundamentalGroupoid X) :
-    homMk (Path.id x) = 𝟙 x := rfl
+    homMk (Edge.id x) = 𝟙 x := rfl
 
 lemma homMk_eq_of_homotopy {x₀ x₁ : FundamentalGroupoid X}
-    {p q : Path x₀ x₁} (h : p.Homotopy q) :
+    {p q : Edge x₀ x₁} (h : p.Homotopy q) :
     homMk p = homMk q :=
   h.eq
 
 @[simp]
-lemma map_homMk {x₀ x₁ : FundamentalGroupoid X} (p : Path x₀ x₁)
+lemma map_homMk {x₀ x₁ : FundamentalGroupoid X} (p : Edge x₀ x₁)
     {Y : SSet.{u}} [IsFibrant Y] (f : X ⟶ Y) :
     Hom.map (homMk p) f = homMk (p.pushforward f) := rfl
 
@@ -691,39 +691,39 @@ variable {x₀ x₁ x₂ : FundamentalGroupoid X}
 lemma homMk_surjective : Function.Surjective (homMk (x₀ := x₀) (x₁ := x₁)) := by
   apply Quot.mk_surjective
 
-lemma Path.CompStruct.fac {x₀ x₁ x₂ : FundamentalGroupoid X}
-    {p₀₁ : Path x₀ x₁} {p₁₂ : Path x₁ x₂} {p₀₂ : Path x₀ x₂}
+lemma Edge.CompStruct.fac {x₀ x₁ x₂ : FundamentalGroupoid X}
+    {p₀₁ : Edge x₀ x₁} {p₁₂ : Edge x₁ x₂} {p₀₂ : Edge x₀ x₂}
     (h : CompStruct p₀₁ p₁₂ p₀₂) : homMk p₀₁ ≫ homMk p₁₂ = homMk p₀₂ :=
-  homMk_eq_of_homotopy (compUniqueUpToHomotopy (Path.compStruct p₀₁ p₁₂)
+  homMk_eq_of_homotopy (compUniqueUpToHomotopy (Edge.compStruct p₀₁ p₁₂)
     h (.refl _) (.refl _))
 
 noncomputable instance : Category (FundamentalGroupoid X) where
   id_comp f := by
     obtain ⟨p, rfl⟩ := homMk_surjective f
-    exact (Path.CompStruct.idComp p).fac
+    exact (Edge.CompStruct.idComp p).fac
   comp_id f:= by
     obtain ⟨p, rfl⟩ := homMk_surjective f
-    exact (Path.CompStruct.compId p).fac
+    exact (Edge.CompStruct.compId p).fac
   assoc {x₀ x₁ x₂ x₃} f₀₁ f₁₂ f₂₃ := by
     obtain ⟨p₀₁, rfl⟩ := homMk_surjective f₀₁
     obtain ⟨p₁₂, rfl⟩ := homMk_surjective f₁₂
     obtain ⟨p₂₃, rfl⟩ := homMk_surjective f₂₃
-    exact (Path.CompStruct.assoc (Path.compStruct p₀₁ p₁₂)
-      (Path.compStruct p₁₂ p₂₃) (Path.compStruct p₀₁ (p₁₂.comp p₂₃))).fac
+    exact (Edge.CompStruct.assoc (Edge.compStruct p₀₁ p₁₂)
+      (Edge.compStruct p₁₂ p₂₃) (Edge.compStruct p₀₁ (p₁₂.comp p₂₃))).fac
 
 @[reassoc (attr := simp)]
-lemma homMk_comp_homMk_inv (p : Path x₀ x₁) :
+lemma homMk_comp_homMk_inv (p : Edge x₀ x₁) :
     homMk p ≫ homMk p.inv = 𝟙 _ :=
-  (Path.CompStruct.mulInv p).fac
+  (Edge.CompStruct.mulInv p).fac
 
 noncomputable instance : Groupoid (FundamentalGroupoid X) :=
   Groupoid.ofIsIso (fun {x₀ x₁} f ↦ by
     obtain ⟨p, hp⟩ := homMk_surjective f
     have ⟨g, hg⟩ : ∃ g, f ≫ g = 𝟙 x₀ := by
-      obtain ⟨q, ⟨hq⟩⟩ := Path.CompStruct.right_inverse p
+      obtain ⟨q, ⟨hq⟩⟩ := Edge.CompStruct.right_inverse p
       exact ⟨homMk q, by rw [← hp, hq.fac, homMk_refl]⟩
     have ⟨g', hg'⟩ : ∃ g', g' ≫ f = 𝟙 x₁ := by
-      obtain ⟨q, ⟨hq⟩⟩ := Path.CompStruct.left_inverse p
+      obtain ⟨q, ⟨hq⟩⟩ := Edge.CompStruct.left_inverse p
       exact ⟨homMk q, by rw [← hp, hq.fac, homMk_refl]⟩
     obtain rfl : g = g' := by
       replace hg := g' ≫= hg
@@ -750,7 +750,7 @@ instance {x y : FundamentalGroupoid X} (f : x ⟶ y) : Mono f where
     simpa using this
 
 @[reassoc (attr := simp)]
-lemma homMk_inv_comp_homMk (p : Path x₀ x₁) :
+lemma homMk_inv_comp_homMk (p : Edge x₀ x₁) :
     homMk p.inv ≫ homMk p = 𝟙 _ := by
   rw [← cancel_epi (homMk p), homMk_comp_homMk_inv_assoc, comp_id]
 
@@ -773,12 +773,12 @@ def mapFundamentalGroupoid :
   obj x := x.map f
   map {x₀ x₁} g := g.map f
   map_id x := by
-    simp only [← homMk_refl, map_homMk, Path.id_pushforward]
+    simp only [← homMk_refl, map_homMk, Edge.id_pushforward]
   map_comp {x₀ x₁ x₂} f₀₁ f₁₂ := by
     dsimp only
     obtain ⟨p₀₁, rfl⟩ := homMk_surjective f₀₁
     obtain ⟨p₁₂, rfl⟩ := homMk_surjective f₁₂
-    exact ((Path.compStruct p₀₁ p₁₂).pushforward f).fac.symm
+    exact ((Edge.compStruct p₀₁ p₁₂).pushforward f).fac.symm
 
 variable {f}
 noncomputable def congrMapFundamentalGroupoid {g : X ⟶ Y} (h : f = g) :
