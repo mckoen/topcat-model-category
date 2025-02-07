@@ -177,6 +177,10 @@ lemma iSup_obj {ι : Type*} (S : ι → X.Subcomplex) (n : SimplexCategoryᵒᵖ
     (iSup S).obj n = iSup (fun i ↦ (S i).obj n) := by
   simp [iSup, sSup_obj]
 
+lemma iSup_inf {ι : Type*} (S : ι → X.Subcomplex) (T : X.Subcomplex):
+    (⨆ i, S i) ⊓ T = ⨆ i, (S i ⊓ T)  := by
+  aesop
+
 instance :
     letI src : SSet := S
     letI f : src ⟶ _ := S.ι
