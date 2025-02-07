@@ -103,6 +103,12 @@ lemma map_objEquiv_symm_apply {n : ℕ} {m : SimplexCategory} (f : m ⟶ .mk n)
     {p : ℕ} (g :  .mk p ⟶ m) (i : Fin (p + 1)) :
     Δ[n].map g.op ((objEquiv.{u} _ _).symm f) i = f.toOrderHom (g.toOrderHom i) := rfl
 
+@[simp]
+lemma objEquiv_symm_σ_apply {n : ℕ} (i : Fin (n + 1)) (j : Fin (n + 1 + 1)) :
+    (objEquiv.{u} [n] (op [n + 1])).symm (SimplexCategory.σ i) j =
+      i.predAbove j :=
+  rfl
+
 instance (n : SimplexCategory) : (standardSimplex.{u}.obj n).StrictSegal where
   spineToSimplex {j v} := objMk
     { toFun i := obj₀Equiv (v.vertex i)

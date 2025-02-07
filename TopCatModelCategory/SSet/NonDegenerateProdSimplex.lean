@@ -46,6 +46,26 @@ def objMk₁ {n : ℕ} (i : Fin (n + 2)) : Δ[1] _[n] :=
         · simp [if_pos hi]
         · rw [if_neg hi, if_neg (fun hj' ↦ hi (lt_of_le_of_lt (by simpa using h) hj'))] }
 
+@[simp]
+lemma objMk₁_apply_eq_zero_iff {n : ℕ} (i : Fin (n + 2)) (j : Fin (n + 1)) :
+    objMk₁ i j = 0 ↔ j.castSucc < i := by
+  dsimp [objMk₁]
+  by_cases hj : j.castSucc < i
+  · rw [if_pos hj]
+    simpa
+  · rw [if_neg hj]
+    simpa using hj
+
+@[simp]
+lemma objMk₁_apply_eq_one_iff {n : ℕ} (i : Fin (n + 2)) (j : Fin (n + 1)) :
+    objMk₁ i j = 1 ↔ i ≤ j.castSucc := by
+  dsimp [objMk₁]
+  by_cases hj : j.castSucc < i
+  · rw [if_pos hj]
+    simpa
+  · rw [if_neg hj]
+    simpa using hj
+
 lemma objMk₁_injective {n : ℕ} : Function.Injective (objMk₁ (n := n)) := by
   intro i j h
   wlog hij : i < j generalizing i j
@@ -100,12 +120,12 @@ variable {p q : ℕ}
 def objEquiv {n : ℕ} :
     (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n] ≃ (Fin (n + 1) →o Fin (p + 1) × Fin (q + 1)) where
   toFun := fun ⟨x, y⟩ ↦ OrderHom.prod
-      ((standardSimplex.objEquiv _ _ x).toOrderHom)
-      ((standardSimplex.objEquiv _ _ y).toOrderHom)
+      ((standardSimplex.objEquiv [p] (op [n]) x).toOrderHom)
+      ((standardSimplex.objEquiv [q] (op [n]) y).toOrderHom)
   invFun f :=
-    ⟨(standardSimplex.objEquiv _ _ ).symm
+    ⟨(standardSimplex.objEquiv [p] (op [n])).symm
       (SimplexCategory.Hom.mk (OrderHom.fst.comp f)),
-      (standardSimplex.objEquiv _ _ ).symm
+      (standardSimplex.objEquiv [q] (op [n])).symm
       (SimplexCategory.Hom.mk (OrderHom.snd.comp f))⟩
   left_inv := fun ⟨x, y⟩ ↦ by simp
   right_inv _ := rfl
