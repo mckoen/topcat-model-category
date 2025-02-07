@@ -57,6 +57,11 @@ variable {X} in
 lemma leftUnitor_inv_naturality (f : X ⟶ Y) :
     (leftUnitor X).inv ≫ _ ◁ f = f ≫ (leftUnitor Y).inv := rfl
 
+variable {X} in
+@[reassoc (attr := simp)]
+lemma leftUnitor_hom_naturality (f : X ⟶ Y) :
+    _ ◁ f  ≫ (leftUnitor Y).hom = (leftUnitor X).hom ≫ f := rfl
+
 @[reassoc (attr := simp)]
 lemma leftUnitor_inv_map_δ_zero :
     (standardSimplex.leftUnitor X).inv ≫ standardSimplex.map (SimplexCategory.δ 0) ▷ X =
@@ -78,6 +83,11 @@ variable {X} in
 @[reassoc (attr := simp)]
 lemma rightUnitor_inv_naturality (f : X ⟶ Y) :
     (rightUnitor X).inv ≫ f ▷ _ = f ≫ (rightUnitor Y).inv := rfl
+
+variable {X} in
+@[reassoc (attr := simp)]
+lemma rightUnitor_hom_naturality (f : X ⟶ Y) :
+    f ▷ _ ≫  (rightUnitor Y).hom = (rightUnitor X).hom ≫ f := rfl
 
 @[reassoc (attr := simp)]
 lemma rightUnitor_inv_map_δ_zero :
@@ -103,6 +113,10 @@ noncomputable def ihom₀Equiv : ((ihom X).obj Y) _[0] ≃ (X ⟶ Y) :=
 
 lemma ihom₀Equiv_symm_comp {Z : SSet.{u}} (f : X ⟶ Y) (g : Y ⟶ Z) :
     ihom₀Equiv.symm (f ≫ g) =
-      ((MonoidalClosed.pre f).app Z).app (op [0]) (ihom₀Equiv.symm g) := sorry
+      ((MonoidalClosed.pre f).app Z).app (op [0]) (ihom₀Equiv.symm g) := by
+  apply (yonedaEquiv _ _).symm.injective
+  dsimp [ihom₀Equiv]
+  rw [Equiv.symm_apply_apply, ← yonedaEquiv_symm_comp, Equiv.symm_apply_apply]
+  rfl
 
 end SSet
