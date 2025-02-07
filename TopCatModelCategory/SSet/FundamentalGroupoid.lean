@@ -104,6 +104,11 @@ noncomputable def isColimitLeftTensor (X : SSet.{u}) :
     IsColimit (BinaryCofan.mk (X ◁ ι₀) (X ◁ ι₁)) :=
   mapIsColimitOfPreservesOfIsColimit (tensorLeft X) _ _ isColimit
 
+lemma hom_ext_rightTensor {X Y : SSet.{u}} {f g : (subcomplexBoundary 1 : SSet) ⊗ X ⟶ Y}
+    (h₀ : ι₀ ▷ X ≫ f = ι₀ ▷ X ≫ g) (h₁ : ι₁ ▷ X ≫ f = ι₁ ▷ X ≫ g) :
+    f = g := by
+  apply BinaryCofan.IsColimit.hom_ext (isColimitRightTensor X) <;> assumption
+
 end subcomplexBoundary₁
 
 namespace KanComplex
@@ -571,7 +576,20 @@ noncomputable def HomotopyL.homotopy (h : p.HomotopyL q) : Homotopy p q where
     rw [← square.δ₀_ιTriangle₁, assoc, IsPushout.inr_desc,
       ← Functor.map_comp_assoc, this, CategoryTheory.Functor.map_id, id_comp]
   rel := by
-    sorry
+    apply subcomplexBoundary₁.hom_ext_rightTensor
+    · have := SimplexCategory.δ_comp_σ_of_gt (n := 0) (i := 1) (j := 0) (by simp)
+      dsimp at this ⊢
+      rw [assoc, Subcomplex.topIso_inv_ι, comp_id, whiskerRight_fst_assoc,
+        subcomplexBoundary₁.ι₀_desc, yonedaEquiv_symm_zero, comp_const,
+        ← MonoidalCategory.comp_whiskerRight_assoc,
+        subcomplexBoundary₁.ι₀_ι, square.δ₁_whiskerRight, assoc, assoc,
+        IsPushout.inr_desc, ← Functor.map_comp_assoc, this,
+        Functor.map_comp_assoc, q.comm₀, comp_const, comp_const]
+    · rw [assoc, Subcomplex.topIso_inv_ι, comp_id, whiskerRight_fst_assoc,
+        subcomplexBoundary₁.ι₁_desc, yonedaEquiv_symm_zero, comp_const,
+        ← MonoidalCategory.comp_whiskerRight_assoc,
+        subcomplexBoundary₁.ι₁_ι, square.δ₀_whiskerRight, assoc, assoc,
+        IsPushout.inl_desc, h.h₁₂, id_map, comp_const]
 
 noncomputable def HomotopyR.homotopy (h : p.Homotopy q) : Homotopy p q :=
   h.homotopyL.homotopy

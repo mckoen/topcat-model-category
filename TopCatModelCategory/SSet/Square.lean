@@ -118,6 +118,22 @@ lemma δ₂_ιTriangle₁ :
   rw [Equiv.apply_symm_apply]
   ext x : 3 <;> fin_cases x <;> rfl
 
+@[reassoc]
+lemma δ₁_whiskerRight :
+    standardSimplex.{u}.map (SimplexCategory.δ (1 : Fin 2)) ▷ Δ[1] =
+      snd _ _ ≫ standardSimplex.map (SimplexCategory.δ 2) ≫ ιTriangle₁ := by
+  rw [← cancel_epi (standardSimplex.leftUnitor _).inv]
+  apply (yonedaEquiv _ _ ).injective
+  apply Prod.ext <;> ext i <;> fin_cases i <;> rfl
+
+@[reassoc]
+lemma δ₀_whiskerRight :
+    standardSimplex.{u}.map (SimplexCategory.δ (0 : Fin 2)) ▷ Δ[1] =
+      snd _ _ ≫ standardSimplex.map (SimplexCategory.δ 0) ≫ ιTriangle₀ := by
+  rw [← cancel_epi (standardSimplex.leftUnitor _).inv]
+  apply (yonedaEquiv _ _ ).injective
+  apply Prod.ext <;> ext i <;> fin_cases i <;> rfl
+
 noncomputable abbrev diagonalSimplex : (Δ[1] ⊗ Δ[1] : SSet.{u}).NonDegenerate 1 :=
   ⟨yonedaEquiv _ _ diagonal, by
     rw [prodStandardSimplex.non_degenerate_iff']
