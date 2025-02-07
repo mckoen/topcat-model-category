@@ -8,20 +8,23 @@ open CategoryTheory Simplicial MonoidalCategory
 lemma Fin.range₁ {α : Type*} (f : Fin 1 → α) :
     Set.range f = {f 0} := Set.range_unique
 
-lemma Fin.range_next {α : Type*} (f : Fin (n + 1) → α) :
+lemma Fin.range_eq_insert {α : Type*} (f : Fin (n + 1) → α) :
     Set.range f =
-      (Set.range (fun (i : Fin n) ↦ f i.succ)).insert (f 0) := by
-  sorry
+      Insert.insert (f 0) (Set.range (fun (i : Fin n) ↦ f i.succ))  := by
+  ext x
+  simp only [Set.mem_range, Set.mem_insert_iff]
+  constructor
+  · rintro ⟨i, rfl⟩
+    obtain rfl | ⟨i, rfl⟩ := i.eq_zero_or_eq_succ <;> aesop
+  · aesop
 
 lemma Fin.range₂ {α : Type*} (f : Fin 2 → α) :
     Set.range f = {f 0, f 1} := by
-  rw [Fin.range_next, Fin.range₁]
-  rfl
+  simp [Fin.range_eq_insert, Fin.range₁]
 
 lemma Fin.range₃ {α : Type*} (f : Fin 3 → α) :
     Set.range f = {f 0, f 1, f 2} := by
-  rw [Fin.range_next, Fin.range₂]
-  rfl
+  simp [Fin.range_eq_insert, Fin.range₂]
 
 namespace SSet
 
