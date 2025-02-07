@@ -190,7 +190,9 @@ lemma isPushout :
     (prodStandardSimplex.isoOfNonDegenerate.{u}
         (prodStandardSimplex.nonDegenerateEquiv₁ (q := 1) 1))
     (topIso (Δ[1] ⊗ Δ[1])).symm
-  · apply Subcomplex.hom_ext
+  all_goals try apply Subcomplex.hom_ext _ rfl
+  all_goals
+    apply Subcomplex.hom_ext
     dsimp
     rw [Category.assoc, Category.assoc, homOfLE_ι,
       prodStandardSimplex.isoOfNonDegenerate_hom_ι,
@@ -198,16 +200,6 @@ lemma isPushout :
       ← yonedaEquiv_symm_δ]
     congr 1
     apply Prod.ext <;> ext i <;> fin_cases i <;> rfl
-  · apply Subcomplex.hom_ext
-    dsimp
-    rw [Category.assoc, Category.assoc, homOfLE_ι,
-      prodStandardSimplex.isoOfNonDegenerate_hom_ι,
-      prodStandardSimplex.isoOfNonDegenerate_hom_ι,
-      ← yonedaEquiv_symm_δ]
-    congr 1
-    apply Prod.ext <;> ext i <;> fin_cases i <;> rfl
-  · exact Subcomplex.hom_ext _ rfl
-  · exact Subcomplex.hom_ext _ rfl
 
 end square
 
