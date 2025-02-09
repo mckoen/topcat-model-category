@@ -258,6 +258,17 @@ lemma face_emptySet (n : ℕ) : (face (∅ : Finset (Fin (n + 1)))) = ⊥ := by
   have := Finset.mem_univ (0 : Fin (k.len + 1))
   simp [h] at this
 
+lemma mem_ofSimplex_obj_iff {X : SSet.{u}} {n m : ℕ} (x : X _[n])
+    (y : X _[m]) : y ∈ (Subcomplex.ofSimplex x).obj _ ↔
+      ∃ (f : SimplexCategory.mk m ⟶ SimplexCategory.mk n), X.map f.op x = y := by
+  dsimp [Subcomplex.ofSimplex]
+  rw [Set.mem_range]
+  constructor
+  · rintro ⟨s, rfl⟩
+    exact ⟨objEquiv _ _ s, rfl⟩
+  · rintro ⟨f, rfl⟩
+    exact ⟨(objEquiv _ _).symm f, rfl⟩
+
 lemma face_eq_ofSimplex (S : Finset (Fin (n + 1))) (m : ℕ) (e : Fin (m + 1) ≃o S) :
     face.{u} S = Subcomplex.ofSimplex (n := m)
         (by exact objMk ((OrderHom.Subtype.val S.toSet).comp e.toOrderEmbedding.toOrderHom)) := by

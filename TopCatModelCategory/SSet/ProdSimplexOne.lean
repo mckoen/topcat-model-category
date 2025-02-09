@@ -43,7 +43,7 @@ lemma mem_range_objEquiv_nonDegenerateEquiv₀_iff (i x : Fin (n + 1)) :
       rw [standardSimplex.objEquiv_symm_σ_apply,
         Fin.predAbove_of_le_castSucc _ _ (by simpa),
         Fin.castPred_castSucc]
-    · simpa
+    · simpa [standardSimplex.objMk₁_apply_eq_zero_iff]
 
 lemma mem_range_objEquiv_nonDegenerateEquiv₁_iff (i x : Fin (n + 1)) :
     (x, 1) ∈ Set.range (prodStandardSimplex.objEquiv (nonDegenerateEquiv i).1) ↔ i ≤ x := by
@@ -61,7 +61,7 @@ lemma mem_range_objEquiv_nonDegenerateEquiv₁_iff (i x : Fin (n + 1)) :
     · dsimp
       rw [standardSimplex.objEquiv_symm_σ_apply,
         Fin.predAbove_of_succ_le _ _ (by simpa), Fin.pred_succ]
-    · simpa
+    · simpa [standardSimplex.objMk₁_apply_eq_one_iff]
 
 noncomputable def filtration (j : Fin (n + 1)) : (Δ[n] ⊗ Δ[1] : SSet.{u}).Subcomplex :=
   ⨆ (i : ({i // i ≤ j} : Type)), .ofSimplex (nonDegenerateEquiv i.1).1
@@ -80,16 +80,45 @@ noncomputable def intersectionNondeg (i j : Fin (n + 1)) :
     (Δ[n] ⊗ Δ[1] : SSet.{u}).Subcomplex :=
   .ofSimplex (nonDegenerateEquiv i).1 ⊓ .ofSimplex (nonDegenerateEquiv j).1
 
-def codimOneSimplex (j : Fin n) : (Δ[n] ⊗ Δ[1] : SSet.{u}).NonDegenerate n :=
-  ⟨⟨standardSimplex.objMk .id, standardSimplex.objMk₁ j.succ.castSucc⟩, by
+@[simps coe_fst coe_snd]
+def codimOneSimplex (j : Fin (n + 2)) : (Δ[n] ⊗ Δ[1] : SSet.{u}).NonDegenerate n :=
+  ⟨⟨standardSimplex.objMk .id, standardSimplex.objMk₁ j⟩, by
     have := standardSimplex.id_nonDegenerate.{u} n
     rw [mem_nondegenerate_iff_not_mem_degenerate] at this ⊢
     intro h
     exact this (degenerate_map h (fst _ _))⟩
 
+lemma δ_castSucc_nonDegenerateEquiv (j : Fin (n + 1)) :
+    (Δ[n] ⊗ Δ[1]).δ j.castSucc (nonDegenerateEquiv j).1 =
+      (codimOneSimplex j.castSucc).1 := by
+  apply Prod.ext
+  · exact (standardSimplex.objEquiv _ _).injective SimplexCategory.δ_comp_σ_self
+  · dsimp
+    rw [standardSimplex.δ_objMk₁_of_lt _ _ (by simp), Fin.pred_castSucc_succ]
+
+lemma δ_succ_nonDegenerateEquiv (j : Fin (n + 1)) :
+    (Δ[n] ⊗ Δ[1]).δ j.succ (nonDegenerateEquiv j).1 =
+      (codimOneSimplex j.succ).1 := by
+  apply Prod.ext
+  · exact (standardSimplex.objEquiv _ _).injective SimplexCategory.δ_comp_σ_succ
+  · dsimp
+    rw [standardSimplex.δ_objMk₁_of_le _ _ (by simp), Fin.castPred_castSucc]
+
 lemma ofSimplex_codimOneSimplex (j : Fin n) :
-    Subcomplex.ofSimplex (codimOneSimplex.{u} j).1 =
-      intersectionNondeg j.castSucc j.succ := sorry
+    Subcomplex.ofSimplex (codimOneSimplex.{u} j.succ.castSucc).1 =
+      intersectionNondeg j.castSucc j.succ := by
+  apply le_antisymm
+  · dsimp [intersectionNondeg]
+    simp only [le_inf_iff, Subcomplex.ofSimplex_le_iff,
+      standardSimplex.mem_ofSimplex_obj_iff]
+    constructor
+    · refine ⟨SimplexCategory.δ j.succ.castSucc, ?_⟩
+      rw [← Fin.succ_castSucc, ← δ_succ_nonDegenerateEquiv]
+      rfl
+    · refine ⟨SimplexCategory.δ j.succ.castSucc, ?_⟩
+      rw [← δ_castSucc_nonDegenerateEquiv]
+      rfl
+  · sorry
 
 lemma intersectionNondeg_le_intersectionNondeg (i j k : Fin (n + 1))
     (hij : i ≤ j) (hij : j ≤ k) :
@@ -130,7 +159,7 @@ lemma intersectionNondeg_le_intersectionNondeg' (i j k : Fin (n + 1))
 section
 
 lemma sq (j : Fin n) :
-    Subcomplex.Sq (Subcomplex.ofSimplex (codimOneSimplex.{u} j).1)
+    Subcomplex.Sq (Subcomplex.ofSimplex (codimOneSimplex.{u} j.succ.castSucc).1)
       (filtration.{u} j.castSucc) (.ofSimplex (nonDegenerateEquiv j.succ).1)
       (filtration.{u} j.succ) where
   min_eq := by

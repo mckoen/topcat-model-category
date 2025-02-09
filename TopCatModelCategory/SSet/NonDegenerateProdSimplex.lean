@@ -46,7 +46,6 @@ def objMk₁ {n : ℕ} (i : Fin (n + 2)) : Δ[1] _[n] :=
         · simp [if_pos hi]
         · rw [if_neg hi, if_neg (fun hj' ↦ hi (lt_of_le_of_lt (by simpa using h) hj'))] }
 
-@[simp]
 lemma objMk₁_apply_eq_zero_iff {n : ℕ} (i : Fin (n + 2)) (j : Fin (n + 1)) :
     objMk₁ i j = 0 ↔ j.castSucc < i := by
   dsimp [objMk₁]
@@ -56,7 +55,10 @@ lemma objMk₁_apply_eq_zero_iff {n : ℕ} (i : Fin (n + 2)) (j : Fin (n + 1)) :
   · rw [if_neg hj]
     simpa using hj
 
-@[simp]
+lemma objMk₁_of_castSucc_lt {n : ℕ} (i : Fin (n + 2)) (j : Fin (n + 1)) (h : j.castSucc < i) :
+    objMk₁ i j = 0 := by
+  simpa [objMk₁_apply_eq_zero_iff]
+
 lemma objMk₁_apply_eq_one_iff {n : ℕ} (i : Fin (n + 2)) (j : Fin (n + 1)) :
     objMk₁ i j = 1 ↔ i ≤ j.castSucc := by
   dsimp [objMk₁]
@@ -65,6 +67,50 @@ lemma objMk₁_apply_eq_one_iff {n : ℕ} (i : Fin (n + 2)) (j : Fin (n + 1)) :
     simpa
   · rw [if_neg hj]
     simpa using hj
+
+lemma objMk₁_of_le_castSucc {n : ℕ} (i : Fin (n + 2)) (j : Fin (n + 1)) (h : i ≤ j.castSucc) :
+    objMk₁ i j = 1 := by
+  simpa [objMk₁_apply_eq_one_iff]
+
+lemma _root_.Fin.eq_iff_of_two (a b : Fin 2) : a = b ↔ (a = 0 ↔ b = 0) := by
+  fin_cases a <;> fin_cases b <;> tauto
+
+lemma δ_objMk₁_of_le {n : ℕ} (i : Fin (n + 3)) (j : Fin (n + 2)) (h : i ≤ j.castSucc) :
+    Δ[1].δ j (objMk₁.{u} i) =
+      objMk₁.{u} (i.castPred (Fin.ne_last_of_lt (lt_of_le_of_lt h j.castSucc_lt_succ))) := by
+  obtain ⟨i, rfl⟩ := Fin.eq_castSucc_of_ne_last
+    (Fin.ne_last_of_lt (lt_of_le_of_lt h j.castSucc_lt_succ))
+  simp only [Fin.castSucc_le_castSucc_iff] at h
+  rw [Fin.castPred_castSucc]
+  ext k : 1
+  change objMk₁.{u} i.castSucc (j.succAbove k) = _
+  rw [Fin.eq_iff_of_two]
+  simp only [objMk₁_apply_eq_zero_iff, Fin.castSucc_lt_castSucc_iff]
+  by_cases hk : k.castSucc < j
+  · rw [Fin.succAbove_of_castSucc_lt _ _ hk]
+  · simp only [not_lt] at hk
+    rw [Fin.succAbove_of_le_castSucc _ _ hk]
+    constructor
+    · intro h'
+      exfalso
+      have := lt_of_le_of_lt ((h.trans hk).trans k.castSucc_le_succ) h'
+      simp at this
+    · omega
+
+lemma δ_objMk₁_of_lt {n : ℕ} (i : Fin (n + 3)) (j : Fin (n + 2)) (h : j.castSucc < i) :
+    Δ[1].δ j (objMk₁.{u} i) = objMk₁.{u} (i.pred (Fin.ne_zero_of_lt h)) := by
+  obtain ⟨i, rfl⟩ := Fin.eq_succ_of_ne_zero (Fin.ne_zero_of_lt h)
+  rw [Fin.pred_succ]
+  ext k : 1
+  change objMk₁.{u} i.succ (j.succAbove k) = _
+  rw [Fin.eq_iff_of_two]
+  simp only [objMk₁_apply_eq_zero_iff]
+  by_cases hk : j ≤ k.castSucc
+  · rw [Fin.succAbove_of_le_castSucc _ _ hk,
+      Fin.castSucc_lt_succ_iff, Fin.castSucc_lt_iff_succ_le]
+  · simp only [not_le] at hk
+    rw [Fin.succAbove_of_castSucc_lt _ _ hk, Fin.castSucc_lt_succ_iff]
+    exact ⟨fun _ ↦ lt_of_lt_of_le hk (by simpa using h), fun h ↦ h.le⟩
 
 lemma objMk₁_injective {n : ℕ} : Function.Injective (objMk₁ (n := n)) := by
   intro i j h
