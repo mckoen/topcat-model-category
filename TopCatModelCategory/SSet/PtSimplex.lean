@@ -38,6 +38,11 @@ def equiv₀ : X.PtSimplex 0 x ≃ X _[0] where
   left_inv f := by simp
   right_inv y := by simp only [Equiv.apply_symm_apply]
 
+lemma map_eq_const_equiv₀ (s : X.PtSimplex 0 x) :
+    s.map = const (equiv₀ s) := by
+  obtain ⟨y, rfl⟩ := equiv₀.symm.surjective s
+  simp [equiv₀]
+
 section
 
 @[reassoc]
@@ -81,7 +86,25 @@ namespace RelStruct₀
 
 def equiv₀ {f g : X.PtSimplex 0 x} :
     RelStruct₀ f g ≃
-  KanComplex.FundamentalGroupoid.Edge (X := X) ⟨equiv₀ g⟩ ⟨equiv₀ f⟩ := sorry
+      KanComplex.FundamentalGroupoid.Edge (X := X) ⟨equiv₀ g⟩ ⟨equiv₀ f⟩ where
+  toFun h := KanComplex.FundamentalGroupoid.Edge.mk h.map (by
+    have := h.δ_succ_map
+    dsimp at this
+    simp [this, map_eq_const_equiv₀]) (by
+    have := h.δ_castSucc_map
+    dsimp at this
+    simp [this, map_eq_const_equiv₀])
+  invFun e :=
+    { map := e.map
+      δ_succ_map := by simp [e.comm₀, map_eq_const_equiv₀]
+      δ_castSucc_map := by simp [e.comm₁, map_eq_const_equiv₀]
+      δ_map_of_lt := by aesop
+      δ_map_of_gt := by
+        rintro j hj
+        simp at hj
+        omega }
+  left_inv h := rfl
+  right_inv e := rfl
 
 end RelStruct₀
 

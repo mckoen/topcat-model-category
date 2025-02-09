@@ -13,6 +13,11 @@ theorem Finset.image_comp (f : β → γ) (g : α → β) [DecidableEq β] [Deci
 
 namespace SSet
 
+@[simp]
+lemma yonedaEquiv₀ {X : SSet.{u}} (x : X _[0]) :
+    (yonedaEquiv X [0]) (const x) = x :=
+  (yonedaEquiv _ _).symm.injective (by simp)
+
 lemma yonedaEquiv_comp {X Y : SSet.{u}} {n : SimplexCategory}
     (g : standardSimplex.obj n ⟶ X) (f : X ⟶ Y) :
     yonedaEquiv _ _ (g ≫ f) = f.app _ (yonedaEquiv _ _ g) := rfl

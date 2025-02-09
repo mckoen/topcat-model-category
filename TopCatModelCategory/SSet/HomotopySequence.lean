@@ -95,11 +95,18 @@ noncomputable def deltaStruct [Fibration p] (s : B.PtSimplex (n + 1) b) (i : Fin
     DeltaStruct s (δ'' he s i) i :=
   (exists_deltaStruct he s i).choose_spec.some
 
+variable {he} in
+def uniqueδ'' [Fibration p] {s s' : B.PtSimplex (n + 1) b} {i : Fin (n + 2)}
+    {t t' : PtSimplex _ n (basePoint p he)} (hst : DeltaStruct s t i) (hst' : DeltaStruct s' t' i)
+    (hs : s.Homotopy s') :
+    t.Homotopy t' := sorry
+
 end
 
 noncomputable def δ' (n : ℕ) [Fibration p] [IsFibrant E] [IsFibrant B] (i : Fin (n + 2)) :
     π (n + 1) B b → π n (Subcomplex.fiber p b) (basePoint p he) :=
-  Quot.lift (fun s ↦ (δ'' he s i).homotopyClass) sorry
+  Quot.lift (fun s ↦ (δ'' he s i).homotopyClass) (fun s s' hs ↦
+    Quot.sound ⟨uniqueδ'' (deltaStruct he s i) (deltaStruct he s' i) hs.some⟩)
 
 end HomotopySequence
 
