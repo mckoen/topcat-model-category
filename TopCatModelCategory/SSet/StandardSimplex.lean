@@ -558,6 +558,10 @@ lemma non_degenerate_top_dim :
       infer_instance
   · exact (Equiv.apply_eq_iff_eq _).symm
 
+variable (n) in
+lemma id_nonDegenerate : standardSimplex.id.{u} n ∈ Δ[n].NonDegenerate n := by
+  simp [non_degenerate_top_dim]
+
 instance : (Δ[n] : SSet.{u}).HasDimensionLT (n + 1) where
   degenerate_eq_top i hi := by
     ext x

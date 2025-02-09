@@ -1,6 +1,6 @@
 import TopCatModelCategory.SSet.NonDegenerateProdSimplex
 
-open CategoryTheory Simplicial MonoidalCategory Opposite
+open CategoryTheory Simplicial MonoidalCategory Opposite ChosenFiniteProducts
 
 universe u
 
@@ -80,41 +80,67 @@ noncomputable def intersectionNondeg (i j : Fin (n + 1)) :
     (Δ[n] ⊗ Δ[1] : SSet.{u}).Subcomplex :=
   .ofSimplex (nonDegenerateEquiv i).1 ⊓ .ofSimplex (nonDegenerateEquiv j).1
 
--- TODO: show this is representable by Δ[n]
-noncomputable abbrev interSucc (j : Fin n) : (Δ[n] ⊗ Δ[1] : SSet.{u}).Subcomplex :=
-    intersectionNondeg j.castSucc j.succ
+def codimOneSimplex (j : Fin n) : (Δ[n] ⊗ Δ[1] : SSet.{u}).NonDegenerate n :=
+  ⟨⟨standardSimplex.objMk .id, standardSimplex.objMk₁ j.succ.castSucc⟩, by
+    have := standardSimplex.id_nonDegenerate.{u} n
+    rw [mem_nondegenerate_iff_not_mem_degenerate] at this ⊢
+    intro h
+    exact this (degenerate_map h (fst _ _))⟩
 
-lemma le_interSucc (i : Fin (n + 1)) (j : Fin n) (hij : i ≤ j.castSucc) :
-    intersectionNondeg.{u} i j.succ ≤ interSucc j := by
+lemma ofSimplex_codimOneSimplex (j : Fin n) :
+    Subcomplex.ofSimplex (codimOneSimplex.{u} j).1 =
+      intersectionNondeg j.castSucc j.succ := sorry
+
+lemma intersectionNondeg_le_intersectionNondeg (i j k : Fin (n + 1))
+    (hij : i ≤ j) (hij : j ≤ k) :
+    intersectionNondeg.{u} i k ≤ intersectionNondeg.{u} j k := by
   rintro ⟨k⟩ x hx
   induction' k using SimplexCategory.rec with k
-  dsimp [interSucc, intersectionNondeg] at hx ⊢
+  dsimp [intersectionNondeg] at hx ⊢
   simp only [Set.mem_inter_iff, prodStandardSimplex.mem_ofSimplex_iff,
     ← Set.subset_inter_iff] at hx ⊢
   apply hx.trans
   rintro ⟨x, y⟩ hxy
   simp only [Set.mem_inter_iff] at hxy ⊢
   fin_cases y
+  all_goals
   · dsimp at hxy ⊢
-    simp only [mem_range_objEquiv_nonDegenerateEquiv₀_iff] at hxy ⊢
-    exact ⟨hxy.1.trans hij, hxy.2⟩
+    simp only [mem_range_objEquiv_nonDegenerateEquiv₀_iff,
+      mem_range_objEquiv_nonDegenerateEquiv₁_iff] at hxy ⊢
+    omega
+
+lemma intersectionNondeg_le_intersectionNondeg' (i j k : Fin (n + 1))
+    (hij : i ≤ j) (hij : j ≤ k) :
+    intersectionNondeg.{u} i k ≤ intersectionNondeg.{u} i j := by
+  rintro ⟨k⟩ x hx
+  induction' k using SimplexCategory.rec with k
+  dsimp [intersectionNondeg] at hx ⊢
+  simp only [Set.mem_inter_iff, prodStandardSimplex.mem_ofSimplex_iff,
+    ← Set.subset_inter_iff] at hx ⊢
+  apply hx.trans
+  rintro ⟨x, y⟩ hxy
+  simp only [Set.mem_inter_iff] at hxy ⊢
+  fin_cases y
+  all_goals
   · dsimp at hxy ⊢
-    simp only [mem_range_objEquiv_nonDegenerateEquiv₁_iff] at hxy ⊢
-    exact ⟨j.castSucc_le_succ.trans hxy.2, hxy.2⟩
+    simp only [mem_range_objEquiv_nonDegenerateEquiv₀_iff,
+      mem_range_objEquiv_nonDegenerateEquiv₁_iff] at hxy ⊢
+    omega
 
 section
 
 lemma sq (j : Fin n) :
-    Subcomplex.Sq (interSucc j) (filtration.{u} j.castSucc)
-      (.ofSimplex (nonDegenerateEquiv j.succ).1)
+    Subcomplex.Sq (Subcomplex.ofSimplex (codimOneSimplex.{u} j).1)
+      (filtration.{u} j.castSucc) (.ofSimplex (nonDegenerateEquiv j.succ).1)
       (filtration.{u} j.succ) where
   min_eq := by
+    rw [ofSimplex_codimOneSimplex]
     apply le_antisymm
     · dsimp [filtration]
       rw [Subcomplex.iSup_inf, iSup_le_iff, Subtype.forall]
       intro i hi
-      exact le_interSucc _ _ hi
-    · dsimp [interSucc, intersectionNondeg]
+      exact intersectionNondeg_le_intersectionNondeg _ _ _ hi j.castSucc_le_succ
+    · dsimp [intersectionNondeg]
       simp only [le_inf_iff, inf_le_right, and_true]
       exact inf_le_left.trans (ofSimplex_le_filtration (by rfl))
   max_eq := by
