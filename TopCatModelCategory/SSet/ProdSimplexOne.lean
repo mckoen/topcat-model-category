@@ -181,6 +181,15 @@ lemma intersectionNondeg_le_intersectionNondeg' (i j k : Fin (n + 1))
       mem_range_objEquiv_nonDegenerateEquiv₁_iff] at hxy ⊢
     omega
 
+namespace filtration
+
+lemma monotone :
+    Monotone (filtration.{u} (n := n)) := by
+  intro j j' h
+  rw [filtration, iSup_le_iff, Subtype.forall]
+  intro i hi
+  exact ofSimplex_le_filtration (hi.trans h)
+
 lemma sq (j : Fin n) :
     Subcomplex.Sq (Subcomplex.ofSimplex (codimOneSimplex.{u} j.succ.castSucc).1)
       (filtration.{u} j.castSucc) (.ofSimplex (nonDegenerateEquiv j.succ).1)
@@ -208,6 +217,66 @@ lemma sq (j : Fin n) :
       · refine le_trans ?_ le_sup_left
         exact ofSimplex_le_filtration (Fin.le_castSucc_iff.2 hi)
       · exact le_sup_right
+
+noncomputable def ι {i j : Fin (n + 1)} (hi : i ≤ j) :
+    Δ[n + 1] ⟶ filtration.{u} j :=
+  Subcomplex.lift
+    ((yonedaEquiv _ _).symm (nonDegenerateEquiv i)) (by
+      apply le_antisymm (by simp)
+      rw [← Subcomplex.image_le_iff, Subcomplex.image_top,
+        Subcomplex.range_eq_ofSimplex, Equiv.apply_symm_apply]
+      exact ofSimplex_le_filtration hi)
+
+@[reassoc (attr := simp)]
+lemma ι_ι (i j : Fin (n + 1)) (hi : i ≤ j) :
+    ι.{u} hi ≫ (filtration j).ι =
+      (yonedaEquiv _ _).symm (nonDegenerateEquiv i) := rfl
+
+lemma isPushout (j : Fin n) :
+    IsPushout
+      (standardSimplex.{u}.map
+        (SimplexCategory.δ j.succ.castSucc) ≫ ι (by rfl))
+      (standardSimplex.map (SimplexCategory.δ j.succ.castSucc))
+      (Subcomplex.homOfLE (filtration.monotone j.castSucc_le_succ))
+      (ι (by rfl)) := by
+  fapply (sq.{u} j).isPushout.of_iso'
+    (standardSimplex.isoOfRepresentableBy
+      (Subcomplex.ofSimplexRepresentableBy _))
+    (Iso.refl _)
+    (standardSimplex.isoOfRepresentableBy
+      (Subcomplex.ofSimplexRepresentableBy _))
+    (Iso.refl _)
+  · apply Subcomplex.hom_ext
+    dsimp
+    simp only [Category.assoc, Category.comp_id, ι_ι]
+    rw [Subcomplex.homOfLE_ι,
+      Subcomplex.isoOfRepresentableBy_ofSimplexRepresentableBy_hom,
+      ← yonedaEquiv_symm_map, ← Fin.succ_castSucc,
+      ← δ_succ_nonDegenerateEquiv]
+    rfl
+  · apply Subcomplex.hom_ext
+    dsimp
+    simp only [Category.assoc]
+    rw [Subcomplex.homOfLE_ι,
+      Subcomplex.isoOfRepresentableBy_ofSimplexRepresentableBy_hom,
+      Subcomplex.isoOfRepresentableBy_ofSimplexRepresentableBy_hom,
+      ← yonedaEquiv_symm_map, ← δ_castSucc_nonDegenerateEquiv]
+    rfl
+  · simp
+  · aesop_cat
+
+variable {X : SSet.{u}} {j : Fin (n + 1)}
+  (α : ∀ (i : Fin (n + 1)) (_ : i ≤ j), Δ[n + 1] ⟶ X)
+  (hα : ∀ (i : Fin n), (sorry : Prop))
+
+include hα in
+def exists_desc :
+    ∃ (φ : (filtration j : SSet.{u}) ⟶ X),
+      ∀ (i : Fin (n + 1)) (hi : i ≤ j), ι hi ≫ φ = α i hi
+        := by
+  sorry
+
+end filtration
 
 noncomputable def ι (i : Fin (n + 1)) : (Δ[n + 1] : SSet.{u}) ⟶ Δ[n] ⊗ Δ[1] :=
   (yonedaEquiv _ _).symm (nonDegenerateEquiv i)
