@@ -267,14 +267,42 @@ lemma isPushout (j : Fin n) :
 
 variable {X : SSet.{u}} {j : Fin (n + 1)}
   (α : ∀ (i : Fin (n + 1)) (_ : i ≤ j), Δ[n + 1] ⟶ X)
-  (hα : ∀ (i : Fin n), (sorry : Prop))
+  (hα : ∀ (i : Fin n) (hi : i.succ ≤ j),
+    standardSimplex.map (SimplexCategory.δ i.succ.castSucc) ≫
+        α i.castSucc (i.castSucc_le_succ.trans hi) =
+      standardSimplex.map (SimplexCategory.δ i.succ.castSucc) ≫ α i.succ hi)
 
 include hα in
 def exists_desc :
     ∃ (φ : (filtration j : SSet.{u}) ⟶ X),
-      ∀ (i : Fin (n + 1)) (hi : i ≤ j), ι hi ≫ φ = α i hi
-        := by
-  sorry
+      ∀ (i : Fin (n + 1)) (hi : i ≤ j), ι hi ≫ φ = α i hi := by
+  revert α hα
+  induction j using Fin.induction with
+  | zero =>
+    intro α hα
+    refine ⟨(Subcomplex.isoOfEq (filtration_zero.{u} n)).hom ≫
+      (standardSimplex.isoOfRepresentableBy
+        (Subcomplex.ofSimplexRepresentableBy _)).inv ≫ α 0 (by rfl), ?_⟩
+    intro i hi
+    obtain rfl : i = 0 := le_antisymm hi bot_le
+    trans 𝟙 _ ≫ α 0 (by rfl)
+    · rw [← Category.assoc, ← Category.assoc]
+      congr 1
+      simp [← cancel_mono (standardSimplex.isoOfRepresentableBy
+        (Subcomplex.ofSimplexRepresentableBy (nonDegenerateEquiv (0 : Fin (n + 1))).1)).hom]
+      rfl
+    · simp
+  | succ j hj  =>
+    intro α hα
+    obtain ⟨β, hβ⟩ := hj (fun i hi ↦ α i (hi.trans j.castSucc_le_succ)) (fun i _ ↦ hα i _)
+    obtain ⟨φ, hφ₁, hφ₂⟩ := (isPushout j).exists_desc β (α j.succ (by rfl)) (by
+      rw [Category.assoc, hβ, hα])
+    refine ⟨φ, fun i hi ↦ ?_⟩
+    obtain hi | rfl := hi.lt_or_eq
+    · rw [← Fin.le_castSucc_iff] at hi
+      rw [← hβ i hi, ← hφ₁]
+      rfl
+    · exact hφ₂
 
 end filtration
 
