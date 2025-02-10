@@ -1,10 +1,11 @@
 import TopCatModelCategory.SSet.Horn
 import TopCatModelCategory.SSet.HomotopyBasic
 import TopCatModelCategory.SSet.FundamentalGroupoid
+import TopCatModelCategory.SSet.ProdSimplexOne
 
 universe u
 
-open HomotopicalAlgebra CategoryTheory Simplicial Limits
+open HomotopicalAlgebra CategoryTheory Simplicial Limits MonoidalCategory
 
 namespace SSet
 
@@ -583,7 +584,16 @@ variable {p q}
 
 noncomputable def Homotopy.relStruct₀ (h : p.Homotopy q) : RelStruct₀ p q := sorry
 
-noncomputable def RelStruct₀.homotopy (h : RelStruct₀ p q) : p.Homotopy q := sorry
+noncomputable def RelStruct₀.homotopy (h : RelStruct₀ p q) : p.Homotopy q := by
+  apply Nonempty.some
+  let α : Fin (n + 1) → (Δ[n + 1] ⟶ X) := sorry
+  obtain ⟨φ, hφ⟩ := prodStandardSimplex₁.exists_desc α sorry
+  exact ⟨{
+    h := φ
+    h₀ := sorry
+    h₁ := sorry
+    rel := sorry
+  }⟩
 
 noncomputable def RelStruct.homotopy {i : Fin (n + 1)} (h : RelStruct p q i) : p.Homotopy q :=
   h.relStruct₀.homotopy
