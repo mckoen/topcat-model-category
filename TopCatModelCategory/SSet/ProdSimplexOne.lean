@@ -118,7 +118,32 @@ lemma ofSimplex_codimOneSimplex (j : Fin n) :
     · refine ⟨SimplexCategory.δ j.succ.castSucc, ?_⟩
       rw [← δ_castSucc_nonDegenerateEquiv]
       rfl
-  · sorry
+  · rintro ⟨k⟩ s hs
+    induction' k using SimplexCategory.rec with k
+    obtain ⟨f, rfl⟩ := prodStandardSimplex.objEquiv.symm.surjective s
+    simp only [prodStandardSimplex.mem_ofSimplex_iff, intersectionNondeg,
+      Subpresheaf.min_obj, Set.mem_inter_iff, Equiv.apply_symm_apply] at hs ⊢
+    rintro ⟨x, y⟩ hxy
+    refine ⟨x, Prod.ext rfl ?_⟩
+    obtain ⟨x₁, h₁⟩ := hs.1 hxy
+    obtain ⟨x₂, h₂⟩ := hs.2 hxy
+    have h₁₁ := congr_arg Prod.fst h₁
+    have h₁₂ := congr_arg Prod.snd h₁
+    have h₂₁ := congr_arg Prod.fst h₂
+    have h₂₂ := congr_arg Prod.snd h₂
+    simp only [prodStandardSimplex.objEquiv_apply_fst, nonDegenerateEquiv_fst,
+      prodStandardSimplex.objEquiv_apply_snd, nonDegenerateEquiv_snd] at h₁₁ h₁₂ h₂₁ h₂₂
+    rw [standardSimplex.objEquiv_symm_σ_apply] at h₁₁ h₂₁
+    simp only [prodStandardSimplex.objEquiv_apply_snd, codimOneSimplex_coe_snd]
+    fin_cases y
+    · simp [standardSimplex.objMk₁_apply_eq_zero_iff,
+        ← Fin.le_castSucc_iff] at h₁₂ h₂₂ ⊢
+      rw [Fin.predAbove_of_le_castSucc _ _ h₁₂] at h₁₁
+      simpa [← h₁₁] using h₁₂
+    · simp [standardSimplex.objMk₁_apply_eq_one_iff] at h₁₂ h₂₂ ⊢
+      rw [Fin.predAbove_of_castSucc_lt _ _ h₂₂] at h₂₁
+      rw [← h₂₁, ← Fin.succ_le_succ_iff, Fin.succ_pred]
+      exact h₂₂
 
 lemma intersectionNondeg_le_intersectionNondeg (i j k : Fin (n + 1))
     (hij : i ≤ j) (hij : j ≤ k) :
@@ -156,8 +181,6 @@ lemma intersectionNondeg_le_intersectionNondeg' (i j k : Fin (n + 1))
       mem_range_objEquiv_nonDegenerateEquiv₁_iff] at hxy ⊢
     omega
 
-section
-
 lemma sq (j : Fin n) :
     Subcomplex.Sq (Subcomplex.ofSimplex (codimOneSimplex.{u} j.succ.castSucc).1)
       (filtration.{u} j.castSucc) (.ofSimplex (nonDegenerateEquiv j.succ).1)
@@ -185,8 +208,6 @@ lemma sq (j : Fin n) :
       · refine le_trans ?_ le_sup_left
         exact ofSimplex_le_filtration (Fin.le_castSucc_iff.2 hi)
       · exact le_sup_right
-
-end
 
 noncomputable def ι (i : Fin (n + 1)) : (Δ[n + 1] : SSet.{u}) ⟶ Δ[n] ⊗ Δ[1] :=
   (yonedaEquiv _ _).symm (nonDegenerateEquiv i)
