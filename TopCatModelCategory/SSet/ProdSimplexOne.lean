@@ -76,6 +76,17 @@ lemma filtration_zero :
     filtration.{u} (0 : Fin (n + 1)) = .ofSimplex (nonDegenerateEquiv 0).1 :=
   le_antisymm (by simp [filtration]) (ofSimplex_le_filtration.{u} (by rfl))
 
+variable (n) in
+lemma filtration_last :
+    filtration.{u} (Fin.last n) = ⊤ := by
+  rw [prodStandardSimplex.subcomplex_eq_top_iff _ rfl]
+  intro x hx
+  obtain ⟨i, hi⟩ := nonDegenerateEquiv.surjective ⟨x, hx⟩
+  rw [Subtype.ext_iff] at hi
+  subst hi
+  rw [← Subcomplex.ofSimplex_le_iff]
+  exact ofSimplex_le_filtration i.le_last
+
 noncomputable def intersectionNondeg (i j : Fin (n + 1)) :
     (Δ[n] ⊗ Δ[1] : SSet.{u}).Subcomplex :=
   .ofSimplex (nonDegenerateEquiv i).1 ⊓ .ofSimplex (nonDegenerateEquiv j).1
@@ -272,7 +283,6 @@ variable {X : SSet.{u}} {j : Fin (n + 1)}
         α i.castSucc (i.castSucc_le_succ.trans hi) =
       standardSimplex.map (SimplexCategory.δ i.succ.castSucc) ≫ α i.succ hi)
 
-include hα in
 def exists_desc :
     ∃ (φ : (filtration j : SSet.{u}) ⟶ X),
       ∀ (i : Fin (n + 1)) (hi : i ≤ j), ι hi ≫ φ = α i hi := by
@@ -308,6 +318,20 @@ end filtration
 
 noncomputable def ι (i : Fin (n + 1)) : (Δ[n + 1] : SSet.{u}) ⟶ Δ[n] ⊗ Δ[1] :=
   (yonedaEquiv _ _).symm (nonDegenerateEquiv i)
+
+variable {X : SSet.{u}}
+  (α : Fin (n + 1) → (Δ[n + 1] ⟶ X))
+  (hα : ∀ (i : Fin n),
+    standardSimplex.map (SimplexCategory.δ i.succ.castSucc) ≫ α i.castSucc =
+      standardSimplex.map (SimplexCategory.δ i.succ.castSucc) ≫ α i.succ)
+
+def exists_desc :
+    ∃ (φ : Δ[n] ⊗ Δ[1] ⟶ X),
+      ∀ (i : Fin (n + 1)), ι i ≫ φ = α i := by
+  obtain ⟨ψ, hψ⟩ := filtration.exists_desc (j := Fin.last n) (fun i hi ↦ α i)
+    (fun i _ ↦ hα i)
+  exact ⟨(Subcomplex.topIso _).inv ≫ (Subcomplex.isoOfEq (filtration_last n)).inv ≫ ψ,
+    fun i ↦ by rw [← hψ i (by exact Fin.le_last i)]; rfl⟩
 
 end prodStandardSimplex₁
 
