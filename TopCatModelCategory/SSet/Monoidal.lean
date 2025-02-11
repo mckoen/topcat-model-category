@@ -119,4 +119,10 @@ lemma ihom₀Equiv_symm_comp {Z : SSet.{u}} (f : X ⟶ Y) (g : Y ⟶ Z) :
   rw [Equiv.symm_apply_apply, ← yonedaEquiv_symm_comp, Equiv.symm_apply_apply]
   rfl
 
+lemma yonedaEquiv_fst {n : ℕ} (f : Δ[n] ⟶ X ⊗ Y) :
+    (yonedaEquiv _ _ f).1 = yonedaEquiv _ _ (f ≫ fst _ _) := rfl
+
+lemma yonedaEquiv_snd {n : ℕ} (f : Δ[n] ⟶ X ⊗ Y) :
+    (yonedaEquiv _ _ f).2 = yonedaEquiv _ _ (f ≫ snd _ _) := rfl
+
 end SSet

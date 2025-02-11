@@ -1,4 +1,5 @@
 import TopCatModelCategory.SSet.NonDegenerateProdSimplex
+import TopCatModelCategory.SSet.Monoidal
 
 open CategoryTheory Simplicial MonoidalCategory Opposite ChosenFiniteProducts
 
@@ -332,6 +333,32 @@ def exists_desc :
     (fun i _ ↦ hα i)
   exact ⟨(Subcomplex.topIso _).inv ≫ (Subcomplex.isoOfEq (filtration_last n)).inv ≫ ψ,
     fun i ↦ by rw [← hψ i (by exact Fin.le_last i)]; rfl⟩
+
+@[reassoc]
+lemma δ_ι_last :
+    standardSimplex.map (SimplexCategory.δ (Fin.last (n + 1))) ≫ ι (Fin.last n) = ι₀.{u} := by
+  apply (yonedaEquiv _ _).injective
+  apply prodStandardSimplex.objEquiv.injective
+  ext i : 3
+  · simpa [ι, yonedaEquiv_fst, ← yonedaEquiv_symm_map] using
+      SimplexCategory.congr_toOrderHom_apply
+        (SimplexCategory.δ_comp_σ_succ (i := Fin.last n)) i
+  · simp [ι, yonedaEquiv_snd, ← yonedaEquiv_symm_map, standardSimplex.map_op_apply,
+      SimplexCategory.δ]
+    rw [standardSimplex.objMk₁_of_castSucc_lt _ _ (by simpa using i.castSucc_lt_last)]
+    rfl
+
+@[reassoc]
+lemma δ_ι_zero :
+    standardSimplex.map (SimplexCategory.δ 0) ≫ ι (0 : Fin (n + 1)) = ι₁.{u} := by
+  apply (yonedaEquiv _ _).injective
+  apply prodStandardSimplex.objEquiv.injective
+  ext i : 3
+  · simpa [ι, yonedaEquiv_fst, ← yonedaEquiv_symm_map] using
+      SimplexCategory.congr_toOrderHom_apply
+        (SimplexCategory.δ_comp_σ_self (i := 0)) i
+  · rfl
+
 
 end prodStandardSimplex₁
 

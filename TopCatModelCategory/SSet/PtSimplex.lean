@@ -586,14 +586,38 @@ noncomputable def Homotopy.relStruct₀ (h : p.Homotopy q) : RelStruct₀ p q :=
 
 noncomputable def RelStruct₀.homotopy (h : RelStruct₀ p q) : p.Homotopy q := by
   apply Nonempty.some
-  let α : Fin (n + 1) → (Δ[n + 1] ⟶ X) := sorry
-  obtain ⟨φ, hφ⟩ := prodStandardSimplex₁.exists_desc α sorry
+  obtain _ | n := n
+  · sorry
+  have h' := h.symm.relStruct (Fin.last (n + 1))
+  let α : Fin (n + 2) → (Δ[n + 2] ⟶ X) :=
+    Fin.lastCases h'.map (fun i ↦
+      standardSimplex.map (SimplexCategory.σ i.castSucc) ≫ q.map)
+  have hα₁ (i : Fin (n + 1)) :
+      α i.castSucc = standardSimplex.map (SimplexCategory.σ i.castSucc) ≫ q.map := by simp [α]
+  have hα₂ : α (Fin.last (n + 1)) = h'.map := by simp [α]
+  obtain ⟨φ, hφ⟩ := prodStandardSimplex₁.exists_desc α (fun i ↦ by
+    obtain ⟨i, rfl⟩ | rfl := i.eq_castSucc_or_eq_last
+    · rw [hα₁, Fin.succ_castSucc, hα₁, ← Functor.map_comp_assoc,
+        ← Functor.map_comp_assoc,
+        SimplexCategory.δ_comp_σ_self, ← Fin.succ_castSucc, ← Fin.succ_castSucc,
+          SimplexCategory.δ_comp_σ_succ]
+    · conv_rhs => rw [Fin.succ_last, hα₂, h'.δ_castSucc_map]
+      rw [hα₁, ← Functor.map_comp_assoc, ← Fin.succ_castSucc,
+        SimplexCategory.δ_comp_σ_succ, CategoryTheory.Functor.map_id, Category.id_comp])
   exact ⟨{
     h := φ
-    h₀ := sorry
-    h₁ := sorry
-    rel := sorry
-  }⟩
+    h₀ := by
+      rw [← prodStandardSimplex₁.δ_ι_last_assoc, hφ, hα₂]
+      exact h'.δ_succ_map
+    h₁ := by
+      have eq₁ := hα₁ 0
+      have eq₂ := SimplexCategory.δ_comp_σ_self (i := (0 : Fin (n + 2)))
+      dsimp at eq₁ eq₂
+      rw [← prodStandardSimplex₁.δ_ι_zero_assoc, hφ, eq₁,
+        ← standardSimplex.map_comp_assoc, eq₂,
+        CategoryTheory.Functor.map_id, Category.id_comp]
+    rel := by
+      sorry }⟩
 
 noncomputable def RelStruct.homotopy {i : Fin (n + 1)} (h : RelStruct p q i) : p.Homotopy q :=
   h.relStruct₀.homotopy

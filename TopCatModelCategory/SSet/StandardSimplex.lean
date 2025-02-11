@@ -81,6 +81,15 @@ lemma objEquiv_symm_apply {n m : ℕ} (f : SimplexCategory.mk m ⟶ [n])
     (i : Fin (m + 1)) :
     (objEquiv.{u} _ (op [m])).symm f i = f.toOrderHom i := rfl
 
+@[simp]
+lemma yonedaEquiv_id_apply {n : ℕ} (i : Fin (n + 1)) :
+    yonedaEquiv.{u} _ _ (𝟙 (Δ[n])) i = i := rfl
+
+@[simp]
+lemma yonedaEquiv_const_apply {n : ℕ} {m : ℕ}
+    (x : Δ[n] _[0]) (i : Fin (m + 1)) :
+    yonedaEquiv Δ[n] [m] (SSet.const x) i = x 0 := rfl
+
 @[simps]
 def obj₀Equiv {n : ℕ} : Δ[n] _[0] ≃ Fin (n + 1) where
   toFun x := x 0
