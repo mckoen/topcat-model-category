@@ -261,7 +261,7 @@ noncomputable def isColimit :
     IsColimit ((multicoequalizerDiagram i).multicofork'.map Subcomplex.toPresheafFunctor) :=
   Subcomplex.multicoforkIsColimit' (multicoequalizerDiagram i)
 
-def exists_desc {X : SSet.{u}}
+def exists_desc' {X : SSet.{u}}
     (f : ∀ (j : ({i}ᶜ : Set _)), (standardSimplex.face {j.1}ᶜ : SSet) ⟶ X)
     (hf : ∀ (j k : ({i}ᶜ : Set _)) (_ : j.1 < k.1),
       Subcomplex.homOfLE (show standardSimplex.face {j.1, k.1}ᶜ ≤ _ by
@@ -276,18 +276,21 @@ def exists_desc {X : SSet.{u}}
 
 end
 
-lemma exists_desc' {i : Fin (n + 3)} {X : SSet.{u}} (f : ({i}ᶜ : Set _) → ((Δ[n + 1] : SSet) ⟶ X))
+open standardSimplex in
+lemma exists_desc {i : Fin (n + 3)} {X : SSet.{u}} (f : ({i}ᶜ : Set _) → ((Δ[n + 1] : SSet) ⟶ X))
     (hf : ∀ (j k : ({i}ᶜ : Set _)) (hjk : j.1 < k.1),
       standardSimplex.map (SimplexCategory.δ (k.1.pred (Fin.ne_zero_of_lt hjk))) ≫ f j =
         standardSimplex.map (SimplexCategory.δ (j.1.castPred (Fin.ne_last_of_lt hjk))) ≫ f k) :
     ∃ (φ : Λ[n + 2, i] ⟶ X), ∀ j, ι i j.1 j.2 ≫ φ = f j := by
-  obtain ⟨φ, hφ⟩ := exists_desc (i := i)
+  obtain ⟨φ, hφ⟩ := exists_desc' (i := i)
     (f := fun j ↦
-      (standardSimplex.faceSingletonComplIso j.1).inv ≫ f j) (fun j k hjk ↦ by
+      (faceSingletonComplIso j.1).inv ≫ f j) (fun j k hjk ↦ by
         dsimp
-        sorry)
+        rw [homOfLE_faceSingletonComplIso_inv_eq_facePairComplIso_δ_pred_assoc _ _ hjk,
+          homOfLE_faceSingletonComplIso_inv_eq_facePairComplIso_δ_castPred_assoc _ _ hjk,
+          hf _ _ hjk])
   exact ⟨φ, fun j ↦ by
-    rw [← cancel_epi (standardSimplex.faceSingletonComplIso j.1).inv, ← hφ,
+    rw [← cancel_epi (faceSingletonComplIso j.1).inv, ← hφ,
       faceSingletonComplIso_inv_ι_assoc]⟩
 
 end subcomplexHorn

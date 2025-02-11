@@ -22,6 +22,7 @@ import TopCatModelCategory.PseudoFunctor.LaxNatTrans
 import TopCatModelCategory.PseudoFunctor.MorphismProperty
 import TopCatModelCategory.PseudoFunctor.Pseudofunctor
 import TopCatModelCategory.SSet.AnodyneExtensions
+import TopCatModelCategory.SSet.AnodyneExtensionsDefs
 import TopCatModelCategory.SSet.Basic
 import TopCatModelCategory.SSet.Boundary
 import TopCatModelCategory.SSet.CategoryWithFibrations
@@ -33,7 +34,6 @@ import TopCatModelCategory.SSet.Fibrations
 import TopCatModelCategory.SSet.Finite
 import TopCatModelCategory.SSet.FundamentalGroupoid
 import TopCatModelCategory.SSet.FundamentalGroupoidAction
-import TopCatModelCategory.SSet.FundamentalGroupoidHomotopies
 import TopCatModelCategory.SSet.HasDimensionLT
 import TopCatModelCategory.SSet.Homotopy
 import TopCatModelCategory.SSet.HomotopyBasic
@@ -44,6 +44,7 @@ import TopCatModelCategory.SSet.KanComplexW
 import TopCatModelCategory.SSet.Monoidal
 import TopCatModelCategory.SSet.NonDegenerateProdSimplex
 import TopCatModelCategory.SSet.Paths
+import TopCatModelCategory.SSet.ProdSimplexOne
 import TopCatModelCategory.SSet.PtSimplex
 import TopCatModelCategory.SSet.SimplexCategory
 import TopCatModelCategory.SSet.Square

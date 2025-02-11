@@ -1,5 +1,5 @@
 import TopCatModelCategory.SSet.FundamentalGroupoid
-import TopCatModelCategory.SSet.HomotopyBasic
+import TopCatModelCategory.SSet.HomotopyGroup
 
 universe u
 
@@ -12,7 +12,7 @@ namespace KanComplex
 namespace FundamentalGroupoid
 
 structure ActionStruct {X : SSet.{u}} {x₀ x₁ : FundamentalGroupoid X} {n : ℕ}
-    (p : Path x₀ x₁)
+    (p : Edge x₀ x₁)
     (s : Subcomplex.RelativeMorphism (subcomplexBoundary n) _
         (const ⟨x₀.pt, Subcomplex.mem_ofSimplex_obj x₀.pt⟩))
     (t : Subcomplex.RelativeMorphism (subcomplexBoundary n) _
@@ -26,13 +26,13 @@ namespace action
 
 variable {X : SSet.{u}} [IsFibrant X] {x₀ x₁ : FundamentalGroupoid X} {n : ℕ}
 
-lemma exists_actionStruct [IsFibrant X] (p : Path x₀ x₁)
+lemma exists_actionStruct [IsFibrant X] (p : Edge x₀ x₁)
     (s : Subcomplex.RelativeMorphism (subcomplexBoundary n) _
       (const ⟨x₀.pt, Subcomplex.mem_ofSimplex_obj x₀.pt⟩)) :
     ∃ t, Nonempty (ActionStruct p s t) :=
   sorry
 
-def unique_actionStruct {p p' : Path x₀ x₁} (hp : p.Homotopy p')
+def unique_actionStruct {p p' : Edge x₀ x₁} (hp : p.Homotopy p')
     {s s' : Subcomplex.RelativeMorphism (subcomplexBoundary n) _
       (const ⟨x₀.pt, Subcomplex.mem_ofSimplex_obj x₀.pt⟩)} (hs : s.Homotopy s')
     {t t' : Subcomplex.RelativeMorphism (subcomplexBoundary n) _
@@ -41,14 +41,14 @@ def unique_actionStruct {p p' : Path x₀ x₁} (hp : p.Homotopy p')
     t.Homotopy t' := by
   sorry
 
-noncomputable def map' (p : Path x₀ x₁)
+noncomputable def map' (p : Edge x₀ x₁)
     (s : Subcomplex.RelativeMorphism (subcomplexBoundary n) _
         (const ⟨x₀.pt, Subcomplex.mem_ofSimplex_obj x₀.pt⟩)) :
     Subcomplex.RelativeMorphism (subcomplexBoundary n) _
         (const ⟨x₁.pt, Subcomplex.mem_ofSimplex_obj x₁.pt⟩) :=
   (exists_actionStruct p s).choose
 
-noncomputable def actionStruct (p : Path x₀ x₁)
+noncomputable def actionStruct (p : Edge x₀ x₁)
     (s : Subcomplex.RelativeMorphism (subcomplexBoundary n) _
         (const ⟨x₀.pt, Subcomplex.mem_ofSimplex_obj x₀.pt⟩)) :
     ActionStruct p s (map' p s) :=
@@ -56,16 +56,16 @@ noncomputable def actionStruct (p : Path x₀ x₁)
 
 noncomputable def map : ∀ (_p : x₀ ⟶ x₁), π n X x₀.pt ⟶ π n X x₁.pt :=
   Quot.lift₂ (fun p s ↦ (map' p s).homotopyClass) (by
-    rintro (p : Path _ _) s s' ⟨hs⟩
+    rintro (p : Edge _ _) s s' ⟨hs⟩
     apply Subcomplex.RelativeMorphism.Homotopy.eq
     exact unique_actionStruct (.refl p) hs
       (actionStruct p s) (actionStruct p s')) (by
-    rintro (p p' : Path _ _) s ⟨hp⟩
+    rintro (p p' : Edge _ _) s ⟨hp⟩
     apply Subcomplex.RelativeMorphism.Homotopy.eq
     exact unique_actionStruct hp (.refl s)
       (actionStruct p s) (actionStruct p' s))
 
-lemma map_eq {p : Path x₀ x₁}
+lemma map_eq {p : Edge x₀ x₁}
     {s : Subcomplex.RelativeMorphism (subcomplexBoundary n) _
       (const ⟨x₀.pt, Subcomplex.mem_ofSimplex_obj x₀.pt⟩)}
     {t : Subcomplex.RelativeMorphism (subcomplexBoundary n) _

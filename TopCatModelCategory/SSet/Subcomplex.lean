@@ -147,16 +147,22 @@ variable (S : X.Subcomplex) (T : Y.Subcomplex)
 instance : CoeOut X.Subcomplex SSet.{u} where
   coe := fun S ↦ S.toPresheaf
 
-variable (X) in
+variable (X)
+
 @[simps!]
 def topIso : ((⊤ : X.Subcomplex) : SSet) ≅ X :=
   NatIso.ofComponents (fun n ↦ (Equiv.Set.univ (X.obj n)).toIso)
+
+@[reassoc (attr := simp)]
+lemma topIso_inv_ι : (topIso X).inv ≫ Subpresheaf.ι _ = 𝟙 _ := rfl
 
 def isInitialBot : IsInitial ((⊥ : X.Subcomplex) : SSet.{u}) :=
   IsInitial.ofUniqueHom (fun P ↦
     { app i := fun ⟨x, hx⟩ ↦ by simp at hx
       naturality i j f := by ext ⟨x, hx⟩; simp at hx })
     (fun _ _ ↦ by ext _ ⟨x, hx⟩; simp at hx)
+
+variable {X}
 
 variable {S} in
 @[ext]
@@ -170,6 +176,10 @@ lemma sSup_obj (S : Set X.Subcomplex) (n : SimplexCategoryᵒᵖ) :
 lemma iSup_obj {ι : Type*} (S : ι → X.Subcomplex) (n : SimplexCategoryᵒᵖ) :
     (iSup S).obj n = iSup (fun i ↦ (S i).obj n) := by
   simp [iSup, sSup_obj]
+
+lemma iSup_inf {ι : Type*} (S : ι → X.Subcomplex) (T : X.Subcomplex):
+    (⨆ i, S i) ⊓ T = ⨆ i, (S i ⊓ T)  := by
+  aesop
 
 instance :
     letI src : SSet := S
@@ -567,6 +577,10 @@ def lift : X ⟶ B :=
 @[reassoc (attr := simp)]
 lemma lift_ι : lift f hf ≫ B.ι = f := rfl
 
+@[simp]
+lemma lift_app_coe {n : SimplexCategoryᵒᵖ} (x : X.obj n) :
+    ((lift f g).app _ x).1 = f.app _ x := rfl
+
 end
 
 section
@@ -588,6 +602,16 @@ instance : Epi (toOfSimplex x) := by
   simp only [Subpresheaf.toPresheaf_obj, range_eq_ofSimplex, top_subpresheaf_obj, Set.top_eq_univ,
     Set.mem_univ, iff_true]
   exact ⟨u, by simp; rfl⟩
+
+lemma isIso_toOfSimplex_iff :
+    IsIso (toOfSimplex x) ↔ Mono ((yonedaEquiv _ _).symm x) := by
+  constructor
+  · intro
+    rw [← toOfSimplex_ι]
+    infer_instance
+  · intro h
+    have := mono_of_mono_fac (toOfSimplex_ι x)
+    apply isIso_of_mono_of_epi
 
 end
 
@@ -740,6 +764,11 @@ noncomputable def multicoforkIsColimit' [LinearOrder ι] :
     exact (isColimitMapMulticoforkEquiv _ _).2 (Types.isColimitMulticoforkMapSetToTypes' h'))
 
 end multicoequalizer
+
+variable {Y}
+
+lemma hom_ext (B : Y.Subcomplex) {f g : X ⟶ B} (h : f ≫ B.ι = g ≫ B.ι): f = g := by
+  simpa only [cancel_mono] using h
 
 end Subcomplex
 

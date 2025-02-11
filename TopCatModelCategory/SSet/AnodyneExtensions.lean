@@ -1,12 +1,4 @@
-import TopCatModelCategory.SSet.Horn
-import TopCatModelCategory.SSet.CategoryWithFibrations
-import TopCatModelCategory.SSet.ChosenFiniteProducts
-import TopCatModelCategory.SSet.SimplexCategory
-import TopCatModelCategory.SSet.NonDegenerateProdSimplex
-import TopCatModelCategory.IsFibrant
-import Mathlib.CategoryTheory.MorphismProperty.Limits
-import Mathlib.CategoryTheory.MorphismProperty.Retract
-import Mathlib.CategoryTheory.MorphismProperty.TransfiniteComposition
+import TopCatModelCategory.SSet.AnodyneExtensionsDefs
 
 open HomotopicalAlgebra CategoryTheory Limits SSet.ModelCategory MonoidalCategory
   Simplicial Opposite
@@ -56,44 +48,7 @@ end CategoryTheory
 
 namespace SSet
 
-def anodyneExtensions : MorphismProperty SSet.{u} :=
-  (fibrations _).llp
-
-instance : anodyneExtensions.{u}.IsMultiplicative := by
-  dsimp [anodyneExtensions]
-  infer_instance
-
-instance : anodyneExtensions.{u}.RespectsIso := by
-  dsimp [anodyneExtensions]
-  infer_instance
-
-instance : anodyneExtensions.{u}.IsStableUnderCobaseChange := by
-  dsimp [anodyneExtensions]
-  infer_instance
-
 namespace anodyneExtensions
-
-lemma hasLeftLiftingProperty {A B : SSet.{u}} {f : A ⟶ B} (hf : anodyneExtensions f)
-    ⦃X Y : SSet.{u}⦄ (p : X ⟶ Y) [Fibration p] :
-    HasLiftingProperty f p :=
-  hf _ (mem_fibrations p)
-
-lemma exists_lift_of_isFibrant {A B X : SSet.{u}} (f : A ⟶ X) [IsFibrant X] {g : A ⟶ B}
-    (hg : anodyneExtensions g) :
-    ∃ (h : B ⟶ X), g ≫ h = f := by
-  have := hg.hasLeftLiftingProperty
-  have sq : CommSq f g (terminal.from _) (terminal.from _) := ⟨by simp⟩
-  exact ⟨sq.lift, by simp⟩
-
-lemma of_isIso {X Y : SSet.{u}} (f : X ⟶ Y) [IsIso f] :
-    anodyneExtensions f :=
-  MorphismProperty.of_isIso _ _
-
-lemma subcomplexHorn_ι_mem (n : ℕ) (i : Fin (n + 2)) :
-    anodyneExtensions (subcomplexHorn.{u} (n + 1) i).ι := by
-  apply MorphismProperty.le_rlp_llp
-  simp only [J, MorphismProperty.iSup_iff]
-  exact ⟨n, ⟨i⟩⟩
 
 namespace subcomplex_unionProd_face_ι_mem
 
@@ -165,7 +120,7 @@ lemma ιSimplex_app_objEquiv_symm_δ (j : Fin (n + 1)) (i : Fin (n + 2)) :
 
 instance (j : Fin (n + 1)) : Mono (ιSimplex.{u} j) := by
   rw [standardSimplex.mono_iff]
-  exact (prodStandardSimplex.objEquiv_non_degenerate_iff' _).1
+  exact (prodStandardSimplex.non_degenerate_iff' _).1
     (prodStandardSimplex.nonDegenerateEquiv₁.{u} j).2
 
 noncomputable def filtration₁ (i : Fin (n + 2)) :

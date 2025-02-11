@@ -48,10 +48,10 @@ noncomputable def equiv :
 namespace Homotopy
 
 noncomputable def equiv {f g : RelativeMorphism A B φ} :
-    Homotopy f g ≃ KanComplex.FundamentalGroupoid.Path (X := relativeMorphism A B φ)
+    Homotopy f g ≃ KanComplex.FundamentalGroupoid.Edge (X := relativeMorphism A B φ)
         (.mk (RelativeMorphism.equiv f))
         (.mk (RelativeMorphism.equiv g)) where
-  toFun h := KanComplex.FundamentalGroupoid.Path.mk
+  toFun h := KanComplex.FundamentalGroupoid.Edge.mk
       (Subcomplex.lift (MonoidalClosed.curry h.h) sorry) (by
         rw [← cancel_mono (Subpresheaf.ι _), assoc, Subcomplex.lift_ι, const_comp,
           Subpresheaf.ι_app, equiv_apply_coe, ← h.h₀]

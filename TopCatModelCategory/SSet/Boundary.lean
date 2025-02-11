@@ -1,10 +1,11 @@
 import TopCatModelCategory.SSet.Subcomplex
 import TopCatModelCategory.SSet.StandardSimplex
 import TopCatModelCategory.SSet.HasDimensionLT
+import TopCatModelCategory.SSet.Monoidal
 
 universe u
 
-open CategoryTheory Simplicial Opposite
+open CategoryTheory Simplicial Opposite MonoidalCategory
 
 namespace SSet
 
@@ -125,6 +126,28 @@ lemma hom_ext {n : ℕ} {X : SSet.{u}} {f g : (subcomplexBoundary (n + 1) : SSet
   simp [subcomplexBoundary_eq_iSup, standardSimplex.face_singleton_compl] at hx
   obtain ⟨i, ⟨y, rfl⟩⟩ := hx
   exact congr_fun ((congr_app (h i)) _) y
+
+open MonoidalClosed
+
+@[ext]
+lemma hom_ext_tensorLeft {n : ℕ} {X Y : SSet.{u}}
+    {f g : Y ⊗ (subcomplexBoundary (n + 1) : SSet) ⟶ X}
+    (h : ∀ (i : Fin (n + 2)), Y ◁ ι i ≫ f = Y ◁ ι i ≫ g) :
+    f = g := by
+  apply curry_injective
+  apply hom_ext
+  intro i
+  simp only [← curry_natural_left, h]
+
+@[ext]
+lemma hom_ext_tensorRight {n : ℕ} {X Y : SSet.{u}}
+    {f g : (subcomplexBoundary (n + 1) : SSet) ⊗ Y ⟶ X}
+    (h : ∀ (i : Fin (n + 2)), ι i ▷ Y ≫ f = ι i ▷ Y ≫ g) :
+    f = g := by
+  rw [← cancel_epi (β_ _ _).hom]
+  apply hom_ext_tensorLeft
+  intro i
+  simp only [BraidedCategory.braiding_naturality_right_assoc, h]
 
 end subcomplexBoundary
 
