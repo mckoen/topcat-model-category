@@ -6,6 +6,7 @@ import TopCatModelCategory.SSet.ProdSimplexOne
 universe u
 
 open HomotopicalAlgebra CategoryTheory Simplicial Limits MonoidalCategory
+  ChosenFiniteProducts
 
 namespace SSet
 
@@ -373,6 +374,7 @@ noncomputable def assoc'
     (h₀₂ : MulStruct f₀₁ f₁₂ f₀₂ i) (h₁₃ : MulStruct f₁₂ f₂₃ f₁₃ i)
     (h : MulStruct f₀₂ f₂₃ f₀₃ i) :
     MulStruct f₀₁ f₁₃ f₀₃ i :=
+  -- this should be very similar to `assoc` above
   sorry
 
 section
@@ -587,7 +589,33 @@ noncomputable def Homotopy.relStruct₀ (h : p.Homotopy q) : RelStruct₀ p q :=
 noncomputable def RelStruct₀.homotopy (h : RelStruct₀ p q) : p.Homotopy q := by
   apply Nonempty.some
   obtain _ | n := n
-  · sorry
+  · refine ⟨{
+      h := snd _ _ ≫ h.symm.map
+      h₀ := by
+        rw [← h.symm.δ_succ_map, lift_snd_assoc, standardSimplex.obj₀Equiv_symm_apply,
+          const_comp, Fin.succ_zero_eq_one]
+        apply (yonedaEquiv _ _).injective
+        rw [yonedaEquiv₀, yonedaEquiv_map_comp]
+        erw [← FunctorToTypes.naturality]
+        apply congr_arg
+        ext i : 1
+        fin_cases i
+        rfl
+      h₁ := by
+        rw [← h.symm.δ_castSucc_map, lift_snd_assoc, standardSimplex.obj₀Equiv_symm_apply,
+          const_comp]
+        apply (yonedaEquiv _ _).injective
+        rw [yonedaEquiv₀, yonedaEquiv_map_comp]
+        erw [← FunctorToTypes.naturality]
+        apply congr_arg
+        ext i : 1
+        fin_cases i
+        rfl
+      rel := by
+        rw [← cancel_epi (β_ _ _).hom]
+        apply MonoidalClosed.curry_injective
+        ext m ⟨x, hx⟩
+        simp at hx }⟩
   have h' := h.symm.relStruct (Fin.last (n + 1))
   let α : Fin (n + 2) → (Δ[n + 2] ⟶ X) :=
     Fin.lastCases h'.map (fun i ↦
