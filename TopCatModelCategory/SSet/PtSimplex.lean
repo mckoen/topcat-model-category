@@ -647,7 +647,18 @@ noncomputable def RelStruct₀.homotopy (h : RelStruct₀ p q) : p.Homotopy q :=
     rel := subcomplexBoundary.hom_ext_tensorRight (fun i ↦ by
       rw [Subcomplex.ofSimplex_ι, comp_const, comp_const, comp_const,
         ← comp_whiskerRight_assoc, subcomplexBoundary.ι_ι]
-      sorry) }⟩
+      ext j : 1
+      rw [comp_const]
+      by_cases hi : i ≤ j.castSucc
+      · rw [prodStandardSimplex₁.ι_whiskerRight_δ_assoc _ _ hi, hφ]
+        obtain ⟨j, rfl⟩ | rfl := j.eq_castSucc_or_eq_last
+        · rw [Fin.succ_castSucc, hα₁, ← Functor.map_comp_assoc, ← Fin.succ_castSucc,
+            SimplexCategory.δ_comp_σ_of_le hi,
+            Functor.map_comp, Category.assoc, δ_map, comp_const]
+        · simp only [Fin.succ_last, Nat.succ_eq_add_one, hα₂]
+          apply h'.δ_map_of_lt i.castSucc
+          rwa [Fin.castSucc_lt_castSucc_iff, ← Fin.succ_last, ← Fin.le_castSucc_iff]
+      · sorry) }⟩
 
 noncomputable def RelStruct.homotopy {i : Fin (n + 1)} (h : RelStruct p q i) : p.Homotopy q :=
   h.relStruct₀.homotopy
