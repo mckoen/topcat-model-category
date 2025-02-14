@@ -372,7 +372,7 @@ lemma δ_ι_zero :
   · rfl
 
 @[reassoc]
-lemma ι_whiskerRight_δ (i : Fin (n + 2)) (j : Fin (n + 1)) (hij : i ≤ j.castSucc) :
+lemma ι_whiskerRight_δ_of_le (i : Fin (n + 2)) (j : Fin (n + 1)) (hij : i ≤ j.castSucc) :
     ι.{u} j ≫ standardSimplex.map (SimplexCategory.δ i) ▷ Δ[1] =
       standardSimplex.map (SimplexCategory.δ i.castSucc) ≫ ι.{u} j.succ := by
   apply (yonedaEquiv _ _).injective
@@ -403,7 +403,7 @@ lemma δ_ι_of_lt (i : Fin (n + 3)) (j : Fin (n + 2)) (hij : i < j.castSucc) :
   obtain ⟨j, rfl⟩ := j.eq_succ_of_ne_zero (by simpa using Fin.ne_zero_of_lt hij)
   obtain ⟨i, rfl⟩ := i.eq_castSucc_of_ne_last (Fin.ne_last_of_lt hij)
   rw [Fin.pred_succ, Fin.castPred_castSucc,
-    ι_whiskerRight_δ _ _ (Fin.le_castSucc_iff.2 hij)]
+    ι_whiskerRight_δ_of_le _ _ (Fin.le_castSucc_iff.2 hij)]
 
 end prodStandardSimplex₁
 

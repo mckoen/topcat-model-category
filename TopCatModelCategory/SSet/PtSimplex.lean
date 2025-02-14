@@ -650,7 +650,7 @@ noncomputable def RelStruct₀.homotopy (h : RelStruct₀ p q) : p.Homotopy q :=
       ext j : 1
       rw [comp_const]
       by_cases hi : i ≤ j.castSucc
-      · rw [prodStandardSimplex₁.ι_whiskerRight_δ_assoc _ _ hi, hφ]
+      · rw [prodStandardSimplex₁.ι_whiskerRight_δ_of_le_assoc _ _ hi, hφ]
         obtain ⟨j, rfl⟩ | rfl := j.eq_castSucc_or_eq_last
         · rw [Fin.succ_castSucc, hα₁, ← Functor.map_comp_assoc, ← Fin.succ_castSucc,
             SimplexCategory.δ_comp_σ_of_le hi,
