@@ -405,6 +405,34 @@ lemma δ_ι_of_lt (i : Fin (n + 3)) (j : Fin (n + 2)) (hij : i < j.castSucc) :
   rw [Fin.pred_succ, Fin.castPred_castSucc,
     ι_whiskerRight_δ_of_le _ _ (Fin.le_castSucc_iff.2 hij)]
 
+@[reassoc]
+lemma ι_whiskerRight_δ_of_gt (i : Fin (n + 2)) (j : Fin (n + 1)) (hij : j.castSucc < i ) :
+    ι.{u} j ≫ standardSimplex.map (SimplexCategory.δ i) ▷ Δ[1] =
+      standardSimplex.map (SimplexCategory.δ i.succ) ≫ ι.{u} j.castSucc := by
+  apply (yonedaEquiv _ _).injective
+  apply prodStandardSimplex.objEquiv.injective
+  ext k : 3
+  · exact SimplexCategory.congr_toOrderHom_apply (SimplexCategory.δ_comp_σ_of_gt hij).symm k
+  · simp [ι, ← yonedaEquiv_symm_map, standardSimplex.map_op_apply, SimplexCategory.δ]
+    by_cases hk : k < j.succ
+    · have : k.castSucc < i.succ := by
+        rw [← Fin.castSucc_lt_castSucc_iff] at hk
+        rw [← Fin.succ_lt_succ_iff] at hij
+        exact hk.trans hij
+      rw [standardSimplex.objMk₁_of_castSucc_lt _ _ (by simpa using hk),
+        standardSimplex.objMk₁_of_castSucc_lt]
+      rwa [Fin.succAbove_of_castSucc_lt _ _ this,
+      Fin.castSucc_lt_castSucc_iff, Fin.castSucc_lt_succ_iff, Fin.le_castSucc_iff]
+    · simp only [not_lt] at hk
+      rw [standardSimplex.objMk₁_of_le_castSucc _ _ (by simpa using hk),
+        standardSimplex.objMk₁_of_le_castSucc]
+      rw [Fin.castSucc_le_castSucc_iff]
+      by_cases hk' : k.castSucc < i.succ
+      · simpa [Fin.succAbove_of_castSucc_lt _ _ hk'] using hk
+      · simp only [Fin.castSucc_lt_succ_iff, not_le] at hk'
+        rw [Fin.succAbove_of_le_castSucc _ _ (by simpa), Fin.succ_le_succ_iff]
+        refine hij.le.trans hk'.le
+
 end prodStandardSimplex₁
 
 end SSet

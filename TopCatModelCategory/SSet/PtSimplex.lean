@@ -654,11 +654,14 @@ noncomputable def RelStruct₀.homotopy (h : RelStruct₀ p q) : p.Homotopy q :=
         obtain ⟨j, rfl⟩ | rfl := j.eq_castSucc_or_eq_last
         · rw [Fin.succ_castSucc, hα₁, ← Functor.map_comp_assoc, ← Fin.succ_castSucc,
             SimplexCategory.δ_comp_σ_of_le hi,
-            Functor.map_comp, Category.assoc, δ_map, comp_const]
+            Functor.map_comp_assoc, δ_map, comp_const]
         · simp only [Fin.succ_last, Nat.succ_eq_add_one, hα₂]
           apply h'.δ_map_of_lt i.castSucc
           rwa [Fin.castSucc_lt_castSucc_iff, ← Fin.succ_last, ← Fin.le_castSucc_iff]
-      · sorry) }⟩
+      · simp only [not_le] at hi
+        rw [prodStandardSimplex₁.ι_whiskerRight_δ_of_gt_assoc _ _ hi, hφ, hα₁,
+          ← Functor.map_comp_assoc, SimplexCategory.δ_comp_σ_of_gt hi,
+          Functor.map_comp_assoc, δ_map, comp_const] ) }⟩
 
 noncomputable def RelStruct.homotopy {i : Fin (n + 1)} (h : RelStruct p q i) : p.Homotopy q :=
   h.relStruct₀.homotopy
