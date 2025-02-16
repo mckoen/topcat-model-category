@@ -72,6 +72,18 @@ lemma leftUnitor_inv_map_δ_one :
     (standardSimplex.leftUnitor X).inv ≫ standardSimplex.map (SimplexCategory.δ 1) ▷ X =
       ι₀ ≫ (β_ _ _).hom := rfl
 
+@[reassoc]
+lemma ι₀_standardSimplex_zero :
+    ι₀ = standardSimplex.map (SimplexCategory.δ 1) ≫ (standardSimplex.leftUnitor Δ[1]).inv := by
+  ext : 1
+  all_goals exact (yonedaEquiv _ _).injective (by ext i; fin_cases i; rfl)
+
+@[reassoc]
+lemma ι₁_standardSimplex_zero :
+    ι₁ = standardSimplex.map (SimplexCategory.δ 0) ≫ (standardSimplex.leftUnitor Δ[1]).inv := by
+  ext : 1
+  all_goals exact (yonedaEquiv _ _).injective (by ext i; fin_cases i; rfl)
+
 noncomputable def rightUnitor : X ⊗ Δ[0] ≅ X where
   hom := fst _ _
   inv := lift (𝟙 X) (isTerminalObj₀.from _)

@@ -434,6 +434,17 @@ lemma ι_whiskerRight_δ_of_gt (i : Fin (n + 2)) (j : Fin (n + 1)) (hij : j.cast
         refine hij.le.trans hk'.le
 
 @[reassoc]
+lemma δ_ι_of_succ_lt (i : Fin (n + 3)) (j : Fin (n + 2)) (hij : j.succ < i) :
+  standardSimplex.map (SimplexCategory.δ i) ≫ ι.{u} j = ι.{u} (j.castPred (by
+      rintro rfl
+      simp [Fin.lt_iff_val_lt_val] at hij
+      omega)) ≫
+      standardSimplex.map (SimplexCategory.δ (i.pred (Fin.ne_zero_of_lt hij))) ▷ Δ[1] := by
+  rw [ι_whiskerRight_δ_of_gt _ _ (by
+    rwa [← Fin.succ_lt_succ_iff, Fin.castSucc_castPred, Fin.succ_pred])]
+  simp
+
+@[reassoc]
 lemma δ_succ_castSucc_ι_succ (i : Fin n) :
     standardSimplex.map (SimplexCategory.δ i.succ.castSucc) ≫
       prodStandardSimplex₁.ι.{u} i.succ =
