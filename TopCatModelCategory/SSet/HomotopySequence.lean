@@ -1,4 +1,3 @@
---import TopCatModelCategory.SSet.Homotopy
 import TopCatModelCategory.SSet.Fiber
 import TopCatModelCategory.SSet.HomotopyGroup
 
@@ -107,6 +106,18 @@ noncomputable def δ' (n : ℕ) [Fibration p] [IsFibrant E] [IsFibrant B] (i : F
     π (n + 1) B b → π n (Subcomplex.fiber p b) (basePoint p he) :=
   Quot.lift (fun s ↦ (δ'' he s i).homotopyClass) (fun s s' hs ↦
     Quot.sound ⟨uniqueδ'' (deltaStruct he s i) (deltaStruct he s' i) hs.some⟩)
+
+variable [IsFibrant B]
+
+lemma map₂_map₁_apply {n : ℕ} (x : π n (Subcomplex.fiber p b) (basePoint p he)) :
+    map₂ p he n (map₁ p he n x) = 1 := by
+  obtain ⟨x, rfl⟩ := x.mk_surjective
+  dsimp only [map₁, map₂]
+  rw [mapπ_mapπ, mapπ_mk, π.mk_eq_one_iff]
+  refine ⟨PtSimplex.RelStruct₀.ofEq ?_⟩
+  ext : 1
+  dsimp
+  rw [Subcomplex.fiber_ι_comp, comp_const]
 
 end HomotopySequence
 

@@ -117,6 +117,10 @@ lemma le_fiber_iff (A : X.Subcomplex) :
   rw [← image_le_iff, le_ofSimplex_iff,
     ← cancel_epi (A.toImage f), comp_const, toImage_ι]
 
+@[reassoc (attr := simp)]
+lemma fiber_ι_comp : (fiber f y).ι ≫ f = const y := by
+  rw [← le_fiber_iff]
+
 instance [Fibration f] : IsFibrant (C := SSet.{u}) (fiber f y) :=
   (isFibrant_iff_of_isTerminal (C := SSet.{u})
     ((Subcomplex.ofSimplex y).fromPreimage f) (isTerminal _)).2 inferInstance

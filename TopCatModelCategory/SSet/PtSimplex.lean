@@ -22,6 +22,15 @@ namespace PtSimplex
 variable {X} {n : ℕ} {x : X _[0]}
 
 @[simps]
+def pushforward (z : X.PtSimplex n x) {Y : SSet.{u}} (f : X ⟶ Y) (y : Y _[0])
+    (hy : f.app _ x = y) : Y.PtSimplex n y where
+  map := z.map ≫ f
+  comm := by
+    rw [Subcomplex.ofSimplex_ι, comp_const, z.comm_assoc, Subcomplex.ofSimplex_ι,
+      const_comp, FunctorToTypes.comp, const_app, SimplexCategory.const_eq_id,
+      op_id, FunctorToTypes.map_id_apply, hy]
+
+@[simps]
 def mk (f : Δ[n + 1] ⟶ X)
     (hf : ∀ i, standardSimplex.map (SimplexCategory.δ i) ≫ f = const x) :
     X.PtSimplex (n +1) x where
@@ -160,7 +169,14 @@ def refl (f : X.PtSimplex n x) (i : Fin (n + 1)) : RelStruct f f i where
       have := Fin.ne_last_of_lt hj
       simp at this
 
+def ofEq {f g : X.PtSimplex n x} (h : f = g) (i : Fin (n + 1)) : RelStruct f g i := by
+  subst h
+  exact refl f i
+
 end RelStruct
+
+def RelStruct₀.ofEq {f g : X.PtSimplex n x} (h : f = g) : RelStruct₀ f g :=
+  RelStruct.ofEq h 0
 
 namespace MulStruct
 

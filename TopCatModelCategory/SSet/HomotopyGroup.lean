@@ -31,6 +31,10 @@ variable {X Y : SSet.{u}} (f : X ⟶ Y) (n : ℕ)
 def mapπ (p : π n X x) : π n Y y :=
   p.postcomp (.ofSimplex₀ f x y h) (by rw [comp_const])
 
+@[simp]
+lemma mapπ_mk (z : X.PtSimplex n x) :
+    mapπ f n x y h (π.mk z) = π.mk (z.pushforward f y h) := rfl
+
 variable {Z : SSet.{u}} (g : Y ⟶ Z) (z : Z _[0]) (h' : g.app _ y = z)
 
 lemma mapπ_mapπ (p : π n X x) :
