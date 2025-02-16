@@ -584,7 +584,40 @@ abbrev Homotopy := Subcomplex.RelativeMorphism.Homotopy p q
 
 variable {p q}
 
-noncomputable def Homotopy.relStruct₀ (h : p.Homotopy q) : RelStruct₀ p q := sorry
+namespace Homotopy
+
+noncomputable def relStruct₀ (h : p.Homotopy q) : RelStruct₀ p q := by
+  let src (i : Fin (n + 1)) : X.PtSimplex n x :=
+    { map := standardSimplex.map (SimplexCategory.δ i.castSucc) ≫
+      prodStandardSimplex₁.ι.{u} i ≫ h.h
+      comm := sorry }
+  let tgt (i : Fin (n + 1)) : X.PtSimplex n x :=
+    { map := standardSimplex.map (SimplexCategory.δ i.succ) ≫
+      prodStandardSimplex₁.ι.{u} i ≫ h.h
+      comm := sorry }
+  have ρ (i : Fin (n + 1)) : RelStruct (src i) (tgt i) i :=
+    { map := prodStandardSimplex₁.ι i ≫ h.h
+      δ_castSucc_map := rfl
+      δ_succ_map := rfl
+      δ_map_of_gt := sorry
+      δ_map_of_lt := sorry }
+  have h₀ : src 0 = q := by
+    ext : 1
+    simp [src, prodStandardSimplex₁.δ_ι_zero_assoc]
+  have h₁ (i : Fin n) : src i.succ = tgt i.castSucc := by
+    ext : 1
+    dsimp [src, tgt]
+    rw [prodStandardSimplex₁.δ_succ_castSucc_ι_succ_assoc, Fin.succ_castSucc]
+  have h₂ : tgt (Fin.last _) = p := by
+    ext : 1
+    simp [tgt, prodStandardSimplex₁.δ_ι_last_assoc]
+  have (i : Fin (n + 1)) : RelStruct₀ q (tgt i) := by
+    induction i using Fin.induction with
+    | zero => simpa only [← h₀] using ρ 0
+    | succ i hi => exact hi.trans (by simpa only [← h₁] using (ρ i.succ).relStruct₀)
+  simpa only [← h₂] using (this (Fin.last _)).symm
+
+end Homotopy
 
 noncomputable def RelStruct₀.homotopy (h : RelStruct₀ p q) : p.Homotopy q := by
   apply Nonempty.some
