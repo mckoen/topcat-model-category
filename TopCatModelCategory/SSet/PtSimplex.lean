@@ -116,7 +116,7 @@ structure MulStruct (f g fg : X.PtSimplex n x) (i : Fin n) where
     by aesop_cat
   δ_castSucc_castSucc_map : standardSimplex.map
     (SimplexCategory.δ (i.castSucc.castSucc)) ≫ map = g.map := by aesop_cat
-  δ_castSucc_succ_map : standardSimplex.map (SimplexCategory.δ (i.castSucc.succ)) ≫ map =
+  δ_castSucc_succ_map : standardSimplex.map (SimplexCategory.δ (i.succ.castSucc)) ≫ map =
     fg.map := by aesop_cat
   δ_map_of_lt (j : Fin (n + 2)) (hj : j < i.castSucc.castSucc) :
     standardSimplex.map (SimplexCategory.δ j) ≫ map = const x := by aesop_cat
@@ -167,6 +167,12 @@ namespace MulStruct
 attribute [reassoc (attr := simp)] δ_succ_succ_map δ_castSucc_castSucc_map
   δ_castSucc_succ_map δ_map_of_lt δ_map_of_gt
 
+@[reassoc (attr := simp)]
+lemma δ_succ_castSucc_map {f g fg : X.PtSimplex n x} {i : Fin n}
+    (h : MulStruct f g fg i) :
+    standardSimplex.map (SimplexCategory.δ i.castSucc.succ) ≫ h.map = fg.map := by
+  simp [Fin.succ_castSucc]
+
 end MulStruct
 
 def relStructCastSuccEquivMulStruct {f g : X.PtSimplex n x} {i : Fin n} :
@@ -174,7 +180,8 @@ def relStructCastSuccEquivMulStruct {f g : X.PtSimplex n x} {i : Fin n} :
   toFun h :=
     { map := h.map
       δ_succ_succ_map := h.δ_map_of_gt i.succ.succ (by simp)
-      δ_map_of_gt j hj := h.δ_map_of_gt j (lt_trans (by simp) hj) }
+      δ_map_of_gt j hj := h.δ_map_of_gt j (lt_trans (by simp) hj)
+      δ_castSucc_succ_map := by simp only [← Fin.succ_castSucc, RelStruct.δ_succ_map] }
   invFun h :=
     { map := h.map
       δ_map_of_gt j hj := by
@@ -359,7 +366,8 @@ noncomputable def assoc
         rw [hμ _ (by rfl), hα₁]
         exact h₁₃.δ_castSucc_castSucc_map
       δ_castSucc_succ_map := by
-        rw [hμ' _ (by rfl), hα₂]
+        rw [hμ' _ (by rfl)]
+        simp only [← Fin.succ_castSucc, hα₂]
         exact h.δ_castSucc_succ_map
       δ_map_of_lt j hj := by
         rw [hμ _ (by omega), hα₀ _ (by simpa using hj), comp_const]
