@@ -189,6 +189,15 @@ lemma δ_succ_castSucc_map {f g fg : X.PtSimplex n x} {i : Fin n}
     standardSimplex.map (SimplexCategory.δ i.castSucc.succ) ≫ h.map = fg.map := by
   simp [Fin.succ_castSucc]
 
+@[simps]
+def pushforward {f g fg : X.PtSimplex n x} {i : Fin n}
+    (h : MulStruct f g fg i) {Y : SSet.{u}} (φ : X ⟶ Y) (y : Y _[0])
+    (hxy : φ.app (Opposite.op [0]) x = y) :
+    MulStruct (f.pushforward φ y hxy) (g.pushforward φ y hxy) (fg.pushforward φ y hxy) i where
+  map := h.map ≫ φ
+  δ_map_of_lt j hj := by simp [h.δ_map_of_lt_assoc j hj, hxy]
+  δ_map_of_gt j hj := by simp [h.δ_map_of_gt_assoc j hj, hxy]
+
 end MulStruct
 
 def relStructCastSuccEquivMulStruct {f g : X.PtSimplex n x} {i : Fin n} :
