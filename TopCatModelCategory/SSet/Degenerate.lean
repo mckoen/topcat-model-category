@@ -313,4 +313,38 @@ def nonDegenerateEquivOfIso (e : X ≅ Y) (n : ℕ) :
 
 end
 
+lemma _root_.Fin.eq_castSucc_of_ne_last {n : ℕ} {i : Fin (n + 1)} (hi : i ≠ Fin.last n) :
+    ∃ (j : Fin n), i = j.castSucc := by
+  obtain ⟨j, rfl⟩ | rfl := i.eq_castSucc_or_eq_last
+  · exact ⟨j, rfl⟩
+  · simp at hi
+
+lemma eq_of_degenerate_of_δ_eq
+    {X : SSet.{u}} {n : ℕ} {x y : X _[n + 1]} (hx : x ∈ X.Degenerate (n + 1))
+    (hy : y ∈ X.Degenerate (n + 1))
+    (h : ∀ (i : Fin (n + 2)), X.δ i x = X.δ i y) : x = y := by
+  simp only [degenerate_eq_iUnion_range_σ, Set.iSup_eq_iUnion, Set.mem_iUnion,
+    Set.mem_range] at hx hy
+  obtain ⟨p, x', hx'⟩ := hx
+  obtain ⟨q, y', hy'⟩ := hy
+  obtain rfl : x' = X.δ p.castSucc x := by rw [← hx', δ_comp_σ_self_apply]
+  obtain rfl : y' = X.δ q.castSucc y := by rw [← hy', δ_comp_σ_self_apply]
+  wlog hpq : p < q
+  · simp only [not_lt] at hpq
+    obtain hpq | rfl := hpq.lt_or_eq
+    · exact (this (fun i ↦ (h i).symm) q p hy' hx' hpq).symm
+    · rw [← hx', ← hy', h]
+  obtain _ | n := n
+  · fin_cases p; fin_cases q
+    simp at hpq
+  obtain ⟨p, rfl⟩ := Fin.eq_castSucc_of_ne_last (Fin.ne_last_of_lt hpq)
+  obtain ⟨q, rfl⟩ := Fin.eq_succ_of_ne_zero (Fin.ne_zero_of_lt hpq)
+  simp only [Fin.castSucc_lt_succ_iff] at hpq
+  let ξ := X.σ p (X.δ p.castSucc (X.δ q.succ.castSucc y))
+  have h₁ : x = X.σ q.succ ξ := by
+    rw [← hx', h, ← hy', SSet.δ_comp_σ_of_le_apply (by simpa),
+      SSet.σ_comp_σ_apply hpq]
+  have h₂ : X.δ q.succ.castSucc x = ξ := by rw [h₁, δ_comp_σ_self_apply]
+  rw [h₁, ← h₂, h, hy']
+
 end SSet

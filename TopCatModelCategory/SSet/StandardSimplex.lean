@@ -332,12 +332,6 @@ noncomputable def _root_.Finset.orderIsoOfOrderEmbedding
     ⟨fun _ _ _ ↦ by aesop, fun _ ↦ by aesop⟩
   map_rel_iff' := by simp
 
-lemma _root_.Fin.eq_castSucc_of_ne_last {n : ℕ} {i : Fin (n + 1)} (hi : i ≠ Fin.last n) :
-    ∃ (j : Fin n), i = j.castSucc := by
-  obtain ⟨j, rfl⟩ | rfl := i.eq_castSucc_or_eq_last
-  · exact ⟨j, rfl⟩
-  · simp at hi
-
 noncomputable def _root_.Fin.orderIsoPairCompl (i j : Fin (n + 3)) (h : i < j) :
     Fin (n + 1) ≃o ({i, j}ᶜ : Finset _) :=
   let φ :=
