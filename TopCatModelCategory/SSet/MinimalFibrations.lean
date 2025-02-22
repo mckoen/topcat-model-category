@@ -10,7 +10,7 @@ namespace SSet
 
 variable {E B : SSet.{u}} (p : E ⟶ B)
 
-structure SimplexOverRel {n : ℕ} (x y : E _[n]) where
+structure SimplexOverRelStruct {n : ℕ} (x y : E _[n]) where
   h : Δ[n] ⊗ Δ[1] ⟶ E
   h₀ : ι₀ ≫ h = (yonedaEquiv _ _).symm x
   h₁ : ι₁ ≫ h = (yonedaEquiv _ _).symm y
@@ -20,7 +20,12 @@ structure SimplexOverRel {n : ℕ} (x y : E _[n]) where
   hd : (subcomplexBoundary.{u} n).ι ▷ Δ[1] ≫ h = fst _ _ ≫ d
 
 class MinimalFibration extends Fibration p : Prop where
-  minimal {n : ℕ} {x y : E _[n]} (rel : SimplexOverRel p x y) : x = y
+  minimal {n : ℕ} {x y : E _[n]} (rel : SimplexOverRelStruct p x y) : x = y
+
+def minimalFibrations : MorphismProperty (SSet.{u}) :=
+  fun _ _ p ↦ MinimalFibration p
+
+lemma minimalFibrations_iff : minimalFibrations p ↔ MinimalFibration p := Iff.rfl
 
 instance : MinimalFibration (𝟙 B) where
   minimal {n x y} rel := by
@@ -28,11 +33,16 @@ instance : MinimalFibration (𝟙 B) where
     simp only [← rel.h₀, ← rel.h₁, ← cancel_mono (𝟙 B), assoc, rel.hπ,
       lift_fst_assoc, id_comp]
 
-namespace SimplexOverRel
+instance : minimalFibrations.{u}.ContainsIdentities where
+  id_mem B := by
+    rw [minimalFibrations_iff]
+    infer_instance
+
+namespace SimplexOverRelStruct
 
 attribute [reassoc] h₀ h₁ hπ hd
 
-variable {p} {n : ℕ} {x y : E _[n]} (rel : SimplexOverRel p x y)
+variable {p} {n : ℕ} {x y : E _[n]} (rel : SimplexOverRelStruct p x y)
 
 include rel in
 lemma eq_of_degenerate (hx : x ∈ E.Degenerate n) (hy : y ∈ E.Degenerate n) :
@@ -49,6 +59,6 @@ lemma eq_of_degenerate (hx : x ∈ E.Degenerate n) (hy : y ∈ E.Degenerate n) :
     ← yonedaEquiv_symm_map, ← yonedaEquiv_symm_map] at this
   exact (yonedaEquiv _ _).symm.injective this
 
-end SimplexOverRel
+end SimplexOverRelStruct
 
 end SSet
