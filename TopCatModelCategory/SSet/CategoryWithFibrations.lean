@@ -47,6 +47,14 @@ instance : IsStableUnderBaseChange (fibrations SSet.{u}) := by
   rw [fibrations_eq]
   infer_instance
 
+instance : IsMultiplicative (fibrations SSet.{u}) := by
+  rw [fibrations_eq]
+  infer_instance
+
+instance (X : SSet.{u}) : Fibration (𝟙 X) := by
+  rw [fibration_iff]
+  exact (fibrations SSet.{u}).id_mem X
+
 section
 
 variable {X Y : SSet.{u}} (f : X ⟶ Y)

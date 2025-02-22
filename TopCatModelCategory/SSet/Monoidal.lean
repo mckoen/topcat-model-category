@@ -23,11 +23,17 @@ noncomputable abbrev ι₀ {X : SSet.{u}} : X ⟶ X ⊗ Δ[1] :=
 lemma ι₀_comp {X Y : SSet.{u}} (f : X ⟶ Y) :
     ι₀ ≫ f ▷ _ = f ≫ ι₀ := rfl
 
+@[reassoc]
+lemma ι₀_fst (X : SSet.{u}) : ι₀ ≫ fst X _ = 𝟙 X := rfl
+
 @[simp]
 lemma ι₀_app_fst {X : SSet.{u}} {m} (x : X.obj m) : (ι₀.app _ x).1 = x := rfl
 
 noncomputable abbrev ι₁ {X : SSet.{u}} : X ⟶ X ⊗ Δ[1] :=
   lift (𝟙 X) (const (standardSimplex.obj₀Equiv.{u}.symm 1))
+
+@[reassoc]
+lemma ι₁_fst (X : SSet.{u}) : ι₁ ≫ fst X _ = 𝟙 X := rfl
 
 @[reassoc (attr := simp)]
 lemma ι₁_comp {X Y : SSet.{u}} (f : X ⟶ Y) :

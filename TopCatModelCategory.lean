@@ -41,6 +41,7 @@ import TopCatModelCategory.SSet.HomotopyGroup
 import TopCatModelCategory.SSet.HomotopySequence
 import TopCatModelCategory.SSet.Horn
 import TopCatModelCategory.SSet.KanComplexW
+import TopCatModelCategory.SSet.MinimalFibrations
 import TopCatModelCategory.SSet.Monoidal
 import TopCatModelCategory.SSet.NonDegenerateProdSimplex
 import TopCatModelCategory.SSet.Paths
