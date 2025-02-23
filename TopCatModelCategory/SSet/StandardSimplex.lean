@@ -54,6 +54,14 @@ lemma yonedaEquiv_symm_σ {X : SSet.{u}} {n : ℕ} (i : Fin (n + 1)) (x : X _[n]
       standardSimplex.map (SimplexCategory.σ i) ≫ (yonedaEquiv _ _).symm x := by
   apply yonedaEquiv_symm_map
 
+@[simp]
+lemma yonedaEquiv_symm_app_id {X : SSet.{u}} {n : ℕ} (x : X _[n]) :
+    ((yonedaEquiv _ _).symm x).app _ (standardSimplex.id n) = x := by
+  apply (yonedaEquiv _ _).symm.injective
+  rw [← yonedaEquiv_symm_comp]
+  dsimp [standardSimplex.id]
+  simp only [Equiv.symm_apply_apply, Category.id_comp]
+
 namespace standardSimplex
 
 instance (n : ℕ) {m : SimplexCategoryᵒᵖ} : Finite ((Δ[n] : SSet.{u}).obj m) := by

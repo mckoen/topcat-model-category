@@ -480,6 +480,10 @@ def image : Y.Subcomplex where
     rintro Δ Δ' φ _ ⟨x, hx, rfl⟩
     exact ⟨X.map φ x, S.map φ hx, by apply FunctorToTypes.naturality⟩
 
+lemma app_mem_image {Δ : SimplexCategoryᵒᵖ} (x : X.obj Δ) (hx : x ∈ S.obj _):
+    f.app _ x ∈ (S.image f).obj _ :=
+  ⟨x, hx, rfl⟩
+
 lemma image_le_iff (Z : Y.Subcomplex) :
     S.image f ≤ Z ↔ S ≤ Z.preimage f := by
   simp [Subpresheaf.le_def]

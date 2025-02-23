@@ -123,4 +123,73 @@ instance : minimalFibrations.{u}.IsStableUnderBaseChange where
     · apply (yonedaEquiv _ _).symm.injective
       simp [← yonedaEquiv_symm_comp, hxy.hπ']
 
+namespace MinimalFibration
+
+structure Selection where
+  set (n : ℕ) : Set (E _[n])
+  le_set (n : ℕ) : E.Degenerate n ≤ set n
+  unique {n : ℕ} {x y : E _[n]} (hx : x ∈ set n) (hy : y ∈ set n)
+    (h : SimplexOverRelStruct p x y) : x = y
+  nonempty {n : ℕ} (x : E _[n]) : ∃ (y : E _[n]) (_ : y ∈ set n),
+    Nonempty (SimplexOverRelStruct p x y)
+
+-- use that `SimplexOverRelStruct` defines an equivalence relation,
+-- "select" all degenerate simplices,
+-- and an element in each other equivalence class
+instance [Fibration p] : Nonempty (Selection p) := sorry
+
+namespace Selection
+
+variable {p} (selection : Selection p)
+
+def SubcomplexOfSelected : Type _ :=
+  Subtype (fun (Y : E.Subcomplex) ↦ ∀ (n : ℕ), Y.obj ⟨.mk n⟩ ≤ selection.set n)
+
+instance : PartialOrder selection.SubcomplexOfSelected := by
+  dsimp [SubcomplexOfSelected]
+  infer_instance
+
+instance : OrderTop selection.SubcomplexOfSelected where
+  top := ⟨⨆ (A : selection.SubcomplexOfSelected), A.1, fun n ↦ by
+    simp only [Subpresheaf.iSup_obj, Set.iSup_eq_iUnion, Set.le_eq_subset, Set.iUnion_subset_iff]
+    intro A
+    exact A.2 n⟩
+  le_top A := le_iSup (ι := selection.SubcomplexOfSelected) (fun A ↦ A.1) A
+
+def subcomplex : E.Subcomplex := (⊤ : selection.SubcomplexOfSelected).1
+
+lemma subcomplex_obj_le (n : ℕ) : selection.subcomplex.obj ⟨.mk n⟩ ≤ selection.set n :=
+  (⊤ : selection.SubcomplexOfSelected).2 n
+
+lemma le_subcomplex (Y : selection.SubcomplexOfSelected) : Y.1 ≤ selection.subcomplex :=
+  le_top (α := selection.SubcomplexOfSelected)
+
+lemma mem_subcomplex_of_boundary {n : ℕ} (x : E _[n]) (hx : x ∈ selection.set n)
+    (hx' : Subcomplex.range ((subcomplexBoundary n).ι ≫ (yonedaEquiv _ _).symm x) ≤
+      selection.subcomplex) :
+    x ∈ selection.subcomplex.obj ⟨.mk n⟩ := by
+  refine selection.le_subcomplex ⟨selection.subcomplex ⊔ Subcomplex.ofSimplex x, ?_⟩ _
+    (Or.inr (Subcomplex.mem_ofSimplex_obj x))
+  intro d
+  simp only [Subpresheaf.max_obj, Set.le_eq_subset, Set.union_subset_iff]
+  constructor
+  · apply subcomplex_obj_le
+  · rintro _ ⟨s, rfl⟩
+    by_cases hs : s ∈ Degenerate _ _
+    · exact selection.le_set _ (degenerate_map hs _)
+    · rw [← mem_nondegenerate_iff_not_mem_degenerate] at hs
+      obtain h | rfl := (Nat.le_of_lt_succ (dim_lt_of_nondegenerate _ ⟨s, hs⟩ (n + 1))).lt_or_eq
+      · apply subcomplex_obj_le
+        apply hx'
+        rw [Subcomplex.range_comp]
+        apply Subcomplex.app_mem_image
+        simp only [Subcomplex.range_ι, subcomplexBoundary_obj_eq_top _ _ h,
+          Set.top_eq_univ, Set.mem_univ]
+      · rw [standardSimplex.non_degenerate_top_dim, Set.mem_singleton_iff] at hs
+        simpa [hs] using hx
+
+end Selection
+
+end MinimalFibration
+
 end SSet
