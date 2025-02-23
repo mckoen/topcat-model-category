@@ -165,8 +165,7 @@ lemma le_subcomplex (Y : selection.SubcomplexOfSelected) : Y.1 ≤ selection.sub
   le_top (α := selection.SubcomplexOfSelected)
 
 lemma mem_subcomplex_of_boundary {n : ℕ} (x : E _[n]) (hx : x ∈ selection.set n)
-    (hx' : Subcomplex.range ((subcomplexBoundary n).ι ≫ (yonedaEquiv _ _).symm x) ≤
-      selection.subcomplex) :
+    (hx' : subcomplexBoundary n ≤ selection.subcomplex.preimage ((yonedaEquiv _ _).symm x)) :
     x ∈ selection.subcomplex.obj ⟨.mk n⟩ := by
   refine selection.le_subcomplex ⟨selection.subcomplex ⊔ Subcomplex.ofSimplex x, ?_⟩ _
     (Or.inr (Subcomplex.mem_ofSimplex_obj x))
@@ -178,13 +177,10 @@ lemma mem_subcomplex_of_boundary {n : ℕ} (x : E _[n]) (hx : x ∈ selection.se
     by_cases hs : s ∈ Degenerate _ _
     · exact selection.le_set _ (degenerate_map hs _)
     · rw [← mem_nondegenerate_iff_not_mem_degenerate] at hs
-      obtain h | rfl := (Nat.le_of_lt_succ (dim_lt_of_nondegenerate _ ⟨s, hs⟩ (n + 1))).lt_or_eq
+      obtain h | rfl := (dim_le_of_nondegenerate _ ⟨s, hs⟩ n).lt_or_eq
       · apply subcomplex_obj_le
         apply hx'
-        rw [Subcomplex.range_comp]
-        apply Subcomplex.app_mem_image
-        simp only [Subcomplex.range_ι, subcomplexBoundary_obj_eq_top _ _ h,
-          Set.top_eq_univ, Set.mem_univ]
+        simp only [subcomplexBoundary_obj_eq_top _ _ h, Set.top_eq_univ, Set.mem_univ]
       · rw [standardSimplex.non_degenerate_top_dim, Set.mem_singleton_iff] at hs
         simpa [hs] using hx
 

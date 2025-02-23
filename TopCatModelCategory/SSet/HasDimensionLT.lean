@@ -10,6 +10,8 @@ namespace SSet
 class HasDimensionLT (X : SSet.{u}) (d : ℕ) : Prop where
   degenerate_eq_top (n : ℕ) (hn : d ≤ n) : X.Degenerate n = ⊤
 
+abbrev HasDimensionLE (X : SSet.{u}) (d : ℕ) := X.HasDimensionLT (d + 1)
+
 section
 
 variable (X : SSet.{u}) (d : ℕ) [X.HasDimensionLT d] (n : ℕ)
@@ -25,6 +27,10 @@ lemma dim_lt_of_nondegenerate {n : ℕ} (x : X.NonDegenerate n) (d : ℕ)
   by_contra!
   obtain ⟨x, hx⟩ := x
   simp [X.nondegenerate_eq_bot_of_hasDimensionLT d n this] at hx
+
+lemma dim_le_of_nondegenerate {n : ℕ} (x : X.NonDegenerate n) (d : ℕ)
+    [X.HasDimensionLE d] : n ≤ d :=
+  Nat.le_of_lt_succ (X.dim_lt_of_nondegenerate x (d + 1))
 
 lemma hasDimensionLT_of_le (hn : d ≤ n) : HasDimensionLT X n where
   degenerate_eq_top i hi :=
