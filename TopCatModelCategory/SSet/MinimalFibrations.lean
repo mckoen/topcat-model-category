@@ -1,4 +1,5 @@
 import TopCatModelCategory.SSet.CategoryWithFibrations
+import TopCatModelCategory.SSet.DeformationRetract
 import TopCatModelCategory.SSet.Degenerate
 
 universe u
@@ -183,6 +184,11 @@ lemma mem_subcomplex_of_boundary {n : ℕ} (x : E _[n]) (hx : x ∈ selection.se
         simp only [subcomplexBoundary_obj_eq_top _ _ h, Set.top_eq_univ, Set.mem_univ]
       · rw [standardSimplex.non_degenerate_top_dim, Set.mem_singleton_iff] at hs
         simpa [hs] using hx
+
+abbrev subcomplexπ : (selection.subcomplex : SSet) ⟶ B := selection.subcomplex.ι ≫ p
+
+def relativeDeformationRetract :
+    RelativeDeformationRetract selection.subcomplexπ p := sorry
 
 end Selection
 
