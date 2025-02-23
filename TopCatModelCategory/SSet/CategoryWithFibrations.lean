@@ -51,6 +51,10 @@ instance : IsMultiplicative (fibrations SSet.{u}) := by
   rw [fibrations_eq]
   infer_instance
 
+instance : IsStableUnderRetracts (fibrations SSet.{u}) := by
+  rw [fibrations_eq]
+  infer_instance
+
 instance (X : SSet.{u}) : Fibration (𝟙 X) := by
   rw [fibration_iff]
   exact (fibrations SSet.{u}).id_mem X

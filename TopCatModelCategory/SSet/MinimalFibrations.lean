@@ -45,6 +45,9 @@ attribute [reassoc] h₀ h₁ hπ hd
 variable {p} {n : ℕ} {x y : E _[n]} (rel : SimplexOverRelStruct p x y)
 
 include rel in
+lemma eq [MinimalFibration p] : x = y := MinimalFibration.minimal rel
+
+include rel in
 lemma eq_of_degenerate (hx : x ∈ E.Degenerate n) (hy : y ∈ E.Degenerate n) :
     x = y := by
   obtain _ | n := n
@@ -59,6 +62,39 @@ lemma eq_of_degenerate (hx : x ∈ E.Degenerate n) (hy : y ∈ E.Degenerate n) :
     ← yonedaEquiv_symm_map, ← yonedaEquiv_symm_map] at this
   exact (yonedaEquiv _ _).symm.injective this
 
+noncomputable def map
+    {E' B' : SSet.{u}} {p' : E' ⟶ B'} (φ : Arrow.mk p ⟶ Arrow.mk p')
+    {x' y' : E' _[n]} (hx' : φ.left.app _ x = x') (hy' : φ.left.app _ y = y') :
+    SimplexOverRelStruct p' x' y' where
+  h := rel.h ≫ φ.left
+  h₀ := by rw [rel.h₀_assoc, ← hx', yonedaEquiv_symm_comp]
+  h₁ := by rw [rel.h₁_assoc, ← hy', yonedaEquiv_symm_comp]
+  π := rel.π ≫ φ.right
+  d := rel.d ≫ φ.left
+  hπ := by
+    have := Arrow.w φ
+    dsimp at this
+    rw [assoc, this, rel.hπ_assoc]
+  hd := by rw [rel.hd_assoc]
+
 end SimplexOverRelStruct
+
+instance : minimalFibrations.{u}.IsStableUnderRetracts where
+  of_retract {E B E' B' p p'} h (hp' : MinimalFibration p') := by
+    have : Fibration p := by
+      have : Fibration p' := inferInstance
+      rw [fibration_iff] at this ⊢
+      exact (fibrations _).of_retract h this
+    constructor
+    intro n x y hxy
+    have h₁ := congr_arg (h.r.left.app _) ((hxy.map h.i rfl rfl).eq)
+    have h₂ (a) : _ = a := congr_fun (NatTrans.congr_app h.left.retract ⟨.mk n⟩) a
+    dsimp at h₂
+    rw [← h₂ x, h₁, h₂]
+
+-- to be generalized
+instance : minimalFibrations.{u}.RespectsIso :=
+  MorphismProperty.RespectsIso.of_respects_arrow_iso _
+    (fun p' p e hp' ↦ (minimalFibrations).of_retract { i := e.inv, r := e.hom } hp')
 
 end SSet
