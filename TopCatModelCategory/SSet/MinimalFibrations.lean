@@ -4,7 +4,14 @@ import TopCatModelCategory.SSet.Degenerate
 universe u
 
 open CategoryTheory HomotopicalAlgebra Simplicial MonoidalCategory
-  ChosenFiniteProducts Category
+  ChosenFiniteProducts Category Limits
+
+
+lemma CategoryTheory.IsPullback.types_ext {A B C D : Type u} {t : A ⟶ B} {l : A ⟶ C}
+    {r : B ⟶ D} {b : C ⟶ D} (h : IsPullback t l r b) {x y : A}
+    (h₁ : t x = t y) (h₂ : l x = l y) : x = y := by
+  apply (PullbackCone.IsLimit.equivPullbackObj (h.isLimit)).injective
+  ext <;> assumption
 
 namespace SSet
 
@@ -43,6 +50,11 @@ namespace SimplexOverRelStruct
 attribute [reassoc] h₀ h₁ hπ hd
 
 variable {p} {n : ℕ} {x y : E _[n]} (rel : SimplexOverRelStruct p x y)
+
+include rel in
+@[reassoc]
+lemma hπ' : (yonedaEquiv _ _).symm x ≫ p = (yonedaEquiv _ _).symm y ≫ p := by
+  simp only [← rel.h₀, ← rel.h₁, assoc, rel.hπ, lift_fst_assoc, id_comp]
 
 include rel in
 lemma eq [MinimalFibration p] : x = y := MinimalFibration.minimal rel
@@ -96,5 +108,19 @@ instance : minimalFibrations.{u}.IsStableUnderRetracts where
 instance : minimalFibrations.{u}.RespectsIso :=
   MorphismProperty.RespectsIso.of_respects_arrow_iso _
     (fun p' p e hp' ↦ (minimalFibrations).of_retract { i := e.inv, r := e.hom } hp')
+
+instance : minimalFibrations.{u}.IsStableUnderBaseChange where
+  of_isPullback {E' E B' B b p t p'} h hp' := by
+    rw [minimalFibrations_iff] at hp'
+    have : Fibration p' := by
+      have : Fibration p := by infer_instance
+      rw [fibration_iff] at this ⊢
+      exact (fibrations SSet.{u}).of_isPullback h this
+    constructor
+    intro n x y hxy
+    apply (h.map ((evaluation _ _).obj _)).types_ext
+    · exact (hxy.map (Arrow.homMk t b h.w) rfl rfl).eq
+    · apply (yonedaEquiv _ _).symm.injective
+      simp [← yonedaEquiv_symm_comp, hxy.hπ']
 
 end SSet
