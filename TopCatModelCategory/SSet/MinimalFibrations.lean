@@ -185,10 +185,89 @@ lemma mem_subcomplex_of_boundary {n : ℕ} (x : E _[n]) (hx : x ∈ selection.se
       · rw [standardSimplex.non_degenerate_top_dim, Set.mem_singleton_iff] at hs
         simpa [hs] using hx
 
-abbrev subcomplexπ : (selection.subcomplex : SSet) ⟶ B := selection.subcomplex.ι ≫ p
+structure Extension where
+  A : E.Subcomplex
+  subcomplex_le : selection.subcomplex ≤ A
+  h : (A : SSet) ⊗ Δ[1] ⟶ E
+  hi' : Subcomplex.homOfLE subcomplex_le ▷ _ ≫ h = fst _ _ ≫ selection.subcomplex.ι := by aesop_cat
+  r : (A : SSet) ⟶ (selection.subcomplex : SSet)
+  i_r : Subcomplex.homOfLE subcomplex_le ≫ r = 𝟙 _ := by aesop_cat
+  ι₀_h : ι₀ ≫ h = r ≫ selection.subcomplex.ι := by aesop_cat
+  ι₁_h : ι₁ ≫ h = A.ι := by aesop_cat
+  wh : h ≫ p = fst _ _ ≫ A.ι ≫ p := by aesop_cat
 
-def relativeDeformationRetract :
-    RelativeDeformationRetract selection.subcomplexπ p := sorry
+namespace Extension
+
+variable {selection} (e : selection.Extension)
+
+attribute [reassoc (attr := simp)] wh i_r ι₀_h ι₁_h
+
+abbrev i : (selection.subcomplex : SSet) ⟶ (e.A : SSet) :=
+  Subcomplex.homOfLE e.subcomplex_le
+
+@[reassoc (attr := simp)]
+lemma hi : e.i ▷ _ ≫ e.h = fst _ _ ≫ selection.subcomplex.ι := e.hi'
+
+@[reassoc (attr := simp)]
+lemma wr : e.r ≫ selection.subcomplex.ι ≫ p = e.A.ι ≫ p := by
+  rw [← ι₀_h_assoc, wh, lift_fst_assoc, id_comp]
+
+end Extension
+
+instance : PartialOrder selection.Extension where
+  le f₁ f₂ := ∃ (h : f₁.A ≤ f₂.A), f₁.h = Subcomplex.homOfLE h ▷ _ ≫ f₂.h
+  le_refl f := ⟨by rfl, rfl⟩
+  le_trans f₁ f₂ f₃ := by
+    rintro ⟨le₁₂, fac₁₂⟩ ⟨le₂₃, fac₂₃⟩
+    exact ⟨le₁₂.trans le₂₃, by rw [fac₁₂, fac₂₃]; rfl⟩
+  le_antisymm := by
+    rintro ⟨A₁, _, h₁, _, r₁, _, ι₀_h₁, _, _⟩ ⟨A₂, _, h₂, _, r₂, _, ι₀_h₂, _, _⟩
+      ⟨le₁₂, fac₁₂⟩ ⟨le₂₁, fac₂₁⟩
+    obtain rfl := le_antisymm le₁₂ le₂₁
+    obtain rfl : h₁ = h₂ := fac₁₂
+    obtain rfl : r₁ = r₂ := by
+      rw [← cancel_mono selection.subcomplex.ι, ← ι₀_h₁, ← ι₀_h₂]
+    rfl
+
+noncomputable instance : OrderBot selection.Extension where
+  bot :=
+    { A := selection.subcomplex
+      subcomplex_le := by rfl
+      h := fst _ _ ≫ selection.subcomplex.ι
+      r := 𝟙 _ }
+  bot_le f := ⟨f.subcomplex_le, by simp⟩
+
+lemma exists_extension : ∃ (f : selection.Extension), f.A = ⊤ := sorry
+
+noncomputable def extension : selection.Extension := selection.exists_extension.choose
+
+@[simp]
+lemma extension_A : selection.extension.A = ⊤ := selection.exists_extension.choose_spec
+
+noncomputable def relativeDeformationRetract :
+    selection.subcomplex.RelativeDeformationRetract p where
+  i := selection.subcomplex.ι
+  i_eq_ι := rfl
+  r := (Subcomplex.topIso E).inv ≫ (Subcomplex.isoOfEq (by simp)).inv ≫ selection.extension.r
+  retract := selection.extension.i_r
+  h := ((Subcomplex.topIso E).inv ≫ (Subcomplex.isoOfEq (by simp)).inv) ▷ _ ≫
+      selection.extension.h
+  hi := selection.extension.hi
+  h₀ := by
+    dsimp
+    rw [ι₀_comp_assoc, assoc, assoc, assoc, Extension.ι₀_h]
+  h₁ := by
+    dsimp
+    rw [ι₁_comp_assoc, assoc, Extension.ι₁_h]
+    rfl
+  wr := by
+    dsimp
+    rw [assoc, assoc, Extension.wr]
+    rfl
+  wh := by
+    dsimp
+    rw [assoc, Extension.wh]
+    rfl
 
 end Selection
 

@@ -213,6 +213,14 @@ variable {S₁ S₂ : X.Subcomplex} (h : S₁ ≤ S₂)
 
 def homOfLE : (S₁ : SSet.{u}) ⟶ (S₂ : SSet.{u}) := Subpresheaf.homOfLe h
 
+@[reassoc]
+lemma homOfLE_comp {S₃ : X.Subcomplex} (h' : S₂ ≤ S₃) :
+    homOfLE h ≫ homOfLE h' = homOfLE (h.trans h') := rfl
+
+variable (S₁) in
+@[simp]
+lemma homOfLE_refl : homOfLE (by rfl : S₁ ≤ S₁) = 𝟙 _ := rfl
+
 @[simp]
 lemma homOfLE_app_val (Δ : SimplexCategoryᵒᵖ) (x : S₁.obj Δ) :
     ((homOfLE h).app Δ x).val = x.val := rfl
