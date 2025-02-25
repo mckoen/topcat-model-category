@@ -4,6 +4,8 @@ import TopCatModelCategory.SSet.DimensionProd
 import TopCatModelCategory.SSet.NonDegenerateProdSimplex
 import Mathlib.CategoryTheory.Limits.Shapes.FunctorToTypes
 
+universe u
+
 open CategoryTheory Simplicial MorphismProperty MonoidalCategory SSet
 
 variable (n : ℕ)
@@ -277,6 +279,9 @@ lemma filtration₃_succ (b : Fin (n + 1)) :
 
 lemma filtration₃_last : filtration₃ (n.succ) = (⊤ : (Δ[n] ⊗ Δ[2]).Subcomplex) := by
   rw [prodStandardSimplex.subcomplex_eq_top_iff _ rfl]
+  intro z hz
+  dsimp [filtration₃, filtration₁]
+  apply Set.mem_union_right
 
   -- show that all nondegenerate n+2 simplices are contained in X(n).obj (n + 2). (they are in all the τ's)
   -- need to understand the nondegen simplices better
@@ -381,22 +386,47 @@ def hornProdSubcomplex {n} (a b : Fin (n + 1)) (hab : a ≤ b) : (Δ[n] ⊗ Δ[2
 
 -- linarith, omega
 
+--image of i-th face under some f : Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2]
+noncomputable
+def SSet.face' {n} (i : Fin (n + 2)) (f : Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2]) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
+  Subcomplex.image (standardSimplex.face {i}ᶜ) f
+
+lemma hornProdSubcomplex_eq_iSup (a b : Fin (n + 1)) (hab : a ≤ b) :
+    hornProdSubcomplex a b hab =
+      ⨆ (j : ({a.succ}ᶜ : Set (Fin (n + 2)))), face' j.1 (f a b hab) := by
+  dsimp [hornProdSubcomplex, face']
+  rw [subcomplexHorn_eq_iSup]
+  aesop
+
+--def face (S : Finset (Fin (n + 1))) : (Δ[n] : SSet.{u}).Subcomplex where
+--  obj U := setOf (fun f ↦ Finset.image ((objEquiv _ _) f).toOrderHom ⊤ ≤ S)
+--  map {U V} i := by
+--    simp
+--    intro x hx y
+--    apply hx
+
 lemma hornProdSubcomplex_le₁ {n} (a b : Fin (n + 1)) (hab : a ≤ b) :
     hornProdSubcomplex a b hab ≤
       Subcomplex.unionProd (subcomplexBoundary n) (subcomplexHorn 2 1) := by
-  dsimp [hornProdSubcomplex]
-  rw [subcomplexHorn_eq_iSup (a.succ), Subcomplex.image_le_iff]
+  rw [hornProdSubcomplex_eq_iSup]
   apply iSup_le
-  intro i
-  rw [← Subcomplex.image_le_iff]
+  intro j
+
   sorry
 
+open Subcomplex in
 lemma hornProdSubcomplex_le₂ {n} (a b : Fin (n + 1)) (hab : a ≤ b) :
-    hornProdSubcomplex a b hab ≤ σ a b hab := by
-  dsimp [hornProdSubcomplex]
-  rw [Subcomplex.image_le_iff]
-  simp [σ, f]
-  sorry
+    hornProdSubcomplex.{u} a b hab ≤ σ a b hab := by
+  rw [hornProdSubcomplex_eq_iSup]
+  dsimp [face', σ]
+  apply iSup_le
+  intro ⟨j, hj⟩
+  rw [standardSimplex.face_singleton_compl, image_ofSimplex, ofSimplex_le_iff,
+    prodStandardSimplex.mem_ofSimplex_iff]
+  intro i
+  simp [Set.mem_range]
+  intro k h
+  exact ⟨_, h⟩
 
 def mySq (a b : Fin (n + 1)) (hab : a ≤ b) :
     Subcomplex.Sq (hornProdSubcomplex a b hab) (σ a b hab) sorry sorry where
@@ -408,3 +438,12 @@ def mySq (a b : Fin (n + 1)) (hab : a ≤ b) :
 #check Subcomplex.Sq.commSq
 
 #check Subcomplex.toOfSimplex
+
+#check prodStandardSimplex.objEquiv_non_degenerate_iff
+
+#check Subcomplex.le_iff_contains_nonDegenerate
+
+#check Subcomplex.ofSimplex_le_iff
+
+#check prodStandardSimplex.mem_ofSimplex_iff
+#check standardSimplex.mem_ofSimplex_obj_iff
