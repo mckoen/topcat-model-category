@@ -569,6 +569,8 @@ lemma face_le'' {n} (a b : Fin (n + 1)) (hab : a ≤ b) (j : Fin (n + 2))
   intro e
   aesop
 
+/-
+-- Λ[n + 1, a + 1] ↪ Y(b,a) = Y(b) ⊔ ... ⊔ σ a b`
 open Subcomplex in
 lemma hornProdSubcomplex_le₂ {n} (b : Fin n) (a : Fin b.succ.1) :
     hornProdSubcomplex ⟨a.1, lt_of_le_of_lt (a.is_le) (Nat.lt_add_right 1 b.2)⟩ ⟨b.1, Nat.lt_add_right 1 b.2⟩ a.is_le ≤
@@ -585,18 +587,116 @@ lemma hornProdSubcomplex_le₂ {n} (b : Fin n) (a : Fin b.succ.1) :
       simp only [h, ha, Fin.castSucc_zero, Fin.isValue, face_le']
     · dsimp
       rw [h]
-      simp
       apply le_sup_of_le_right
-      have goal := face_le''.{u} ⟨a.1, lt_of_le_of_lt (a.is_le) (Nat.lt_add_right 1 b.2)⟩ ⟨b.1, Nat.lt_add_right 1 b.2⟩ a.is_le j (hj) h (ha)
-      simp at goal
-      --have := ((⟨a.1, lt_of_le_of_lt (a.is_le) (Nat.lt_add_right 1 b.2)⟩ : Fin (n + 1)).castSucc.pred sorry)
-      --apply le_iSup_of_le ⟨a.pred ha, sorry⟩
-      sorry
+      apply le_iSup_of_le ↑↑(⟨a.pred (by aesop), by simp [Nat.sub_lt_succ a 1]⟩ : Fin a.1.succ)
+      refine (le_of_eq_of_le') ?_ (face_le'' _ _ _ _ hj h ha)
+      simp
+      congr
+      ext
+      exact Eq.symm (Fin.val_cast_of_lt
+        ((Nat.sub_one_lt (by aesop)).trans (lt_of_le_of_lt a.is_le (Nat.lt_add_right 1 b.2))))
   · exact
     le_sup_of_le_left
       (le_sup_of_le_left
         (face_le ⟨↑a, lt_of_le_of_lt (Fin.is_le a) (Nat.lt_add_right 1 b.isLt)⟩
           ⟨↑b, Nat.lt_add_right 1 b.isLt⟩ (Fin.is_le a) j hj h))
+
+-- Λ[n + 1, a + 1] ↪ Y(b,a + 1) = Y(b) ⊔ ... ⊔ σ (a + 1) b
+open Subcomplex in
+lemma hornProdSubcomplex_le₂' {n} (b : Fin n) (a : Fin b.1) :
+    hornProdSubcomplex
+      ⟨a.1, lt_of_le_of_lt (a.isLt.le) (Nat.lt_add_right 1 b.2)⟩ ⟨b.1, Nat.lt_add_right 1 b.2⟩ a.isLt.le ≤
+        filtration₂ b a.succ := by
+  rw [hornProdSubcomplex_eq_iSup]
+  apply iSup_le
+  rintro ⟨j, hj⟩
+  by_cases j = (⟨a.1, lt_of_le_of_lt (a.isLt.le) (Nat.lt_add_right 1 b.2)⟩ : Fin (n + 1)).castSucc -- check the a-th face first
+  all_goals rename_i h
+  · by_cases (⟨a.1, lt_of_le_of_lt (a.isLt.le) (Nat.lt_add_right 1 b.2)⟩ : Fin (n + 1)) = 0 -- two cases for a = 0 or a > 0
+    all_goals rename_i ha
+    · apply le_sup_of_le_left
+      apply le_sup_of_le_left
+      simp only [h, ha, Fin.castSucc_zero, Fin.isValue, face_le']
+    · dsimp
+      rw [h]
+      apply le_sup_of_le_right
+      apply le_iSup_of_le <| ⟨a.1 - 1, Nat.sub_one_lt_of_le (Nat.zero_lt_of_ne_zero (by aesop)) (Nat.le_add_right a 2)⟩
+      refine (le_of_eq_of_le') ?_ (face_le'' _ _ _ _ hj h ha)
+      congr
+      · ext
+        exact Eq.symm (Fin.val_cast_of_lt
+          ((Nat.sub_one_lt (by aesop)).trans (lt_of_le_of_lt a.isLt.le (Nat.lt_add_right 1 b.2))))
+      · refine Eq.symm (Nat.mod_eq_of_lt (Nat.lt_add_right 1 b.2))
+  · exact
+    le_sup_of_le_left
+      (le_sup_of_le_left
+        (face_le ⟨↑a, lt_of_le_of_lt (a.isLt.le) (Nat.lt_add_right 1 b.isLt)⟩
+          ⟨↑b, Nat.lt_add_right 1 b.isLt⟩ (a.isLt.le) j hj h))
+-/
+
+-- 0 ≤ a < b < n
+-- Λ[n + 1, (a + 1) + 1] ↪ Y(b,a) = Y(b) ⊔ ... ⊔ σ a b
+open Subcomplex in
+lemma hornProdSubcomplex_le₂ {n} (b : Fin n) (a : Fin b.1) :
+    hornProdSubcomplex
+      ⟨a.succ, lt_of_le_of_lt a.succ.le_val_last (Nat.lt_add_right 1 (by simp [b.2]))⟩ ⟨b.1, Nat.lt_add_right 1 b.2⟩ (by simpa using a.succ.le_val_last) ≤
+        filtration₂ b a.castSucc := by
+  rw [hornProdSubcomplex_eq_iSup]
+  apply iSup_le
+  rintro ⟨j, hj⟩
+  by_cases j = (⟨a.succ, lt_of_le_of_lt a.succ.le_val_last (Nat.lt_add_right 1 (by simp [b.2]))⟩ : Fin (n + 1)).castSucc -- check the a-th face first
+  all_goals rename_i h
+  · by_cases (⟨a.succ, lt_of_le_of_lt a.succ.le_val_last (Nat.lt_add_right 1 (by simp [b.2]))⟩ : Fin (n + 1)) = 0 -- two cases for a = 0 or a > 0
+    all_goals rename_i ha
+    · apply le_sup_of_le_left
+      apply le_sup_of_le_left
+      simp only [h, ha, Fin.castSucc_zero, Fin.isValue, face_le']
+    · dsimp
+      rw [h]
+      apply le_sup_of_le_right
+      apply le_iSup_of_le <| ⟨a.1, by aesop⟩
+      refine (le_of_eq_of_le') ?_ (face_le'' _ _ _ _ hj h ha)
+      congr
+      · ext
+        refine Eq.symm (Fin.val_cast_of_lt (a.isLt.trans (Nat.lt_add_right 1 b.2)))
+      · refine Eq.symm (Nat.mod_eq_of_lt (Nat.lt_add_right 1 b.2))
+  · exact
+    le_sup_of_le_left
+      (le_sup_of_le_left
+        (face_le ⟨a.succ, lt_of_le_of_lt a.succ.le_val_last (Nat.lt_add_right 1 (by simp [b.2]))⟩
+          ⟨b.1, Nat.lt_add_right 1 b.isLt⟩ _ j hj h))
+
+-- 0 < a ≤ b < n
+-- Λ[n + 1, a + 1] ↪ Y(b, a - 1) = Y(b) ⊔ ... ⊔ σ (a - 1) b
+open Subcomplex in
+lemma hornProdSubcomplex_le₂' {n} (b : Fin n) (a : Fin b.succ.1) (h' : a.1 ≠ 0) :
+    hornProdSubcomplex
+      ⟨a, lt_of_le_of_lt a.is_le (Nat.lt_add_right 1 b.2)⟩ ⟨b.1, Nat.lt_add_right 1 b.2⟩ a.is_le ≤
+        filtration₂ b ⟨a.pred (by aesop), (Nat.sub_one_lt h').trans a.isLt⟩ := by
+  rw [hornProdSubcomplex_eq_iSup]
+  apply iSup_le
+  rintro ⟨j, hj⟩
+  by_cases j = (⟨a, lt_of_le_of_lt a.is_le (Nat.lt_add_right 1 b.2)⟩ : Fin (n + 1)).castSucc -- check the a-th face first
+  all_goals rename_i h
+  · by_cases (⟨a, lt_of_le_of_lt a.is_le (Nat.lt_add_right 1 b.2)⟩ : Fin (n + 1)) = 0 -- two cases for a = 0 or a > 0
+    all_goals rename_i ha
+    · apply le_sup_of_le_left
+      apply le_sup_of_le_left
+      simp only [h, ha, Fin.castSucc_zero, Fin.isValue, face_le']
+    · dsimp
+      rw [h]
+      apply le_sup_of_le_right
+      apply le_iSup_of_le <| ⟨a.1.pred, by simp⟩
+      refine (le_of_eq_of_le') ?_ (face_le'' _ _ _ _ hj h ha)
+      congr
+      · ext
+        refine Eq.symm (Fin.val_cast_of_lt <| Nat.sub_one_lt_of_le (Nat.zero_lt_of_ne_zero h') (lt_of_le_of_lt a.is_le (Nat.lt_add_right 1 b.2)).le)
+      · refine Eq.symm (Nat.mod_eq_of_lt (Nat.lt_add_right 1 b.2))
+  · exact
+    le_sup_of_le_left
+      (le_sup_of_le_left
+        (face_le ⟨a, lt_of_le_of_lt a.is_le (Nat.lt_add_right 1 b.2)⟩
+          ⟨b.1, Nat.lt_add_right 1 b.isLt⟩ _ j hj h))
 
 def mySq (a b : Fin (n + 1)) (hab : a.succ ≤ b.castSucc) :
     Subcomplex.Sq (hornProdSubcomplex a.succ b.castSucc hab)
