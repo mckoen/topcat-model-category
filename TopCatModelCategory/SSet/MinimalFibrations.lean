@@ -7,6 +7,23 @@ universe u
 open CategoryTheory HomotopicalAlgebra Simplicial MonoidalCategory
   ChosenFiniteProducts Category Limits
 
+-- a better phrasing would be that `Set.toTypes` preserves filtering colimits
+namespace Set
+
+variable {ι : Type*} {X : Type u} [Preorder ι]
+  (f : ι → Set X) (hf : Monotone f)
+
+@[simps]
+def coconeOfMonotone : Cocone (hf.functor ⋙ Set.toTypes) where
+  pt := (⨆ (i : ι), f i :)
+  ι := { app i x := ⟨x.1, le_iSup f i x.2⟩ }
+
+def isColimitCoconeOfMonotone [IsDirected ι (· ≤ ·)] :
+    IsColimit (coconeOfMonotone f hf) := by
+  sorry
+
+end Set
+
 namespace SSet.Subcomplex
 
 variable {ι : Type*} {X : SSet.{u}} [Preorder ι]
@@ -18,8 +35,11 @@ def coconeOfMonotone : Cocone (hf.functor ⋙ toPresheafFunctor) where
   ι := { app i := homOfLE (le_iSup f i) }
 
 def isColimitCoconeOfMonotone [IsDirected ι (· ≤ ·)] :
-    IsColimit (coconeOfMonotone f hf) := by
-  sorry
+    IsColimit (coconeOfMonotone f hf) :=
+  evaluationJointlyReflectsColimits _
+    (fun j ↦ IsColimit.ofIsoColimit (Set.isColimitCoconeOfMonotone
+      (fun i ↦ (f i).obj j) (fun _ _ h ↦ hf h j))
+      (Cocones.ext (Set.toTypes.mapIso (eqToIso (by simp)))))
 
 end SSet.Subcomplex
 
@@ -244,6 +264,13 @@ instance : PartialOrder selection.Extension where
       rw [← cancel_mono selection.subcomplex.ι, ← ι₀_h₁, ← ι₀_h₂]
     rfl
 
+variable {selection} in
+@[reassoc]
+lemma Extension.fac_r_of_le {s₁ s₂ : selection.Extension} (h : s₁ ≤ s₂) :
+    Subcomplex.homOfLE h.1 ≫ s₂.r = s₁.r := by
+  rw [← cancel_mono selection.subcomplex.ι, assoc, ← s₁.ι₀_h,
+    h.2, ι₀_comp_assoc, s₂.ι₀_h]
+
 noncomputable instance : OrderBot selection.Extension where
   bot :=
     { A := selection.subcomplex
@@ -270,7 +297,8 @@ lemma exists_maximal_extension : ∃ (f : selection.Extension), IsMax f := by
     let cr : Cocone (hf.functor ⋙ Subcomplex.toPresheafFunctor) :=
       Cocone.mk selection.subcomplex
         { app s := s.1.r
-          naturality := sorry }
+          naturality _ _ φ := by
+            simpa using (Extension.fac_r_of_le (leOfHom φ)) }
     refine ⟨{
       A := ⨆ (s : S), s.1.A
       subcomplex_le := h.some.subcomplex_le.trans (le_iSup (fun (s : S) ↦ s.1.A) _)
@@ -282,10 +310,29 @@ lemma exists_maximal_extension : ∃ (f : selection.Extension), IsMax f := by
         rw [← s₀.1.hi', ← this, ← MonoidalCategory.comp_whiskerRight_assoc,
           ← Subcomplex.homOfLE_comp]
       r := H.desc cr
-      i_r := sorry
-      ι₀_h := sorry
-      ι₁_h := sorry
-      wh := sorry }, fun s hs ↦ ⟨le_iSup (fun (s : S) ↦ s.1.A) ⟨s, hs⟩, ?_⟩⟩
+      i_r := by
+        have := H.fac cr s₀
+        conv_rhs at this => dsimp [cr]
+        dsimp at this
+        rw [← s₀.1.i_r, ← this, Subcomplex.homOfLE_comp_assoc]
+      ι₀_h := H.hom_ext (fun ⟨s, hs⟩ ↦ by
+        have h₁ := H.fac cr ⟨s, hs⟩
+        have h₂ := (isColimitOfPreserves (tensorRight Δ[1]) H).fac ch ⟨s, hs⟩
+        dsimp at h₁ h₂ ⊢
+        rw [← ι₀_comp_assoc, reassoc_of% h₁, h₂]
+        dsimp only [ch, cr]
+        rw [s.ι₀_h] )
+      ι₁_h := H.hom_ext (fun ⟨s, hs⟩ ↦ by
+        have this := (isColimitOfPreserves (tensorRight Δ[1]) H).fac ch ⟨s, hs⟩
+        dsimp at this ⊢
+        rw [← ι₁_comp_assoc, this]
+        dsimp only [ch, cr]
+        rw [s.ι₁_h, Subcomplex.homOfLE_ι] )
+      wh := (isColimitOfPreserves (tensorRight Δ[1]) H).hom_ext (fun ⟨s, hs⟩ ↦ by
+        have := (isColimitOfPreserves (tensorRight Δ[1]) H).fac ch ⟨s, hs⟩
+        dsimp at this ⊢
+        rw [reassoc_of% this]
+        exact s.wh )}, fun s hs ↦ ⟨le_iSup (fun (s : S) ↦ s.1.A) ⟨s, hs⟩, ?_⟩⟩
     have := (isColimitOfPreserves (tensorRight Δ[1]) H).fac ch ⟨s, hs⟩
     dsimp at this ⊢
     simp [this, ch]
