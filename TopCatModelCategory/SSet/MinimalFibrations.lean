@@ -7,6 +7,21 @@ universe u
 open CategoryTheory HomotopicalAlgebra Simplicial MonoidalCategory
   ChosenFiniteProducts Category Limits
 
+namespace SSet.Subcomplex
+
+variable {ι : Type*} {X : SSet.{u}} [Preorder ι]
+  (f : ι → X.Subcomplex) (hf : Monotone f)
+
+@[simps]
+def coconeOfMonotone : Cocone (hf.functor ⋙ toPresheafFunctor) where
+  pt := (⨆ (i : ι), f i :)
+  ι := { app i := homOfLE (le_iSup f i) }
+
+def isColimitCoconeOfMonotone [IsDirected ι (· ≤ ·)] :
+    IsColimit (coconeOfMonotone f hf) := by
+  sorry
+
+end SSet.Subcomplex
 
 lemma CategoryTheory.IsPullback.types_ext {A B C D : Type u} {t : A ⟶ B} {l : A ⟶ C}
     {r : B ⟶ D} {b : C ⟶ D} (h : IsPullback t l r b) {x y : A}
@@ -237,7 +252,51 @@ noncomputable instance : OrderBot selection.Extension where
       r := 𝟙 _ }
   bot_le f := ⟨f.subcomplex_le, by simp⟩
 
-lemma exists_extension : ∃ (f : selection.Extension), f.A = ⊤ := sorry
+lemma exists_maximal_extension : ∃ (f : selection.Extension), IsMax f := by
+  apply zorn_le
+  intro S hS
+  by_cases h : S.Nonempty; swap
+  · simp only [Set.nonempty_def, not_exists] at h
+    exact ⟨⊥, fun s hs ↦ (h s hs).elim⟩
+  · let s₀ : S := ⟨h.some, h.some_mem⟩
+    let f (s : S) : E.Subcomplex := s.1.A
+    have hf : Monotone f := fun s₁ s₁ hs ↦ hs.1
+    have : IsDirected S (· ≤ ·) := { directed := hS.directedOn.directed_val }
+    have H := Subcomplex.isColimitCoconeOfMonotone f hf
+    let ch : Cocone ((hf.functor ⋙ Subcomplex.toPresheafFunctor) ⋙ tensorRight Δ[1]) :=
+      Cocone.mk E
+        { app s := s.1.h
+          naturality s₁ s₂ φ := by simpa using (leOfHom φ).2.symm }
+    let cr : Cocone (hf.functor ⋙ Subcomplex.toPresheafFunctor) :=
+      Cocone.mk selection.subcomplex
+        { app s := s.1.r
+          naturality := sorry }
+    refine ⟨{
+      A := ⨆ (s : S), s.1.A
+      subcomplex_le := h.some.subcomplex_le.trans (le_iSup (fun (s : S) ↦ s.1.A) _)
+      h := (isColimitOfPreserves (tensorRight Δ[1]) H).desc ch
+      hi' := by
+        have := (isColimitOfPreserves (tensorRight Δ[1]) H).fac ch s₀
+        conv_rhs at this => dsimp [ch]
+        dsimp at this ⊢
+        rw [← s₀.1.hi', ← this, ← MonoidalCategory.comp_whiskerRight_assoc,
+          ← Subcomplex.homOfLE_comp]
+      r := H.desc cr
+      i_r := sorry
+      ι₀_h := sorry
+      ι₁_h := sorry
+      wh := sorry }, fun s hs ↦ ⟨le_iSup (fun (s : S) ↦ s.1.A) ⟨s, hs⟩, ?_⟩⟩
+    have := (isColimitOfPreserves (tensorRight Δ[1]) H).fac ch ⟨s, hs⟩
+    dsimp at this ⊢
+    simp [this, ch]
+
+variable {selection} in
+lemma Extension.A_eq_top_of_isMax (f : selection.Extension)
+    (hf : IsMax f) : f.A = ⊤ := sorry
+
+lemma exists_extension : ∃ (f : selection.Extension), f.A = ⊤ := by
+  obtain ⟨f, hf⟩ := selection.exists_maximal_extension
+  exact ⟨f, f.A_eq_top_of_isMax hf⟩
 
 noncomputable def extension : selection.Extension := selection.exists_extension.choose
 
