@@ -75,10 +75,90 @@ lemma τeq : τ a b hab = Subcomplex.range (g a b hab) := rfl
 lemma σeq : σ a b hab = Subcomplex.range (f a b hab) := rfl
 
 open SimplexCategory in
-instance (a b : Fin (n + 1)) (hab : a ≤ b) : Mono (f a b hab) := sorry
+instance (a b : Fin (n + 1)) (hab : a ≤ b) : Mono (f a b hab) := by
+  rw [standardSimplex.mono_iff]
+  intro ⟨(g : ([0] : SimplexCategory) ⟶ [n + 1])⟩ ⟨(h : ([0] : SimplexCategory) ⟶ [n + 1])⟩
+  intro H
+  ext e
+  simp [f, SSet.yonedaEquiv, yonedaCompUliftFunctorEquiv, standardSimplex] at H
+  change
+    ((SSet.uliftFunctor.obj (yoneda _[n])).map _ _, (SSet.uliftFunctor.obj (yoneda _[2])).map _ _) =
+    ((SSet.uliftFunctor.obj (yoneda _[n])).map _ _, (SSet.uliftFunctor.obj (yoneda _[2])).map _ _) at H
+  simp [ChosenFiniteProducts.product, yoneda, SSet.uliftFunctor] at H
+  obtain ⟨H, H'⟩ := H
+  refine Fin.val_eq_of_eq ?_
+  change g.toOrderHom e = h.toOrderHom e
+  simp [Hom.toOrderHom]
+  apply_fun (fun f ↦ f.toOrderHom e) at H
+  simp [SimplexCategory.σ, Hom.toOrderHom, Hom.mk, CategoryStruct.comp,
+    OrderHom.comp] at H
+  apply_fun (fun f ↦ f.toOrderHom e) at H'
+  simp [Hom.toOrderHom, standardSimplex.objMk, f₂, standardSimplex.objEquiv,
+    Equiv.ulift, Hom.mk, CategoryStruct.comp, OrderHom.comp] at H'
+  by_cases a.castSucc < g.toOrderHom e
+  all_goals rename_i h'
+  · simp [Hom.toOrderHom] at h'
+    simp [Fin.predAbove, h', h'.not_le] at H H'
+    aesop
+  · simp only [len_mk, Nat.reduceAdd, not_lt] at h'
+    simp [Hom.toOrderHom] at h'
+    simp [Fin.predAbove, h', h'.not_lt] at H H'
+    by_cases a.castSucc < h.toOrderHom e
+    all_goals rename_i h''
+    · simp [Hom.toOrderHom] at h''
+      simp [h'', h''.not_le] at H H'
+      aesop
+    · simp only [len_mk, Nat.reduceAdd, not_lt] at h''
+      simp [Hom.toOrderHom] at h''
+      simp only [h''.not_lt, reduceDIte] at H
+      rw [Fin.castPred_eq_iff_eq_castSucc] at H
+      aesop
 
 open SimplexCategory in
-instance : Mono (g a b hab) := sorry
+instance (a b : Fin (n + 2)) (hab : a ≤ b) : Mono (g a b hab) := by
+  rw [standardSimplex.mono_iff]
+  intro ⟨(g' : ([0] : SimplexCategory) ⟶ [n + 2])⟩ ⟨(h : ([0] : SimplexCategory) ⟶ [n + 2])⟩
+  intro H
+  ext e
+  simp [g, SSet.yonedaEquiv, yonedaCompUliftFunctorEquiv, standardSimplex] at H
+  change
+    ((SSet.uliftFunctor.obj (yoneda _[n])).map _ _, (SSet.uliftFunctor.obj (yoneda _[2])).map _ _) =
+    ((SSet.uliftFunctor.obj (yoneda _[n])).map _ _, (SSet.uliftFunctor.obj (yoneda _[2])).map _ _) at H
+  simp [ChosenFiniteProducts.product, yoneda, SSet.uliftFunctor] at H
+  obtain ⟨H, H'⟩ := H
+  refine Fin.val_eq_of_eq ?_
+  change g'.toOrderHom e = h.toOrderHom e
+  simp [Hom.toOrderHom]
+  apply_fun (fun f ↦ f.toOrderHom e) at H
+  simp [g₁] at H
+  simp [SimplexCategory.σ, Hom.toOrderHom, Hom.mk, CategoryStruct.comp,
+    OrderHom.comp] at H
+  apply_fun (fun f ↦ f.toOrderHom e) at H'
+  simp [Hom.toOrderHom, standardSimplex.objMk, g₂, standardSimplex.objEquiv,
+    Equiv.ulift, Hom.mk, CategoryStruct.comp, OrderHom.comp, f₂] at H H'
+  by_cases a.castSucc < g'.toOrderHom e
+  all_goals rename_i h'
+  · simp [Hom.toOrderHom] at h'
+    simp [Fin.predAbove, h', h'.not_le] at H'
+    by_cases a.castSucc < h.toOrderHom e
+    all_goals rename_i h''
+    · simp [Hom.toOrderHom] at h''
+      simp [h'', h''.not_le] at H'
+      sorry
+    · simp at h''
+      simp [Hom.toOrderHom] at h''
+      aesop
+  · simp only [len_mk, Nat.reduceAdd, not_lt] at h'
+    simp [Hom.toOrderHom] at h'
+    simp [Fin.predAbove, h', h'.not_lt] at H H'
+    by_cases a.castSucc < h.toOrderHom e
+    all_goals rename_i h''
+    · simp [Hom.toOrderHom] at h''
+      simp [h'', h''.not_le] at H H'
+      aesop
+    · simp only [len_mk, Nat.reduceAdd, not_lt] at h''
+      simp [Hom.toOrderHom] at h''
+      sorry
 
 /-- `Y(b)` for `0 ≤ b ≤ n`. Goes up to `Y(n)`, the first object in the `τ` filtration. -/
 -- `Y(b) = Y(0) ⊔ [σ00] ⊔ [σ01 ⊔ σ11] ⊔ ... ⊔ [σ0(b-1) ⊔ σ1(b-1) ⊔ ... ⊔ σ(b-1)(b-1)]`
