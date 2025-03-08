@@ -53,6 +53,7 @@ import TopCatModelCategory.SSet.Square
 import TopCatModelCategory.SSet.StandardSimplex
 import TopCatModelCategory.SSet.StrictSegal
 import TopCatModelCategory.SSet.Subcomplex
+import TopCatModelCategory.Set
 import TopCatModelCategory.TopCatIsColimit
 import TopCatModelCategory.TopPackage
 import TopCatModelCategory.TopologyLemmas.IsQuotientMap
