@@ -8,6 +8,24 @@ open CategoryTheory MonoidalCategory HomotopicalAlgebra Limits MonoidalClosed Op
 
 namespace CategoryTheory
 
+namespace Limits
+
+variable {C : Type*} [Category C]
+  {X Y Z : C ⥤ Type u} {f : Y ⟶ X} {g : Z ⟶ X}
+
+lemma FunctorToTypes.pullback_ext {A : C} {x y : (pullback f g).obj A} :
+    x = y ↔ (pullback.fst f g).app _ x = (pullback.fst f g).app _ y ∧
+      (pullback.snd f g).app _ x = (pullback.snd f g).app _ y := by
+  constructor
+  · rintro rfl
+    tauto
+  · rintro ⟨_, _⟩
+    apply (PullbackCone.IsLimit.equivPullbackObj
+      ((IsPullback.of_hasPullback f g).map ((evaluation _ _ ).obj A)).isLimit).injective
+    ext <;> assumption
+
+end Limits
+
 namespace Arrow
 
 variable {C : Type*} [Category C]
@@ -49,6 +67,9 @@ end CategoryTheory
 namespace SSet
 
 variable {A B X Y : SSet.{u}}
+
+lemma yonedaEquiv_apply {n : SimplexCategory} (f : standardSimplex.obj n ⟶ X) :
+    yonedaEquiv X n f = f.app _ ((standardSimplex.objEquiv _ _).symm (𝟙 _)) := rfl
 
 section
 
@@ -325,7 +346,20 @@ noncomputable def ihomToPullbackFiber : ((ihom B).obj X).Subcomplex :=
 
 lemma ihom₀Equiv_symm_mem_ihomToPullbackFiber_obj_zero_iff (f : B ⟶ X) :
     ihom₀Equiv.symm f ∈ (ihomToPullbackFiber sq).obj (op [0]) ↔
-      i ≫ f = t ∧ f ≫ p = b := sorry
+      i ≫ f = t ∧ f ≫ p = b := by
+  dsimp only [ihomToPullbackFiber]
+  rw [Subcomplex.mem_fiber_obj_zero_iff, FunctorToTypes.pullback_ext]
+  apply and_congr
+  · rw [← EmbeddingLike.apply_eq_iff_eq ihom₀Equiv.symm]
+    apply Eq.congr
+    · rw [← FunctorToTypes.comp, pullback.lift_fst, ← ihom₀Equiv_symm_comp]
+    · rw [yonedaEquiv_apply, ← FunctorToTypes.comp, pullback.lift_fst]
+      rfl
+  · rw [← EmbeddingLike.apply_eq_iff_eq ihom₀Equiv.symm]
+    apply Eq.congr
+    · rw [← FunctorToTypes.comp, pullback.lift_snd, ← ihom₀Equiv_symm_comp']
+    · rw [yonedaEquiv_apply, ← FunctorToTypes.comp, pullback.lift_snd]
+      rfl
 
 instance [Cofibration i] [Fibration p] :
     IsFibrant (C := SSet.{u}) (ihomToPullbackFiber sq) := by
