@@ -312,6 +312,10 @@ lemma subcomplex_unionProd_mem_of_right {X Y : SSet.{u}}
     (Arrow.isoMk (Subcomplex.unionProd.symmIso _ _) (β_ _ _))).2
     (subcomplex_unionProd_mem_of_left B A hB)
 
+lemma whiskerLeft {X Y : SSet.{u}} {f : X ⟶ Y} (hf : anodyneExtensions f)
+  (A : SSet.{u}) :
+  anodyneExtensions (A ◁ f) := sorry
+
 end anodyneExtensions
 
 end SSet

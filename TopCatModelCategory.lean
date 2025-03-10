@@ -54,6 +54,7 @@ import TopCatModelCategory.SSet.StandardSimplex
 import TopCatModelCategory.SSet.StrictSegal
 import TopCatModelCategory.SSet.Subcomplex
 import TopCatModelCategory.Set
+import TopCatModelCategory.SimplicialPresheaves.LocalLiftingProperty
 import TopCatModelCategory.TopCatIsColimit
 import TopCatModelCategory.TopPackage
 import TopCatModelCategory.TopologyLemmas.IsQuotientMap
