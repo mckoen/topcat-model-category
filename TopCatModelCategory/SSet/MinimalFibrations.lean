@@ -1,6 +1,8 @@
 import TopCatModelCategory.SSet.CategoryWithFibrations
 import TopCatModelCategory.SSet.DeformationRetract
 import TopCatModelCategory.SSet.Degenerate
+import TopCatModelCategory.SSet.Fibrations
+import TopCatModelCategory.SSet.FundamentalGroupoid
 import TopCatModelCategory.Set
 
 universe u
@@ -45,6 +47,93 @@ structure SimplexOverRelStruct {n : ℕ} (x y : E _[n]) where
   d : ∂Δ[n] ⟶ E
   hπ : h ≫ p = fst _ _ ≫ π
   hd : (subcomplexBoundary.{u} n).ι ▷ Δ[1] ≫ h = fst _ _ ≫ d
+
+namespace SimplexOverRelStruct
+
+section
+
+variable {p} {n : ℕ} {x y : E _[n]} (rel : SimplexOverRelStruct p x y)
+
+lemma π_eq₁ : rel.π = (yonedaEquiv _ _).symm x ≫ p := by
+  rw [← rel.h₀, Category.assoc, rel.hπ, lift_fst_assoc, id_comp]
+
+lemma π_eq₂ : rel.π = (yonedaEquiv _ _).symm y ≫ p := by
+  rw [← rel.h₁, Category.assoc, rel.hπ, lift_fst_assoc, id_comp]
+
+lemma d_eq₁ : rel.d = (subcomplexBoundary n).ι ≫ (yonedaEquiv _ _).symm x := by
+  rw [← rel.h₀, ← ι₀_comp_assoc, rel.hd]
+  rfl
+
+lemma d_eq₂ : rel.d = (subcomplexBoundary n).ι ≫ (yonedaEquiv _ _).symm y := by
+  rw [← rel.h₁, ← ι₁_comp_assoc, rel.hd]
+  rfl
+
+end
+
+variable {p} in
+@[ext]
+lemma ext {n : ℕ} {x y : E _[n]}
+    {rel₁ rel₂ : SimplexOverRelStruct p x y} (h : rel₁.h = rel₂.h) :
+    rel₁ = rel₂ := by
+  suffices rel₁.π = rel₂.π ∧ rel₁.d = rel₂.d by
+    cases rel₁
+    cases rel₂
+    obtain rfl := h
+    obtain rfl := this.1
+    obtain rfl := this.2
+    rfl
+  simp [π_eq₁, d_eq₁]
+
+noncomputable def refl (x : E _[n]) : SimplexOverRelStruct p x x where
+  h := fst _ _ ≫ (yonedaEquiv _ _).symm x
+  h₀ := rfl
+  h₁ := rfl
+  π := (yonedaEquiv _ _).symm x ≫ p
+  d := (subcomplexBoundary.{u} n).ι ≫ (yonedaEquiv _ _).symm x
+  hπ := rfl
+  hd := rfl
+
+section
+
+variable {p} {n : ℕ} {π : Δ[n] ⟶ B} {d : ∂Δ[n] ⟶ E}
+  (sq : CommSq d (subcomplexBoundary.{u} n).ι p π)
+
+noncomputable def ihomToPullbackFiberMk (x : E _[n])
+    (hx₁ : (subcomplexBoundary n).ι ≫ (yonedaEquiv _ _).symm x = d)
+    (hx₂ : (yonedaEquiv _ _).symm x ≫ p = π) :
+    (ihomToPullbackFiber sq : SSet) _[0] :=
+  ⟨ihom₀Equiv.symm ((yonedaEquiv _ _).symm x), by
+    rw [ihom₀Equiv_symm_mem_ihomToPullbackFiber_obj_zero_iff]
+    exact ⟨hx₁, hx₂⟩⟩
+
+open KanComplex.FundamentalGroupoid
+
+noncomputable def equiv (x y : E _[n])
+    (hx₁ : (subcomplexBoundary n).ι ≫ (yonedaEquiv _ _).symm x = d)
+    (hx₂ : (yonedaEquiv _ _).symm x ≫ p = π)
+    (hy₁ : (subcomplexBoundary n).ι ≫ (yonedaEquiv _ _).symm y = d)
+    (hy₂ : (yonedaEquiv _ _).symm y ≫ p = π) :
+    SimplexOverRelStruct p x y ≃
+      Edge (.mk (ihomToPullbackFiberMk sq x hx₁ hx₂))
+        (.mk (ihomToPullbackFiberMk sq y hy₁ hy₂)) where
+  toFun rel := Edge.mk
+    ((ihomToPullbackFiber sq).lift (MonoidalClosed.curry rel.h) (by
+      rw [Subcomplex.preimage_eq_top_iff]
+      sorry)) sorry sorry
+  invFun e :=
+    { h := MonoidalClosed.uncurry (e.map ≫ Subpresheaf.ι _)
+      h₀ := sorry
+      h₁ := sorry
+      π := π
+      d := d
+      hπ := sorry
+      hd := sorry }
+  left_inv rel := by aesop
+  right_inv e := by aesop
+
+end
+
+end SimplexOverRelStruct
 
 class MinimalFibration extends Fibration p : Prop where
   minimal {n : ℕ} {x y : E _[n]} (rel : SimplexOverRelStruct p x y) : x = y

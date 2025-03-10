@@ -4,7 +4,7 @@ import TopCatModelCategory.SSet.Fiber
 
 universe u
 
-open CategoryTheory MonoidalCategory HomotopicalAlgebra Limits MonoidalClosed
+open CategoryTheory MonoidalCategory HomotopicalAlgebra Limits MonoidalClosed Opposite Simplicial
 
 namespace CategoryTheory
 
@@ -322,6 +322,10 @@ noncomputable def ihomToPullbackFiber : ((ihom B).obj X).Subcomplex :=
         ((yonedaEquiv _ _).injective (ihom₀Equiv.injective (by
         simp only [yonedaEquiv_symm_zero, const_comp, yonedaEquiv₀,
           ← ihom₀Equiv_symm_comp, ← ihom₀Equiv_symm_comp', sq.w])))))
+
+lemma ihom₀Equiv_symm_mem_ihomToPullbackFiber_obj_zero_iff (f : B ⟶ X) :
+    ihom₀Equiv.symm f ∈ (ihomToPullbackFiber sq).obj (op [0]) ↔
+      i ≫ f = t ∧ f ≫ p = b := sorry
 
 instance [Cofibration i] [Fibration p] :
     IsFibrant (C := SSet.{u}) (ihomToPullbackFiber sq) := by
