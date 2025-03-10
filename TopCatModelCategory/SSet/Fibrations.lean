@@ -1,5 +1,6 @@
 import TopCatModelCategory.SSet.AnodyneExtensions
 import TopCatModelCategory.SSet.Monoidal
+import TopCatModelCategory.SSet.Fiber
 
 universe u
 
@@ -51,7 +52,7 @@ variable {A B X Y : SSet.{u}}
 
 section
 
-variable {K L : SSet.{u}} (f : K ⟶ L) (i : A ⟶ B) (p : X ⟶ Y)
+variable {K L : SSet.{u}} (i : A ⟶ B) (f : K ⟶ L) (p : X ⟶ Y)
 
 noncomputable abbrev fromPushoutProduct : pushout (i ▷ K) (A ◁ f) ⟶ B ⊗ L :=
   pushout.desc (B ◁ f) (i ▷ L) (by simp only [whisker_exchange])
@@ -60,8 +61,9 @@ variable {f i} in
 noncomputable def fromPushoutProductCongr {K' L' A' B' : SSet.{u}} {f' : K' ⟶ L'}
     {i' : A' ⟶ B'}
     (e₁ : Arrow.mk f ≅ Arrow.mk f') (e₂ : Arrow.mk i ≅ Arrow.mk i') :
-    Arrow.mk (fromPushoutProduct f i) ≅ Arrow.mk (fromPushoutProduct f' i') := by
+    Arrow.mk (fromPushoutProduct i f) ≅ Arrow.mk (fromPushoutProduct i' f') := by
   refine Arrow.isoMk
+    -- generalize as `pushout.mapIso`...
     { hom := pushout.map _ _ _ _ (e₂.hom.right ⊗ e₁.hom.left) (e₂.hom.left ⊗ e₁.hom.right)
         (e₂.hom.left ⊗ e₁.hom.left) ?_ ?_
       inv := pushout.map _ _ _ _ (e₂.inv.right ⊗ e₁.inv.left) (e₂.inv.left ⊗ e₁.inv.right)
@@ -95,14 +97,9 @@ noncomputable def fromPushoutProductCongr {K' L' A' B' : SSet.{u}} {f' : K' ⟶ 
       simp only [tensorHom_def, pushout.inr_desc_assoc, Category.assoc, pushout.inr_desc,
         ← comp_whiskerRight_assoc, whisker_exchange, this]
 
-noncomputable def fromPushoutProductιιIso' (A : K.Subcomplex) (B : L.Subcomplex) :
-    Arrow.mk (fromPushoutProduct A.ι B.ι) ≅ Arrow.mk (B.unionProd A).ι :=
-  Arrow.isoMk (Subcomplex.unionProd.isPushout B A).isoPushout.symm (Iso.refl _)
-
 noncomputable def fromPushoutProductιιIso (A : K.Subcomplex) (B : L.Subcomplex) :
     Arrow.mk (fromPushoutProduct A.ι B.ι) ≅ Arrow.mk (A.unionProd B).ι :=
-  fromPushoutProductιιIso' _ _ ≪≫
-    Arrow.isoMk (Subcomplex.unionProd.symmIso _ _) (β_ _ _)
+  Arrow.isoMk (Subcomplex.unionProd.isPushout A B).isoPushout.symm (Iso.refl _)
 
 noncomputable abbrev ihomToPullback :
     (ihom B).obj X ⟶ pullback ((ihom A).map p) ((pre i).app Y) :=
@@ -111,7 +108,7 @@ noncomputable abbrev ihomToPullback :
 variable {f i p} in
 @[simps]
 noncomputable def arrowMkFromPushoutProductHomEquiv :
-    (Arrow.mk (fromPushoutProduct f i) ⟶ Arrow.mk p) ≃
+    (Arrow.mk (fromPushoutProduct i f) ⟶ Arrow.mk p) ≃
       (Arrow.mk f ⟶ Arrow.mk (ihomToPullback i p)) where
   toFun φ :=
     Arrow.homMk (curry (pushout.inl _ _ ≫ φ.left))
@@ -215,7 +212,7 @@ noncomputable def fromPushoutProductLiftStructEquiv
 
 lemma hasLiftingProperty_iHomToPullback_iff :
     HasLiftingProperty f (ihomToPullback i p) ↔
-      HasLiftingProperty (fromPushoutProduct f i) p := by
+      HasLiftingProperty (fromPushoutProduct i f) p := by
   simp only [Arrow.hasLiftingProperty_iff]
   constructor
   · intro h φ
@@ -238,10 +235,10 @@ instance (i : A ⟶ B) (p : X ⟶ Y) [Cofibration i] [Fibration p] :
   apply anodyneExtensions.hasLeftLiftingProperty
   have : Mono i := by rwa [← ModelCategory.cofibration_iff]
   refine (anodyneExtensions.arrow_mk_iso_iff ?_).2
-    (anodyneExtensions.subcomplex_unionProd_mem_of_left _ (Subcomplex.range i)
+    (anodyneExtensions.subcomplex_unionProd_mem_of_right (Subcomplex.range i) _
     (anodyneExtensions.subcomplexHorn_ι_mem _ j))
   exact fromPushoutProductCongr (Iso.refl _)
-    (Arrow.isoMk (asIso (toRangeSubcomplex i)) (Iso.refl _) ) ≪≫ fromPushoutProductιιIso _ _
+    (Arrow.isoMk (asIso (toRangeSubcomplex i)) (Iso.refl _)) ≪≫ fromPushoutProductιιIso _ _
 
 end
 
@@ -313,5 +310,24 @@ instance {A X : SSet.{u}} [IsFibrant X] : IsFibrant (A ⟶[SSet] X) := by
   rw [isFibrant_iff_of_isTerminal ((ihom A).map (terminal.from X))]
   · infer_instance
   · apply isLimitOfHasTerminalOfPreservesLimit
+
+section
+
+variable {t : A ⟶ X} {i : A ⟶ B} {p : X ⟶ Y} {b : B ⟶ Y} (sq : CommSq t i p b)
+
+noncomputable def ihomToPullbackFiber : ((ihom B).obj X).Subcomplex :=
+  Subcomplex.fiber (ihomToPullback i p)
+    (yonedaEquiv _ _ (pullback.lift ((yonedaEquiv _ _).symm (ihom₀Equiv.symm t))
+      ((yonedaEquiv _ _).symm (ihom₀Equiv.symm b))
+        ((yonedaEquiv _ _).injective (ihom₀Equiv.injective (by
+        simp only [yonedaEquiv_symm_zero, const_comp, yonedaEquiv₀,
+          ← ihom₀Equiv_symm_comp, ← ihom₀Equiv_symm_comp', sq.w])))))
+
+instance [Cofibration i] [Fibration p] :
+    IsFibrant (C := SSet.{u}) (ihomToPullbackFiber sq) := by
+  dsimp only [ihomToPullbackFiber]
+  infer_instance
+
+end
 
 end SSet

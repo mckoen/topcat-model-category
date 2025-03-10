@@ -131,11 +131,11 @@ noncomputable def ihom₀Equiv : ((ihom X).obj Y) _[0] ≃ (X ⟶ Y) :=
 
 lemma ihom₀Equiv_symm_comp {Z : SSet.{u}} (f : X ⟶ Y) (g : Y ⟶ Z) :
     ihom₀Equiv.symm (f ≫ g) =
-      ((MonoidalClosed.pre f).app Z).app (op [0]) (ihom₀Equiv.symm g) := by
-  apply (yonedaEquiv _ _).symm.injective
-  dsimp [ihom₀Equiv]
-  rw [Equiv.symm_apply_apply, ← yonedaEquiv_symm_comp, Equiv.symm_apply_apply]
-  rfl
+      ((MonoidalClosed.pre f).app Z).app (op [0]) (ihom₀Equiv.symm g) := rfl
+
+lemma ihom₀Equiv_symm_comp' {Z : SSet.{u}} (f : X ⟶ Y) (g : Y ⟶ Z) :
+    ihom₀Equiv.symm (f ≫ g) =
+      ((ihom X).map g).app (op [0]) (ihom₀Equiv.symm f) := rfl
 
 lemma yonedaEquiv_fst {n : ℕ} (f : Δ[n] ⟶ X ⊗ Y) :
     (yonedaEquiv _ _ f).1 = yonedaEquiv _ _ (f ≫ fst _ _) := rfl
