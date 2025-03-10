@@ -76,6 +76,8 @@ instance (n : ℕ) (i : Fin (n + 2)) [hf : Fibration f] :
   rw [fibration_iff] at hf
   exact hf _ (subcomplexHorn_ι_mem_J i)
 
+instance [Mono f] : Cofibration f := by rwa [cofibration_iff]
+
 end
 
 end ModelCategory

@@ -300,6 +300,7 @@ lemma subcomplex_unionProd_face_boundary_ι_mem (n : ℕ) (i : Fin 2) :
   · exact mem₀ n
   · exact mem₁ n
 
+-- needs "adjunction" results from `SSet.Fibrations`
 lemma subcomplex_unionProd_mem_of_left {X Y : SSet.{u}}
     (A : X.Subcomplex) (B : Y.Subcomplex) (hA : anodyneExtensions A.ι) :
     anodyneExtensions (A.unionProd B).ι := by
@@ -311,10 +312,6 @@ lemma subcomplex_unionProd_mem_of_right {X Y : SSet.{u}}
   (anodyneExtensions.arrow_mk_iso_iff
     (Arrow.isoMk (Subcomplex.unionProd.symmIso _ _) (β_ _ _))).2
     (subcomplex_unionProd_mem_of_left B A hB)
-
-lemma whiskerLeft {X Y : SSet.{u}} {f : X ⟶ Y} (hf : anodyneExtensions f)
-  (A : SSet.{u}) :
-  anodyneExtensions (A ◁ f) := sorry
 
 end anodyneExtensions
 
