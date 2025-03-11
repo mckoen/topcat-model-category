@@ -68,6 +68,8 @@ lemma d_eq₂ : rel.d = (subcomplexBoundary n).ι ≫ (yonedaEquiv _ _).symm y :
   rw [← rel.h₁, ← ι₁_comp_assoc, rel.hd]
   rfl
 
+lemma sq : CommSq rel.d (subcomplexBoundary.{u} n).ι p rel.π := ⟨by simp [π_eq₁, d_eq₁]⟩
+
 end
 
 variable {p} in
@@ -133,7 +135,34 @@ noncomputable def equiv (x y : E _[n])
 
 end
 
+variable {p}
+
+noncomputable def symm {x y : E _[n]} [Fibration p] (h : SimplexOverRelStruct p x y) :
+    SimplexOverRelStruct p y x :=
+  (equiv h.sq y x h.d_eq₂.symm h.π_eq₂.symm h.d_eq₁.symm h.π_eq₁.symm).symm
+    (equiv h.sq x y h.d_eq₁.symm h.π_eq₁.symm h.d_eq₂.symm h.π_eq₂.symm h).inv
+
+noncomputable def trans {x y z : E _[n]} [Fibration p] (h : SimplexOverRelStruct p x y)
+    (h' : SimplexOverRelStruct p y z) :
+    SimplexOverRelStruct p x z :=
+  (equiv h.sq x z h.d_eq₁.symm h.π_eq₁.symm
+      (by rw [h.d_eq₂, ← h'.d_eq₁, h'.d_eq₂])
+      (by rw [h.π_eq₂, ← h'.π_eq₁, h'.π_eq₂])).symm
+    ((equiv h.sq x y h.d_eq₁.symm h.π_eq₁.symm h.d_eq₂.symm h.π_eq₂.symm h).comp
+      (equiv h.sq y z h.d_eq₂.symm h.π_eq₂.symm
+      (by rw [h.d_eq₂, ← h'.d_eq₁, h'.d_eq₂])
+      (by rw [h.π_eq₂, ← h'.π_eq₁, h'.π_eq₂]) h'))
+
 end SimplexOverRelStruct
+
+inductive SimplexOverRel {n : ℕ} : E _[n] → E _[n] → Prop
+  | mk {x y : E _[n]} (h : SimplexOverRelStruct p x y) : SimplexOverRel x y
+
+lemma SimplexOverRel.equivalence [Fibration p] (n : ℕ) :
+    _root_.Equivalence (SimplexOverRel p (n := n)) where
+  refl _ := .mk (.refl _ _)
+  symm := fun ⟨h⟩ ↦ .mk h.symm
+  trans := fun ⟨h₁⟩ ⟨h₂⟩ ↦ .mk (h₁.trans h₂)
 
 class MinimalFibration extends Fibration p : Prop where
   minimal {n : ℕ} {x y : E _[n]} (rel : SimplexOverRelStruct p x y) : x = y
