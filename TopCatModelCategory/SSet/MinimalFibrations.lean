@@ -126,10 +126,13 @@ noncomputable def toFun (rel : SimplexOverRelStruct p x y) :
         (.mk (ihomToPullbackFiberMk sq y hy₁ hy₂)) :=
   Edge.mk
     ((ihomToPullbackFiber sq).lift (curry rel.h) (by
-      rw [Subcomplex.preimage_eq_top_iff]
-      have := rel.hπ
-      have := rel.hd
-      sorry)) (by
+      rw [Subcomplex.preimage_eq_top_iff,
+        range_le_ihomToPullbackFiber_iff]
+      constructor
+      · rw [← curry_whiskerRight_comp, rel.hd, ← hx₁, rel.d_eq₁]
+        rfl
+      · rw [← curry_natural_right, rel.hπ, ← hx₂, rel.π_eq₁]
+        rfl)) (by
         rw [← cancel_mono (Subpresheaf.ι _), Category.assoc, Subcomplex.lift_ι,
           ← curry_natural_left]
         -- could be better with `curry'`
@@ -319,7 +322,48 @@ structure Selection where
 -- use that `SimplexOverRel` is an equivalence relation,
 -- "select" all degenerate simplices,
 -- and an element in each other equivalence class
-instance [Fibration p] : Nonempty (Selection p) := sorry
+instance [Fibration p] : Nonempty (Selection p) := by
+  let S (n : ℕ) : Set (E _[n]) :=
+    setOf (fun x ↦ ¬ (∃ (y : E.Degenerate n), SimplexOverRel p x y))
+  let s (n : ℕ) : Setoid (S n) :=
+    { r x y := SimplexOverRel p x.1 y.1
+      iseqv := (SimplexOverRel.equivalence p n).comap Subtype.val }
+  have (n : ℕ) : Function.Surjective (Quotient.mk (s n)) := Quotient.mk_surjective
+  obtain ⟨σ, hσ⟩ : ∃ (σ : ({n : ℕ} → Quotient (s n) → S n)),
+    ∀ (n : ℕ) (x : Quotient (s n)), Quotient.mk _ (σ x) = x :=
+      ⟨fun {n} ↦ (this n).hasRightInverse.choose,
+        fun {n} ↦ (this n).hasRightInverse.choose_spec⟩
+  have rel {n : ℕ} (x : S n) : SimplexOverRelStruct p x.1 (σ ⟦x⟧).1 := Nonempty.some (by
+    obtain ⟨h⟩ := Quotient.eq.1 (hσ _ ⟦x⟧).symm
+    exact ⟨h⟩)
+  let T (n : ℕ) : Set (E _[n]) := Set.range (Subtype.val ∘ σ)
+  have hT {n x y} (hxy : SimplexOverRelStruct p x y) (hy : y ∈ E.Degenerate n) :
+      x ∉ T n := fun hx ↦ by
+    simp only [Set.mem_range, Function.comp_apply, T] at hx
+    obtain ⟨z, rfl⟩ := hx
+    obtain ⟨⟨w, hw⟩, rfl⟩ := Quotient.mk_surjective z
+    exact hw ⟨⟨_, hy⟩, ⟨(rel ⟨w, hw⟩).trans hxy⟩⟩
+  exact ⟨
+    { set n := E.Degenerate n ⊔ T n
+      le_set n := le_sup_left
+      unique {n x y} hx hy hxy := by
+        simp only [Set.sup_eq_union, Set.mem_union] at hx hy
+        obtain hx | hx := hx <;> obtain hy | hy := hy
+        · exact hxy.eq_of_degenerate hx hy
+        · exact (hT hxy.symm hx hy).elim
+        · exact (hT hxy hy hx).elim
+        · obtain ⟨x', rfl⟩ := hx
+          obtain ⟨y', rfl⟩ := hy
+          have := (Quotient.eq (r := s n)).2 ⟨hxy⟩
+          simp only [hσ, T] at this
+          rw [this]
+      nonempty {n} x := by
+        by_cases hx : x ∈ S n
+        · exact ⟨_, Or.inr ⟨_, rfl⟩, ⟨rel ⟨x, hx⟩⟩⟩
+        · simp only [Subtype.exists, exists_prop, not_exists, not_and, Set.mem_setOf_eq,
+            not_forall, Classical.not_imp, not_not, S] at hx
+          obtain ⟨y, hy, ⟨hxy⟩⟩ := hx
+          exact ⟨y, Or.inl hy, ⟨hxy⟩⟩ }⟩
 
 namespace Selection
 
@@ -490,7 +534,8 @@ lemma exists_maximal_extension : ∃ (f : selection.Extension), IsMax f := by
 
 variable {selection} in
 lemma Extension.A_eq_top_of_isMax (f : selection.Extension)
-    (hf : IsMax f) : f.A = ⊤ := sorry
+    (hf : IsMax f) : f.A = ⊤ := by
+  sorry
 
 lemma exists_extension : ∃ (f : selection.Extension), f.A = ⊤ := by
   obtain ⟨f, hf⟩ := selection.exists_maximal_extension

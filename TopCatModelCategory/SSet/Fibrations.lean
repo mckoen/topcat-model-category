@@ -71,6 +71,11 @@ variable {A B X Y : SSet.{u}}
 lemma yonedaEquiv_apply {n : SimplexCategory} (f : standardSimplex.obj n ⟶ X) :
     yonedaEquiv X n f = f.app _ ((standardSimplex.objEquiv _ _).symm (𝟙 _)) := rfl
 
+lemma eq_const_iff_range_le_ofSimplex (f : X ⟶ Y) (y : Y _[0]) :
+    f = const y ↔ Subcomplex.range f ≤ Subcomplex.ofSimplex y := by
+  rw [Subcomplex.le_ofSimplex_iff, ← cancel_epi (toRangeSubcomplex f),
+    toRangeSubcomplex_ι, comp_const]
+
 section
 
 variable {K L : SSet.{u}} (i : A ⟶ B) (f : K ⟶ L) (p : X ⟶ Y)
@@ -344,32 +349,52 @@ noncomputable def ihomToPullbackFiber : ((ihom B).obj X).Subcomplex :=
         simp only [yonedaEquiv_symm_zero, const_comp, yonedaEquiv₀,
           ← ihom₀Equiv_symm_comp, ← ihom₀Equiv_symm_comp', sq.w])))))
 
-@[reassoc (attr := simp)]
-lemma ihomToPullbackFiber_ihom_map :
-    (ihomToPullbackFiber sq).ι ≫ (ihom B).map p = SSet.const (ihom₀Equiv.symm b) := by
-  sorry
+lemma range_le_ihomToPullbackFiber_iff {Z : SSet.{u}} (f : Z ⟶ (ihom B).obj X) :
+    Subcomplex.range f ≤ ihomToPullbackFiber sq ↔
+      f ≫ (pre i).app X = SSet.const (ihom₀Equiv.symm t) ∧
+      f ≫ (ihom B).map p = SSet.const (ihom₀Equiv.symm b) := by
+  rw [ihomToPullbackFiber, Subcomplex.le_fiber_iff, ihomToPullback,
+    pullback.hom_ext_iff, Category.assoc, Category.assoc, pullback.lift_fst,
+      pullback.lift_snd, const_comp, const_comp, yonedaEquiv_apply,
+      ← FunctorToTypes.comp, ← FunctorToTypes.comp,
+      pullback.lift_fst, pullback.lift_snd,
+      yonedaEquiv_symm_zero, yonedaEquiv_symm_zero, const_app, const_app,
+      SimplexCategory.const_eq_id, op_id,
+      FunctorToTypes.map_id_apply, FunctorToTypes.map_id_apply,
+      eq_const_iff_range_le_ofSimplex, eq_const_iff_range_le_ofSimplex,
+      eq_const_iff_range_le_ofSimplex, eq_const_iff_range_le_ofSimplex,
+      Subcomplex.range_comp, Subcomplex.range_comp,
+      Subcomplex.range_comp, Subcomplex.range_comp,
+      Subcomplex.range_ι]
 
-@[reassoc (attr := simp)]
-lemma ihomToPullbackFiber_pre_app :
-    (ihomToPullbackFiber sq).ι ≫ (pre i).app X = SSet.const (ihom₀Equiv.symm t) := by
-  sorry
+lemma le_ihomToPullbackFiber_iff (Z : ((ihom B).obj X).Subcomplex) :
+    Z ≤ ihomToPullbackFiber sq ↔
+      Z.ι ≫ (pre i).app X = SSet.const (ihom₀Equiv.symm t) ∧
+      Z.ι ≫ (ihom B).map p = SSet.const (ihom₀Equiv.symm b) := by
+  rw [← range_le_ihomToPullbackFiber_iff sq, Subcomplex.range_ι]
 
 lemma ihom₀Equiv_symm_mem_ihomToPullbackFiber_obj_zero_iff (f : B ⟶ X) :
     ihom₀Equiv.symm f ∈ (ihomToPullbackFiber sq).obj (op [0]) ↔
-      i ≫ f = t ∧ f ≫ p = b := by
-  dsimp only [ihomToPullbackFiber]
-  rw [Subcomplex.mem_fiber_obj_zero_iff, FunctorToTypes.pullback_ext]
-  apply and_congr
-  · rw [← EmbeddingLike.apply_eq_iff_eq ihom₀Equiv.symm]
-    apply Eq.congr
-    · rw [← FunctorToTypes.comp, pullback.lift_fst, ← ihom₀Equiv_symm_comp]
-    · rw [yonedaEquiv_apply, ← FunctorToTypes.comp, pullback.lift_fst]
-      rfl
-  · rw [← EmbeddingLike.apply_eq_iff_eq ihom₀Equiv.symm]
-    apply Eq.congr
-    · rw [← FunctorToTypes.comp, pullback.lift_snd, ← ihom₀Equiv_symm_comp']
-    · rw [yonedaEquiv_apply, ← FunctorToTypes.comp, pullback.lift_snd]
-      rfl
+      i ≫ f = t ∧ f ≫ p = b:= by
+  have := range_le_ihomToPullbackFiber_iff sq
+    ((yonedaEquiv _ _).symm (ihom₀Equiv.symm f))
+  simp only [yonedaEquiv_symm_zero, Subcomplex.range_eq_ofSimplex, yonedaEquiv₀,
+      Subcomplex.ofSimplex_le_iff] at this
+  convert this using 2
+  all_goals
+  · rw [← EmbeddingLike.apply_eq_iff_eq ihom₀Equiv.symm,
+      ← EmbeddingLike.apply_eq_iff_eq (yonedaEquiv _ _).symm]
+    rfl
+
+@[reassoc (attr := simp)]
+lemma ihomToPullbackFiber_ihom_map :
+    (ihomToPullbackFiber sq).ι ≫ (ihom B).map p = SSet.const (ihom₀Equiv.symm b) :=
+  ((le_ihomToPullbackFiber_iff sq _).1 (by rfl)).2
+
+@[reassoc (attr := simp)]
+lemma ihomToPullbackFiber_pre_app :
+    (ihomToPullbackFiber sq).ι ≫ (pre i).app X = SSet.const (ihom₀Equiv.symm t) :=
+  ((le_ihomToPullbackFiber_iff sq _).1 (by rfl)).1
 
 instance [Cofibration i] [Fibration p] :
     IsFibrant (C := SSet.{u}) (ihomToPullbackFiber sq) := by
