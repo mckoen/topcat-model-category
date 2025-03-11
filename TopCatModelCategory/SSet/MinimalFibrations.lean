@@ -110,6 +110,63 @@ noncomputable def ihomToPullbackFiberMk (x : E _[n])
 
 open KanComplex.FundamentalGroupoid
 
+namespace equiv
+
+open MonoidalClosed
+
+variable (x y : E _[n])
+    {hx₁ : (subcomplexBoundary n).ι ≫ (yonedaEquiv _ _).symm x = d}
+    {hx₂ : (yonedaEquiv _ _).symm x ≫ p = π}
+    {hy₁ : (subcomplexBoundary n).ι ≫ (yonedaEquiv _ _).symm y = d}
+    {hy₂ : (yonedaEquiv _ _).symm y ≫ p = π}
+
+@[simps! map]
+noncomputable def toFun (rel : SimplexOverRelStruct p x y) :
+      Edge (.mk (ihomToPullbackFiberMk sq x hx₁ hx₂))
+        (.mk (ihomToPullbackFiberMk sq y hy₁ hy₂)) :=
+  Edge.mk
+    ((ihomToPullbackFiber sq).lift (curry rel.h) (by
+      rw [Subcomplex.preimage_eq_top_iff]
+      have := rel.hπ
+      have := rel.hd
+      sorry)) (by
+        rw [← cancel_mono (Subpresheaf.ι _), Category.assoc, Subcomplex.lift_ι,
+          ← curry_natural_left]
+        -- could be better with `curry'`
+        apply uncurry_injective
+        rw [uncurry_curry, ← cancel_epi (standardSimplex.rightUnitor _).inv]
+        exact rel.h₀) (by
+        rw [← cancel_mono (Subpresheaf.ι _), Category.assoc, Subcomplex.lift_ι,
+          ← curry_natural_left]
+        apply uncurry_injective
+        rw [uncurry_curry, ← cancel_epi (standardSimplex.rightUnitor _).inv]
+        exact rel.h₁)
+
+@[simps]
+noncomputable def invFun (e : Edge (.mk (ihomToPullbackFiberMk sq x hx₁ hx₂))
+        (.mk (ihomToPullbackFiberMk sq y hy₁ hy₂))) :
+    SimplexOverRelStruct p x y where
+  h := uncurry (e.map ≫ Subpresheaf.ι _)
+  h₀ := by
+    rw [← standardSimplex.rightUnitor_inv_map_δ_one, Category.assoc,
+      uncurry_natural_left, ← MonoidalCategory.whiskerLeft_comp_assoc, e.comm₀]
+    rfl
+  h₁ := by
+    rw [← standardSimplex.rightUnitor_inv_map_δ_zero, Category.assoc,
+      uncurry_natural_left, ← MonoidalCategory.whiskerLeft_comp_assoc, e.comm₁]
+    rfl
+  π := π
+  d := d
+  hπ := by
+    rw [← MonoidalClosed.uncurry_natural_right, Category.assoc,
+      ihomToPullbackFiber_ihom_map]
+    rfl
+  hd := by
+    rw [whiskerRight_comp_uncurry, Category.assoc, ihomToPullbackFiber_pre_app]
+    rfl
+
+end equiv
+
 noncomputable def equiv (x y : E _[n])
     (hx₁ : (subcomplexBoundary n).ι ≫ (yonedaEquiv _ _).symm x = d)
     (hx₂ : (yonedaEquiv _ _).symm x ≫ p = π)
@@ -118,18 +175,8 @@ noncomputable def equiv (x y : E _[n])
     SimplexOverRelStruct p x y ≃
       Edge (.mk (ihomToPullbackFiberMk sq x hx₁ hx₂))
         (.mk (ihomToPullbackFiberMk sq y hy₁ hy₂)) where
-  toFun rel := Edge.mk
-    ((ihomToPullbackFiber sq).lift (MonoidalClosed.curry rel.h) (by
-      rw [Subcomplex.preimage_eq_top_iff]
-      sorry)) sorry sorry
-  invFun e :=
-    { h := MonoidalClosed.uncurry (e.map ≫ Subpresheaf.ι _)
-      h₀ := sorry
-      h₁ := sorry
-      π := π
-      d := d
-      hπ := sorry
-      hd := sorry }
+  toFun := equiv.toFun sq x y
+  invFun := equiv.invFun sq x y
   left_inv rel := by aesop
   right_inv e := by aesop
 
@@ -139,15 +186,13 @@ variable {p}
 
 noncomputable def symm {x y : E _[n]} [Fibration p] (h : SimplexOverRelStruct p x y) :
     SimplexOverRelStruct p y x :=
-  (equiv h.sq y x h.d_eq₂.symm h.π_eq₂.symm h.d_eq₁.symm h.π_eq₁.symm).symm
+  (equiv h.sq y x _ _ _ _).symm
     (equiv h.sq x y h.d_eq₁.symm h.π_eq₁.symm h.d_eq₂.symm h.π_eq₂.symm h).inv
 
 noncomputable def trans {x y z : E _[n]} [Fibration p] (h : SimplexOverRelStruct p x y)
     (h' : SimplexOverRelStruct p y z) :
     SimplexOverRelStruct p x z :=
-  (equiv h.sq x z h.d_eq₁.symm h.π_eq₁.symm
-      (by rw [h.d_eq₂, ← h'.d_eq₁, h'.d_eq₂])
-      (by rw [h.π_eq₂, ← h'.π_eq₁, h'.π_eq₂])).symm
+  (equiv h.sq x z _ _ _ _).symm
     ((equiv h.sq x y h.d_eq₁.symm h.π_eq₁.symm h.d_eq₂.symm h.π_eq₂.symm h).comp
       (equiv h.sq y z h.d_eq₂.symm h.π_eq₂.symm
       (by rw [h.d_eq₂, ← h'.d_eq₁, h'.d_eq₂])
@@ -271,7 +316,7 @@ structure Selection where
   nonempty {n : ℕ} (x : E _[n]) : ∃ (y : E _[n]) (_ : y ∈ set n),
     Nonempty (SimplexOverRelStruct p x y)
 
--- use that `SimplexOverRelStruct` defines an equivalence relation,
+-- use that `SimplexOverRel` is an equivalence relation,
 -- "select" all degenerate simplices,
 -- and an element in each other equivalence class
 instance [Fibration p] : Nonempty (Selection p) := sorry

@@ -344,6 +344,16 @@ noncomputable def ihomToPullbackFiber : ((ihom B).obj X).Subcomplex :=
         simp only [yonedaEquiv_symm_zero, const_comp, yonedaEquiv₀,
           ← ihom₀Equiv_symm_comp, ← ihom₀Equiv_symm_comp', sq.w])))))
 
+@[reassoc (attr := simp)]
+lemma ihomToPullbackFiber_ihom_map :
+    (ihomToPullbackFiber sq).ι ≫ (ihom B).map p = SSet.const (ihom₀Equiv.symm b) := by
+  sorry
+
+@[reassoc (attr := simp)]
+lemma ihomToPullbackFiber_pre_app :
+    (ihomToPullbackFiber sq).ι ≫ (pre i).app X = SSet.const (ihom₀Equiv.symm t) := by
+  sorry
+
 lemma ihom₀Equiv_symm_mem_ihomToPullbackFiber_obj_zero_iff (f : B ⟶ X) :
     ihom₀Equiv.symm f ∈ (ihomToPullbackFiber sq).obj (op [0]) ↔
       i ≫ f = t ∧ f ≫ p = b := by
