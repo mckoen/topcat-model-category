@@ -501,6 +501,9 @@ lemma range_comp {Z : SSet.{u}} (g : Y ⟶ Z) :
     Subcomplex.range (f ≫ g) = (Subcomplex.range f).image g := by
   simp only [← image_top, image_comp]
 
+lemma image_eq_range : S.image f = range (S.ι ≫ f) := by
+  rw [range_comp, range_ι]
+
 lemma image_iSup {ι : Type*} (S : ι → X.Subcomplex) (f : X ⟶ Y) :
     image (⨆ i, S i) f = ⨆ i, (S i).image f := by
   aesop

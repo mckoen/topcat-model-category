@@ -571,6 +571,19 @@ noncomputable def relativeDeformationRetract :
     rw [assoc, Extension.wh]
     rfl
 
+instance [Fibration p] :
+    Fibration (C := SSet) (selection.subcomplex.ι ≫ p) := by
+  rw [fibration_iff]
+  apply MorphismProperty.of_retract selection.relativeDeformationRetract.retractArrow
+  rwa [← fibration_iff]
+
+instance minimalFibration_ι_comp [Fibration p] :
+    MinimalFibration (selection.subcomplex.ι ≫ p) where
+  minimal {n x y} h := by
+    simpa [← Subtype.ext_iff] using selection.unique
+      (selection.subcomplex_obj_le _ x.2) (selection.subcomplex_obj_le _ y.2)
+      (h.map selection.relativeDeformationRetract.retractArrow.i rfl rfl)
+
 end Selection
 
 end MinimalFibration
