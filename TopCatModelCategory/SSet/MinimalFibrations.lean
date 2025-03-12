@@ -541,17 +541,55 @@ lemma Extension.A_eq_top_of_isMax (f : selection.Extension)
   induction' n using Nat.strong_induction_on with n hn
   by_contra!
   obtain ⟨x, hx⟩ := this
+  let A' := f.A ⊔ .ofSimplex x
+  have le : f.A ≤ A' := le_sup_left
+  let t : (subcomplexBoundary n : SSet) ⟶ (f.A : SSet) :=
+    Subcomplex.lift ((subcomplexBoundary n).ι ≫ (yonedaEquiv _ _).symm x) (by
+      rw [Subcomplex.preimage_eq_top_iff,
+        Subcomplex.range_le_iff_nonDegenerate]
+      rintro m y
+      exact hn _ (dim_lt_of_nondegenerate _ y _) _)
+  let e : Δ[n] ⟶ A' := (yonedaEquiv _ _).symm ⟨x, Or.inr (Subcomplex.mem_ofSimplex_obj x)⟩
+  have isPushout : IsPushout t (subcomplexBoundary.{u} n).ι (Subcomplex.homOfLE le) e := sorry
+  obtain ⟨α, β, hβ, hα₁, hα₂, hα₃, hα₄⟩ :
+    ∃ (α : Δ[n] ⊗ Δ[1] ⟶ E) (β : Δ[n] ⟶ selection.subcomplex),
+      Subpresheaf.ι (subcomplexBoundary n) ≫ β = t ≫ f.r ∧
+      (subcomplexBoundary n).ι ▷ Δ[1] ≫ α = t ▷ Δ[1] ≫ f.h ∧
+      ι₁ ≫ α = e ≫ Subpresheaf.ι A' ∧
+      α ≫ p = fst _ _ ≫ (yonedaEquiv _ _).symm x ≫ p ∧
+      ι₀ ≫ α = β ≫ Subpresheaf.ι selection.subcomplex := sorry
+  obtain ⟨h, h₁, h₂⟩ := (isPushout.map (tensorRight Δ[1])).exists_desc f.h α hα₁.symm
+  obtain ⟨r, hr₁, hr₂⟩ := isPushout.exists_desc f.r β hβ.symm
+  dsimp at h₁ h₂
   let f' : selection.Extension :=
-    { A := f.A ⊔ .ofSimplex x
-      subcomplex_le := sorry
-      h := sorry
-      hi' := sorry
-      r := sorry
-      i_r := sorry
-      ι₀_h := sorry
-      ι₁_h := sorry
-      wh := sorry }
-  have : f ≤ f' := ⟨le_sup_left, sorry⟩
+    { A := A'
+      subcomplex_le := f.subcomplex_le.trans le
+      h := h
+      hi' := by
+        rw [← f.hi', ← h₁]
+        rfl
+      r := r
+      i_r := by
+        rw [← f.i_r, ← hr₁]
+        rfl
+      ι₀_h := by
+        apply isPushout.hom_ext
+        · rw [← ι₀_comp_assoc, h₁, reassoc_of% hr₁, f.ι₀_h]
+        · rw [← ι₀_comp_assoc, h₂, reassoc_of% hr₂, hα₄]
+      ι₁_h := by
+        apply isPushout.hom_ext
+        · rw [← ι₁_comp_assoc, h₁]
+          exact f.ι₁_h
+        · rw [← ι₁_comp_assoc, h₂, hα₂]
+      wh := by
+        apply (isPushout.map (tensorRight Δ[1])).hom_ext
+        · dsimp
+          rw [reassoc_of% h₁]
+          exact f.wh
+        · dsimp
+          rw [reassoc_of% h₂]
+          exact hα₃ }
+  have : f ≤ f' := ⟨le, h₁.symm⟩
   exact hx ((hf this).1 _ (Or.inr (Subcomplex.mem_ofSimplex_obj x)))
 
 lemma exists_extension : ∃ (f : selection.Extension), f.A = ⊤ := by

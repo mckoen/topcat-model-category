@@ -347,4 +347,19 @@ lemma eq_of_degenerate_of_δ_eq
   have h₂ : X.δ q.succ.castSucc x = ξ := by rw [h₁, δ_comp_σ_self_apply]
   rw [h₁, ← h₂, h, hy']
 
+lemma Subcomplex.range_le_iff_nonDegenerate {Y : SSet.{u}} (f : X ⟶ Y) (B : Y.Subcomplex) :
+    range f ≤ B ↔ ∀ (n : ℕ) (x : X.NonDegenerate n), f.app _ x.1 ∈ B.obj _ := by
+  constructor
+  · intro h n x
+    exact h _ (by simp)
+  · intro h
+    rw [le_iff_contains_nonDegenerate]
+    rintro n ⟨y, hy⟩ h
+    simp only [range_obj, Set.mem_range] at h
+    obtain ⟨x, rfl⟩ := h
+    refine h n ⟨x, ?_⟩
+    rw [mem_nondegenerate_iff_not_mem_degenerate] at hy ⊢
+    intro hx
+    exact hy (degenerate_map hx f)
+
 end SSet
