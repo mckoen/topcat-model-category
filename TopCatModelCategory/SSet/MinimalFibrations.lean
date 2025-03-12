@@ -32,7 +32,7 @@ end SSet.Subcomplex
 lemma CategoryTheory.IsPullback.types_ext {A B C D : Type u} {t : A ⟶ B} {l : A ⟶ C}
     {r : B ⟶ D} {b : C ⟶ D} (h : IsPullback t l r b) {x y : A}
     (h₁ : t x = t y) (h₂ : l x = l y) : x = y := by
-  apply (PullbackCone.IsLimit.equivPullbackObj (h.isLimit)).injective
+  apply (PullbackCone.IsLimit.equivPullbackObj h.isLimit).injective
   ext <;> assumption
 
 namespace SSet
@@ -535,7 +535,24 @@ lemma exists_maximal_extension : ∃ (f : selection.Extension), IsMax f := by
 variable {selection} in
 lemma Extension.A_eq_top_of_isMax (f : selection.Extension)
     (hf : IsMax f) : f.A = ⊤ := by
-  sorry
+  ext ⟨n⟩ : 2
+  simp only [top_subpresheaf_obj, Set.top_eq_univ, Set.eq_univ_iff_forall]
+  induction' n using SimplexCategory.rec with n
+  induction' n using Nat.strong_induction_on with n hn
+  by_contra!
+  obtain ⟨x, hx⟩ := this
+  let f' : selection.Extension :=
+    { A := f.A ⊔ .ofSimplex x
+      subcomplex_le := sorry
+      h := sorry
+      hi' := sorry
+      r := sorry
+      i_r := sorry
+      ι₀_h := sorry
+      ι₁_h := sorry
+      wh := sorry }
+  have : f ≤ f' := ⟨le_sup_left, sorry⟩
+  exact hx ((hf this).1 _ (Or.inr (Subcomplex.mem_ofSimplex_obj x)))
 
 lemma exists_extension : ∃ (f : selection.Extension), f.A = ⊤ := by
   obtain ⟨f, hf⟩ := selection.exists_maximal_extension
