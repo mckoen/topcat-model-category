@@ -403,4 +403,41 @@ instance [Cofibration i] [Fibration p] :
 
 end
 
+-- a consequence of the right lifting property with respect
+-- to the horn inclusion `Λ[2, 1] ⟶ Δ[2]`: it is possible
+-- to compose path above if we provide a composition below
+lemma exist_path_composition_above_of_fibration
+    (p : X ⟶ Y) [Fibration p] (x₀₁ x₁₂ : Δ[1] ⟶ X)
+    (h : standardSimplex.map (SimplexCategory.δ 0) ≫ x₀₁ =
+      standardSimplex.map (SimplexCategory.δ 1) ≫ x₁₂)
+    (s : Δ[2] ⟶ Y)
+    (hs₀₁ : standardSimplex.map (SimplexCategory.δ 2) ≫ s = x₀₁ ≫ p)
+    (hs₁₂ : standardSimplex.map (SimplexCategory.δ 0) ≫ s = x₁₂ ≫ p) :
+    ∃ (x₀₂ : Δ[1] ⟶ X),
+      standardSimplex.map (SimplexCategory.δ 1) ≫ x₀₂ =
+        standardSimplex.map (SimplexCategory.δ 1) ≫ x₀₁ ∧
+      standardSimplex.map (SimplexCategory.δ 0) ≫ x₀₂ =
+        standardSimplex.map (SimplexCategory.δ 0) ≫ x₁₂ ∧
+        x₀₂ ≫ p = standardSimplex.map (SimplexCategory.δ 1) ≫ s := by
+  obtain ⟨t, ht₁, ht₂⟩ := subcomplexHorn₂₁.isPushout.exists_desc x₀₁ x₁₂ h
+  have sq : CommSq t (subcomplexHorn 2 1).ι p s := ⟨by
+    apply subcomplexHorn₂₁.isPushout.hom_ext
+    · simp [reassoc_of% ht₁, ← hs₀₁]
+    · simp [reassoc_of% ht₂, ← hs₁₂]⟩
+  refine ⟨standardSimplex.map (SimplexCategory.δ 1) ≫ sq.lift, ?_, ?_, ?_⟩
+  · rw [← ht₁]
+    conv_rhs => rw [← sq.fac_left]
+    rw [subcomplexHorn.ι_ι_assoc,
+      ← Functor.map_comp_assoc, ← Functor.map_comp_assoc]
+    congr 2
+    exact (SimplexCategory.δ_comp_δ (i := 1) (j := 1) (by rfl)).symm
+  · rw [← ht₂]
+    conv_rhs => rw [← sq.fac_left]
+    rw [subcomplexHorn.ι_ι_assoc,
+      ← Functor.map_comp_assoc, ← Functor.map_comp_assoc]
+    have := SimplexCategory.δ_comp_δ_self (n := 0) (i := 0)
+    dsimp at this
+    rw [this]
+  · rw [Category.assoc, sq.fac_right]
+
 end SSet

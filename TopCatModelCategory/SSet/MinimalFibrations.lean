@@ -543,12 +543,14 @@ lemma Extension.A_eq_top_of_isMax (f : selection.Extension)
   obtain ⟨x, hx⟩ := this
   let A' := f.A ⊔ .ofSimplex x
   have le : f.A ≤ A' := le_sup_left
+  have hx' : Subcomplex.range
+      (Subpresheaf.ι (subcomplexBoundary n) ≫ (E.yonedaEquiv [n]).symm x) ≤ f.A := by
+    rw [Subcomplex.range_le_iff_nonDegenerate]
+    rintro m y
+    exact hn _ (dim_lt_of_nondegenerate _ y _) _
   let t : (subcomplexBoundary n : SSet) ⟶ (f.A : SSet) :=
     Subcomplex.lift ((subcomplexBoundary n).ι ≫ (yonedaEquiv _ _).symm x) (by
-      rw [Subcomplex.preimage_eq_top_iff,
-        Subcomplex.range_le_iff_nonDegenerate]
-      rintro m y
-      exact hn _ (dim_lt_of_nondegenerate _ y _) _)
+      rwa [Subcomplex.preimage_eq_top_iff])
   let e : Δ[n] ⟶ A' := (yonedaEquiv _ _).symm ⟨x, Or.inr (Subcomplex.mem_ofSimplex_obj x)⟩
   have isPushout : IsPushout t (subcomplexBoundary.{u} n).ι (Subcomplex.homOfLE le) e := sorry
   obtain ⟨α, β, hβ, hα₁, hα₂, hα₃, hα₄⟩ :
@@ -557,7 +559,8 @@ lemma Extension.A_eq_top_of_isMax (f : selection.Extension)
       (subcomplexBoundary n).ι ▷ Δ[1] ≫ α = t ▷ Δ[1] ≫ f.h ∧
       ι₁ ≫ α = e ≫ Subpresheaf.ι A' ∧
       α ≫ p = fst _ _ ≫ (yonedaEquiv _ _).symm x ≫ p ∧
-      ι₀ ≫ α = β ≫ Subpresheaf.ι selection.subcomplex := sorry
+      ι₀ ≫ α = β ≫ Subpresheaf.ι selection.subcomplex := by
+    sorry
   obtain ⟨h, h₁, h₂⟩ := (isPushout.map (tensorRight Δ[1])).exists_desc f.h α hα₁.symm
   obtain ⟨r, hr₁, hr₂⟩ := isPushout.exists_desc f.r β hβ.symm
   dsimp at h₁ h₂
