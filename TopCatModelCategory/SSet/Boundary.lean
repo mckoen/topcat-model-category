@@ -20,11 +20,15 @@ lemma face_le_subcomplexBoundary (i : Fin (n + 1)) :
   rw [subcomplexBoundary_eq_iSup]
   exact le_iSup (fun (i : Fin (n +1)) ↦ standardSimplex.face {i}ᶜ) i
 
-lemma non_mem_subcomplexBoundary (n : ℕ):
+lemma non_mem_subcomplexBoundary (n : ℕ) :
     standardSimplex.objMk .id ∉ (subcomplexBoundary.{u} n).obj (op [n]) := by
   simp [subcomplexBoundary_eq_iSup]
   intro i hi
   simpa using @hi i (by aesop)
+
+lemma subcomplexBoundary_lt_top (n : ℕ) :
+    subcomplexBoundary.{u} n < ⊤ :=
+  lt_of_le_not_le (by simp) (fun h ↦ non_mem_subcomplexBoundary n (h _ (by simp)))
 
 lemma subcomplexBoundary_obj_eq_top (m n : ℕ) (h : m < n) :
     (subcomplexBoundary.{u} n).obj (op [m]) = ⊤ := by
@@ -78,6 +82,14 @@ lemma subcomplex_le_boundary_iff :
       replace h₁ := (A.mem_non_degenerate_iff ⟨x, h₂⟩).2 h₁
       rw [nondegenerate_eq_bot_of_hasDimensionLT _ _ _ h₃] at h₁
       simp at h₁
+
+lemma eq_subcomplexBoundary_iff :
+    A = subcomplexBoundary n ↔ subcomplexBoundary n ≤ A ∧ A ≠ ⊤ := by
+  constructor
+  · rintro rfl
+    exact ⟨by rfl, (subcomplexBoundary_lt_top n).ne⟩
+  · rintro ⟨h₁, h₂⟩
+    exact le_antisymm (by rwa [subcomplex_le_boundary_iff]) h₁
 
 instance : HasDimensionLT (subcomplexBoundary.{u} n) n := by
   apply subcomplex_hasDimensionLT_of_neq_top
@@ -148,6 +160,31 @@ lemma hom_ext_tensorRight {n : ℕ} {X Y : SSet.{u}}
   apply hom_ext_tensorLeft
   intro i
   simp only [BraidedCategory.braiding_naturality_right_assoc, h]
+
+lemma exists_isPushout_of_ne_top {X : SSet.{u}} (A : X.Subcomplex) (hA : A ≠ ⊤) :
+    ∃ (B : X.Subcomplex) (lt : A < B) (n : ℕ)
+    (t : (subcomplexBoundary n : SSet) ⟶ (A : SSet)) (b : Δ[n] ⟶ B),
+    IsPushout t (subcomplexBoundary n).ι (Subcomplex.homOfLE lt.le) b := by
+  by_contra h
+  apply hA
+  ext ⟨n⟩ : 2
+  simp only [top_subpresheaf_obj, Set.top_eq_univ, Set.eq_univ_iff_forall]
+  induction' n using SimplexCategory.rec with n
+  induction' n using Nat.strong_induction_on with n hn
+  by_contra!
+  obtain ⟨x, hx⟩ := this
+  refine h ⟨_, lt_of_le_not_le (le_sup_left)
+    (fun le ↦ hx (le _ (Or.inr (Subcomplex.mem_ofSimplex_obj x)))), n, _, _,
+    Subcomplex.isPushout_of_eq_max_range _ (Eq.symm ?_) rfl⟩
+  rw [standardSimplex.eq_subcomplexBoundary_iff]
+  constructor
+  · rw [← Subcomplex.image_le_iff, Subcomplex.image_eq_range,
+      Subcomplex.range_le_iff_nonDegenerate]
+    intro d x
+    exact hn _ (dim_lt_of_nondegenerate _ x _) _
+  · intro h
+    apply hx
+    simpa using h.symm.le _ (show standardSimplex.id n ∈ _ by simp)
 
 end subcomplexBoundary
 

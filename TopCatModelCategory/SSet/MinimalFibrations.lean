@@ -535,32 +535,15 @@ lemma exists_maximal_extension : ∃ (f : selection.Extension), IsMax f := by
 variable {selection} in
 lemma Extension.A_eq_top_of_isMax (f : selection.Extension)
     (hf : IsMax f) : f.A = ⊤ := by
-  ext ⟨n⟩ : 2
-  simp only [top_subpresheaf_obj, Set.top_eq_univ, Set.eq_univ_iff_forall]
-  induction' n using SimplexCategory.rec with n
-  induction' n using Nat.strong_induction_on with n hn
   by_contra!
-  obtain ⟨x, hx⟩ := this
-  let A' := f.A ⊔ .ofSimplex x
-  have le : f.A ≤ A' := le_sup_left
-  have hx' : Subcomplex.range
-      (Subpresheaf.ι (subcomplexBoundary n) ≫ (E.yonedaEquiv [n]).symm x) ≤ f.A := by
-    rw [Subcomplex.range_le_iff_nonDegenerate]
-    rintro m y
-    exact hn _ (dim_lt_of_nondegenerate _ y _) _
-  let t : (subcomplexBoundary n : SSet) ⟶ (f.A : SSet) :=
-    Subcomplex.lift ((subcomplexBoundary n).ι ≫ (yonedaEquiv _ _).symm x) (by
-      rwa [Subcomplex.preimage_eq_top_iff])
-  let e : Δ[n] ⟶ A' := (yonedaEquiv _ _).symm ⟨x, Or.inr (Subcomplex.mem_ofSimplex_obj x)⟩
-  have isPushout : IsPushout t (subcomplexBoundary.{u} n).ι (Subcomplex.homOfLE le) e := by
-    -- use Subcomplex.isColimitPushoutCoconeOfPullback
-    sorry
+  obtain ⟨A', lt, n, t, b, isPushout⟩ :=
+    subcomplexBoundary.exists_isPushout_of_ne_top f.A this
   obtain ⟨α, β, hβ, hα₁, hα₂, hα₃, hα₄⟩ :
     ∃ (α : Δ[n] ⊗ Δ[1] ⟶ E) (β : Δ[n] ⟶ selection.subcomplex),
       Subpresheaf.ι (subcomplexBoundary n) ≫ β = t ≫ f.r ∧
       (subcomplexBoundary n).ι ▷ Δ[1] ≫ α = t ▷ Δ[1] ≫ f.h ∧
-      ι₁ ≫ α = e ≫ Subpresheaf.ι A' ∧
-      α ≫ p = fst _ _ ≫ (yonedaEquiv _ _).symm x ≫ p ∧
+      ι₁ ≫ α = b ≫ A'.ι ∧
+      α ≫ p = fst _ _ ≫ b ≫ A'.ι ≫ p ∧
       ι₀ ≫ α = β ≫ Subpresheaf.ι selection.subcomplex := by
     sorry
   obtain ⟨h, h₁, h₂⟩ := (isPushout.map (tensorRight Δ[1])).exists_desc f.h α hα₁.symm
@@ -568,7 +551,7 @@ lemma Extension.A_eq_top_of_isMax (f : selection.Extension)
   dsimp at h₁ h₂
   let f' : selection.Extension :=
     { A := A'
-      subcomplex_le := f.subcomplex_le.trans le
+      subcomplex_le := f.subcomplex_le.trans lt.le
       h := h
       hi' := by
         rw [← f.hi', ← h₁]
@@ -594,8 +577,7 @@ lemma Extension.A_eq_top_of_isMax (f : selection.Extension)
         · dsimp
           rw [reassoc_of% h₂]
           exact hα₃ }
-  have : f ≤ f' := ⟨le, h₁.symm⟩
-  exact hx ((hf this).1 _ (Or.inr (Subcomplex.mem_ofSimplex_obj x)))
+  simpa using lt_of_lt_of_le lt ((hf (show f ≤ f' from ⟨lt.le, h₁.symm⟩)).1)
 
 lemma exists_extension : ∃ (f : selection.Extension), f.A = ⊤ := by
   obtain ⟨f, hf⟩ := selection.exists_maximal_extension
