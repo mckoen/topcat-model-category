@@ -552,7 +552,9 @@ lemma Extension.A_eq_top_of_isMax (f : selection.Extension)
     Subcomplex.lift ((subcomplexBoundary n).ι ≫ (yonedaEquiv _ _).symm x) (by
       rwa [Subcomplex.preimage_eq_top_iff])
   let e : Δ[n] ⟶ A' := (yonedaEquiv _ _).symm ⟨x, Or.inr (Subcomplex.mem_ofSimplex_obj x)⟩
-  have isPushout : IsPushout t (subcomplexBoundary.{u} n).ι (Subcomplex.homOfLE le) e := sorry
+  have isPushout : IsPushout t (subcomplexBoundary.{u} n).ι (Subcomplex.homOfLE le) e := by
+    -- use Subcomplex.isColimitPushoutCoconeOfPullback
+    sorry
   obtain ⟨α, β, hβ, hα₁, hα₂, hα₃, hα₄⟩ :
     ∃ (α : Δ[n] ⊗ Δ[1] ⟶ E) (β : Δ[n] ⟶ selection.subcomplex),
       Subpresheaf.ι (subcomplexBoundary n) ≫ β = t ≫ f.r ∧
