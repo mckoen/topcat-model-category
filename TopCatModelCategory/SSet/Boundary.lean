@@ -173,18 +173,10 @@ lemma exists_isPushout_of_ne_top {X : SSet.{u}} (A : X.Subcomplex) (hA : A ≠ �
   induction' n using Nat.strong_induction_on with n hn
   by_contra!
   obtain ⟨x, hx⟩ := this
-  refine h ⟨_, lt_of_le_not_le (le_sup_left)
-    (fun le ↦ hx (le _ (Or.inr (Subcomplex.mem_ofSimplex_obj x)))), n, _, _,
-    Subcomplex.isPushout_of_eq_max_range _ (Eq.symm ?_) rfl⟩
-  rw [standardSimplex.eq_subcomplexBoundary_iff]
-  constructor
-  · rw [← Subcomplex.image_le_iff, Subcomplex.image_eq_range,
-      Subcomplex.range_le_iff_nonDegenerate]
-    intro d x
-    exact hn _ (dim_lt_of_nondegenerate _ x _) _
-  · intro h
-    apply hx
-    simpa using h.symm.le _ (show standardSimplex.id n ∈ _ by simp)
+  -- show that `x` is non degenerate
+  apply h
+  refine ⟨?_, sorry⟩
+  sorry
 
 end subcomplexBoundary
 

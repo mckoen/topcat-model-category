@@ -788,15 +788,6 @@ lemma hom_ext_of_eq_bot {A : X.Subcomplex} (h : A = ⊥) {f g : (A : SSet) ⟶ Y
   ext _ ⟨x, hx⟩
   simp [h] at hx
 
-
-lemma isPushout_of_eq_max_range (f : Y ⟶ X) {A : X.Subcomplex} {A' : Y.Subcomplex}
-    (hA' : A' = A.preimage f) {B : X.Subcomplex} (hB : B = A ⊔ range f) :
-    IsPushout (A.lift (A'.ι ≫ f)
-      (by rw [preimage_eq_top_iff, range_comp, range_ι, image_le_iff, hA'])) A'.ι
-      (homOfLE (show A ≤ B by simpa only [hB] using le_sup_left))
-      (B.lift f (by simpa only [preimage_eq_top_iff, hB] using le_sup_right)) := by
-  sorry
-
 end Subcomplex
 
 end SSet
