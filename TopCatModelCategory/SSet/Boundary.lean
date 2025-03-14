@@ -5,7 +5,7 @@ import TopCatModelCategory.SSet.Monoidal
 
 universe u
 
-open CategoryTheory Simplicial Opposite MonoidalCategory
+open CategoryTheory Simplicial Opposite MonoidalCategory Limits
 
 namespace SSet
 
@@ -161,6 +161,9 @@ lemma hom_ext_tensorRight {n : ℕ} {X Y : SSet.{u}}
   intro i
   simp only [BraidedCategory.braiding_naturality_right_assoc, h]
 
+instance {X : Type u} (p : X → Prop) : Mono (show Subtype p ⟶ X from Subtype.val) := by
+  simpa only [mono_iff_injective] using Subtype.val_injective
+
 lemma exists_isPushout_of_ne_top {X : SSet.{u}} (A : X.Subcomplex) (hA : A ≠ ⊤) :
     ∃ (B : X.Subcomplex) (lt : A < B) (n : ℕ)
     (t : (subcomplexBoundary n : SSet) ⟶ (A : SSet)) (b : Δ[n] ⟶ B),
@@ -173,10 +176,62 @@ lemma exists_isPushout_of_ne_top {X : SSet.{u}} (A : X.Subcomplex) (hA : A ≠ �
   induction' n using Nat.strong_induction_on with n hn
   by_contra!
   obtain ⟨x, hx⟩ := this
-  -- show that `x` is non degenerate
+  have hx' : x ∈ X.NonDegenerate _ := fun hx' ↦ by
+    rw [mem_degenerate_iff] at hx'
+    obtain ⟨m, hm, f, _, y, rfl⟩ := hx'
+    exact hx (A.map _ (hn _ hm _))
   apply h
-  refine ⟨?_, sorry⟩
-  sorry
+  let A' := A ⊔ .ofSimplex x
+  have hA' : x ∈ A'.obj _ := Or.inr (Subcomplex.mem_ofSimplex_obj x)
+  have lt : A < A' := lt_of_le_not_le le_sup_left (fun hA ↦ hx (hA _ hA'))
+  have hA'' : A.preimage ((yonedaEquiv _ _).symm x) = subcomplexBoundary n := by
+    rw [standardSimplex.eq_subcomplexBoundary_iff]
+    constructor
+    · rw [Subcomplex.le_iff_contains_nonDegenerate]
+      intro d ⟨y, hy⟩ hy'
+      exact hn _ (dim_lt_of_nondegenerate (X := subcomplexBoundary.{u} n) ⟨⟨y, hy'⟩,
+        (Subcomplex.mem_non_degenerate_iff _ ⟨y, hy'⟩).2 hy⟩ _) _
+    · intro h
+      apply hx
+      simpa using h.symm.le _ (by simp : standardSimplex.id.{u} n ∈ _)
+  refine ⟨A', lt, n,
+    Subcomplex.lift ((subcomplexBoundary _).ι ≫ (yonedaEquiv _ _).symm x) (by
+      rw [Subcomplex.preimage_eq_top_iff,
+        Subcomplex.range_le_iff_nonDegenerate]
+      intro d y
+      exact hn _ (dim_lt_of_nondegenerate _ y _) _),
+    (yonedaEquiv _ _).symm ⟨x, hA'⟩,
+    ⟨⟨rfl⟩, ⟨evaluationJointlyReflectsColimits _ (fun ⟨m⟩ ↦
+      (PushoutCocone.isColimitMapCoconeEquiv _ _).2 ?_)⟩⟩⟩
+  apply IsPushout.isColimit
+  dsimp
+  refine Types.isPushout_of_isPullback_of_mono (X₅ := X.obj _) (k := Subtype.val)
+    (r' := Subtype.val) (b' := ((yonedaEquiv _ _).symm x).app _) ?_ rfl rfl
+      (le_antisymm (by simp) ?_) ?_
+  · exact Types.isPullback_of_eq_setPreimage (f := ((yonedaEquiv _ _).symm x).app _) _
+      (by simp [← hA''])
+  · rintro ⟨y, hy⟩ _
+    simp only [Subpresheaf.max_obj, Set.mem_union, A'] at hy
+    simp only [Subpresheaf.max_obj, Set.sup_eq_union, Set.mem_union,
+      Set.mem_range, Subtype.exists, A']
+    obtain hy | ⟨z, hz⟩ := hy
+    · exact Or.inl ⟨y, hy, rfl⟩
+    · exact Or.inr ⟨z, by rwa [Subtype.ext_iff]⟩
+  · induction' m using SimplexCategory.rec with m
+    intro x₃ y₃ hx₃ hy₃ h
+    simp only [Set.mem_range, Subpresheaf.ι_app, Subtype.exists,
+      exists_prop, exists_eq_right] at hx₃ hy₃
+    obtain ⟨φ, rfl⟩ := (standardSimplex.objEquiv _ _).symm.surjective x₃
+    obtain ⟨ψ, rfl⟩ := (standardSimplex.objEquiv _ _).symm.surjective y₃
+    dsimp at φ ψ
+    have : Epi φ := by
+      rw [SimplexCategory.epi_iff_surjective]
+      exact not_not.1 hx₃
+    have : Epi ψ := by
+      rw [SimplexCategory.epi_iff_surjective]
+      exact not_not.1 hy₃
+    obtain rfl := X.unique_non_degenerate₃ _ φ ⟨x, hx'⟩ rfl ψ ⟨x, hx'⟩ h
+    rfl
 
 end subcomplexBoundary
 

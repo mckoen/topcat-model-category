@@ -1,6 +1,7 @@
 import Mathlib.CategoryTheory.Limits.Shapes.Pullback.CommSq
 import Mathlib.CategoryTheory.Limits.Shapes.Multiequalizer
 import Mathlib.CategoryTheory.Limits.Shapes.Types
+import Mathlib.CategoryTheory.MorphismProperty.Limits
 import Mathlib.Data.Set.Lattice
 import TopCatModelCategory.Multiequalizer
 
@@ -206,6 +207,8 @@ namespace CategoryTheory.Limits
 
 namespace Types
 
+section
+
 variable {T : Type u} {ι : Type v} {X : Set T} {U : ι → Set T} {V : ι → ι → Set T}
   (d : CompleteLattice.MulticoequalizerDiagram X U V)
 
@@ -276,6 +279,132 @@ noncomputable def isColimitMulticoforkMapSetToTypes' [LinearOrder ι] :
   Multicofork.IsColimit.mk _ desc' (fun s i ↦ by ext x; apply fac'_apply) (fun s m hm ↦ by
     ext x
     exact congr_fun (hm (index d x)) ⟨x.1, mem d x⟩)
+
+end
+
+section
+
+variable {X₁ X₂ X₃ X₄ X₅ : Type u} {t : X₁ ⟶ X₂} {r : X₂ ⟶ X₄}
+  {l : X₁ ⟶ X₃} {b : X₃ ⟶ X₄}
+
+lemma eq_or_eq_of_isPushout (h : IsPushout t l r b)
+    (x₄ : X₄) : (∃ x₂, x₄ = r x₂) ∨ ∃ x₃, x₄ = b x₃ := by
+  obtain ⟨j, x, rfl⟩ := jointly_surjective_of_isColimit h.isColimit x₄
+  obtain (_ | _ | _) := j
+  · exact Or.inl ⟨t x, by simp⟩
+  · exact Or.inl ⟨x, rfl⟩
+  · exact Or.inr ⟨x, rfl⟩
+
+lemma eq_or_eq_of_isPushout' (h : IsPushout t l r b)
+    (x₄ : X₄) : (∃ x₂, x₄ = r x₂) ∨ ∃ x₃, x₄ = b x₃ ∧ x₃ ∉ Set.range l := by
+  obtain h₁ | ⟨x₃, hx₃⟩ := eq_or_eq_of_isPushout h x₄
+  · refine Or.inl h₁
+  · by_cases h₂ : x₃ ∈ Set.range l
+    · obtain ⟨x₁, rfl⟩ := h₂
+      exact Or.inl ⟨t x₁, by simpa only [hx₃] using congr_fun h.w.symm x₁⟩
+    · exact Or.inr ⟨x₃, hx₃, h₂⟩
+
+lemma ext_of_isPullback (h : IsPullback t l r b) {x₁ y₁ : X₁}
+    (h₁ : t x₁ = t y₁) (h₂ : l x₁ = l y₁) : x₁ = y₁ := by
+  apply (h.isLimit.conePointUniqueUpToIso
+    (Types.pullbackLimitCone _ _).isLimit).toEquiv.injective
+  dsimp; ext <;> assumption
+
+lemma exists_of_isPullback (h : IsPullback t l r b)
+    (x₂ : X₂) (x₃ : X₃) (hx : r x₂ = b x₃) :
+    ∃ x₁, x₂ = t x₁ ∧ x₃ = l x₁ := by
+  let e := PullbackCone.IsLimit.equivPullbackObj h.isLimit
+  obtain ⟨x₁, hx₁⟩ := e.surjective ⟨⟨x₂, x₃⟩, hx⟩
+  rw [Subtype.ext_iff] at hx₁
+  exact ⟨x₁, congr_arg _root_.Prod.fst hx₁.symm,
+    congr_arg _root_.Prod.snd hx₁.symm⟩
+
+open MorphismProperty
+
+lemma mono_of_isPushout_of_isPullback (h₁ : IsPushout t l r b)
+    {r' : X₂ ⟶ X₅} {b' : X₃ ⟶ X₅} (h₂ : IsPullback t l r' b')
+    (facr : r ≫ k = r') (facb : b ≫ k = b') [hr' : Mono r']
+    (H : ∀ (x₃ y₃ : X₃) (_ : x₃ ∉ Set.range l)
+      (_ : y₃ ∉ Set.range l), b' x₃ = b' y₃ → x₃ = y₃) :
+    Mono k := by
+  subst facr facb
+  have hl : Mono l := (monomorphisms _).of_isPullback h₂ (.infer_property _)
+  rw [mono_iff_injective] at hr' hl ⊢
+  have w := congr_fun h₁.w
+  dsimp at w
+  intro x₃ y₃ eq
+  obtain (⟨x₂, rfl⟩ | ⟨x₃, rfl, hx₃⟩) := eq_or_eq_of_isPushout' h₁ x₃ <;>
+  obtain (⟨y₂, rfl⟩ | ⟨y₃, rfl, hy₃⟩) := eq_or_eq_of_isPushout' h₁ y₃
+  · obtain rfl : x₂ = y₂ := hr' eq
+    rfl
+  · obtain ⟨x₁, rfl, rfl⟩ := exists_of_isPullback h₂ x₂ y₃ eq
+    rw [w]
+  · obtain ⟨x₁, rfl, rfl⟩ := exists_of_isPullback h₂ y₂ x₃ eq.symm
+    rw [w]
+  · obtain rfl := H x₃ y₃ hx₃ hy₃ eq
+    rfl
+
+lemma isPushout_of_isPullback_of_mono
+    {r' : X₂ ⟶ X₅} {b' : X₃ ⟶ X₅} (h₁ : IsPullback t l r' b')
+    (facr : r ≫ k = r') (facb : b ≫ k = b') [Mono r'] [Mono k]
+    (h₂ : Set.range r ⊔ Set.range b = Set.univ)
+    (H : ∀ (x₃ y₃ : X₃) (_ : x₃ ∉ Set.range l)
+      (_ : y₃ ∉ Set.range l), b' x₃ = b' y₃ → x₃ = y₃) :
+    IsPushout t l r b := by
+  let φ : pushout t l ⟶ X₄ := pushout.desc r b
+    (by simp only [← cancel_mono k, Category.assoc, facr, facb, h₁.w])
+  have hφ₁ : pushout.inl t l ≫ φ = r := by simp [φ]
+  have hφ₂ : pushout.inr t l ≫ φ = b := by simp [φ]
+  have := mono_of_isPushout_of_isPullback (IsPushout.of_hasPushout t l) h₁
+    (k := φ ≫ k) (by simp [φ, facr]) (by simp [φ, facb]) H
+  have := mono_of_mono φ k
+  have : Epi φ := by
+    rw [epi_iff_surjective]
+    intro x₄
+    have hx₄ := Set.mem_univ x₄
+    simp only [← h₂, Set.sup_eq_union, Set.mem_union, Set.mem_range] at hx₄
+    obtain (⟨x₂, rfl⟩ | ⟨x₃, rfl⟩) := hx₄
+    · exact ⟨_, congr_fun hφ₁ x₂⟩
+    · exact ⟨_, congr_fun hφ₂ x₃⟩
+  have := isIso_of_mono_of_epi φ
+  exact IsPushout.of_iso (IsPushout.of_hasPushout t l)
+    (Iso.refl _) (Iso.refl _) (Iso.refl _) (asIso φ) (by simp) (by simp)
+    (by simp [φ]) (by simp [φ])
+
+end
+
+lemma isPullback_iff {X₁ X₂ X₃ X₄ : Type u} (t : X₁ ⟶ X₂) (l : X₁ ⟶ X₃) (r : X₂ ⟶ X₄)
+    (b : X₃ ⟶ X₄) :
+  IsPullback t l r b ↔ t ≫ r = l ≫ b ∧
+    (∀ x₁ y₁, t x₁ = t y₁ ∧ l x₁ = l y₁ → x₁ = y₁) ∧
+    ∀ x₂ x₃, r x₂ = b x₃ → ∃ x₁, x₂ = t x₁ ∧ x₃ = l x₁ := by
+  constructor
+  · intro h
+    exact ⟨h.w, fun x₁ y₁ ⟨h₁, h₂⟩ ↦ ext_of_isPullback h h₁ h₂, exists_of_isPullback h⟩
+  · rintro ⟨w, h₁, h₂⟩
+    let φ : X₁ ⟶ PullbackObj r b := fun x₁ ↦ ⟨⟨t x₁, l x₁⟩, congr_fun w x₁⟩
+    have hφ : IsIso φ := by
+      rw [isIso_iff_bijective]
+      constructor
+      · intro x₁ y₁ h
+        rw [Subtype.ext_iff, _root_.Prod.ext_iff] at h
+        exact h₁ _ _ h
+      · rintro ⟨⟨x₂, x₃⟩, h⟩
+        obtain ⟨x₁, rfl, rfl⟩ := h₂ x₂ x₃ h
+        exact ⟨x₁, rfl⟩
+    exact ⟨⟨w⟩, ⟨IsLimit.ofIsoLimit ((Types.pullbackLimitCone r b).isLimit)
+      (PullbackCone.ext (asIso φ)).symm⟩⟩
+
+lemma isPullback_of_eq_setPreimage {X Y : Type u} (f : X ⟶ Y) (B : Set Y) {A : Set X}
+    (hA : A = B.preimage f) :
+    IsPullback (fun (⟨a, ha⟩ : A) ↦ (⟨f a, by simpa [hA] using ha⟩ : B))
+      Subtype.val Subtype.val f:= by
+  rw [isPullback_iff]
+  refine ⟨rfl, ?_, ?_⟩
+  · rintro ⟨x₁, _⟩ ⟨_, _⟩ ⟨_, rfl⟩
+    rfl
+  · rintro ⟨_, hx₃⟩ x₃ rfl
+    exact ⟨⟨x₃, by rwa [hA]⟩, rfl, rfl⟩
 
 end Types
 
