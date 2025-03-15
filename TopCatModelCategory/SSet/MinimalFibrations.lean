@@ -533,7 +533,7 @@ lemma exists_maximal_extension : ∃ (f : selection.Extension), IsMax f := by
     simp [this, ch]
 
 variable {selection} in
-lemma Extension.A_eq_top_of_isMax (f : selection.Extension)
+lemma Extension.A_eq_top_of_isMax [Fibration p] (f : selection.Extension)
     (hf : IsMax f) : f.A = ⊤ := by
   by_contra!
   obtain ⟨A', lt, n, t, b, isPushout⟩ :=
@@ -545,6 +545,8 @@ lemma Extension.A_eq_top_of_isMax (f : selection.Extension)
       ι₁ ≫ α = b ≫ A'.ι ∧
       α ≫ p = fst _ _ ≫ b ≫ A'.ι ≫ p ∧
       ι₀ ≫ α = β ≫ Subpresheaf.ι selection.subcomplex := by
+    have := exist_path_composition_above_of_fibration
+      (ihomToPullback (subcomplexBoundary n).ι p)
     sorry
   obtain ⟨h, h₁, h₂⟩ := (isPushout.map (tensorRight Δ[1])).exists_desc f.h α hα₁.symm
   obtain ⟨r, hr₁, hr₂⟩ := isPushout.exists_desc f.r β hβ.symm
@@ -579,16 +581,18 @@ lemma Extension.A_eq_top_of_isMax (f : selection.Extension)
           exact hα₃ }
   simpa using lt_of_lt_of_le lt ((hf (show f ≤ f' from ⟨lt.le, h₁.symm⟩)).1)
 
-lemma exists_extension : ∃ (f : selection.Extension), f.A = ⊤ := by
+lemma exists_extension [Fibration p] : ∃ (f : selection.Extension), f.A = ⊤ := by
   obtain ⟨f, hf⟩ := selection.exists_maximal_extension
   exact ⟨f, f.A_eq_top_of_isMax hf⟩
 
-noncomputable def extension : selection.Extension := selection.exists_extension.choose
+noncomputable def extension [Fibration p] : selection.Extension :=
+  selection.exists_extension.choose
 
 @[simp]
-lemma extension_A : selection.extension.A = ⊤ := selection.exists_extension.choose_spec
+lemma extension_A [Fibration p] : selection.extension.A = ⊤ :=
+  selection.exists_extension.choose_spec
 
-noncomputable def relativeDeformationRetract :
+noncomputable def relativeDeformationRetract [Fibration p] :
     selection.subcomplex.RelativeDeformationRetract p where
   i := selection.subcomplex.ι
   i_eq_ι := rfl
