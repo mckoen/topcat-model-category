@@ -440,4 +440,37 @@ lemma exist_path_composition_above_of_fibration
     rw [this]
   · rw [Category.assoc, sq.fac_right]
 
+lemma exist_path_composition_above_of_fibration'
+    (p : X ⟶ Y) [Fibration p] (x₀₁ x₁₂ : Δ[1] ⟶ X) (b : Y _[0])
+    (h : standardSimplex.map (SimplexCategory.δ 0) ≫ x₀₁ =
+      standardSimplex.map (SimplexCategory.δ 1) ≫ x₁₂)
+    (hx : x₀₁ ≫ p = const b) :
+    ∃ (x₀₂ : Δ[1] ⟶ X),
+      standardSimplex.map (SimplexCategory.δ 1) ≫ x₀₂ =
+        standardSimplex.map (SimplexCategory.δ 1) ≫ x₀₁ ∧
+      standardSimplex.map (SimplexCategory.δ 0) ≫ x₀₂ =
+        standardSimplex.map (SimplexCategory.δ 0) ≫ x₁₂ ∧
+        x₀₂ ≫ p = x₁₂ ≫ p := by
+  obtain ⟨x₀₂, eq₁, eq₂, eq₃⟩ := exist_path_composition_above_of_fibration p x₀₁ x₁₂ h
+    (standardSimplex.map (SimplexCategory.σ 0) ≫ x₁₂ ≫ p) (by
+      have := h =≫ p
+      simp only [Category.assoc] at this
+      rw [← Functor.map_comp_assoc]
+      have := SimplexCategory.δ_comp_σ_of_gt (n := 0) (i := 1) (j := 0) (by simp)
+      dsimp at this
+      rw [this, Functor.map_comp_assoc, ← reassoc_of% h, hx, comp_const, comp_const]) (by
+      have := SimplexCategory.δ_comp_σ_self (n := 1) (i := 0)
+      dsimp at this
+      rw [← Functor.map_comp_assoc, this, CategoryTheory.Functor.map_id, Category.id_comp])
+  refine ⟨x₀₂, eq₁, eq₂, ?_⟩
+  have := SimplexCategory.δ_comp_σ_succ (n := 1) (i := 0)
+  dsimp at this
+  rw [eq₃, ← Functor.map_comp_assoc, this, CategoryTheory.Functor.map_id, Category.id_comp]
+
+lemma homotopy_extension_property₁ {K L : SSet.{u}} (i : K ⟶ L)
+    (hE : K ⊗ Δ[1] ⟶ E) (f : L ⟶ E) (h₁ : i ≫ f = ι₁ ≫ hE)
+    (hB : L ⊗ Δ[1] ⟶ B) (h₂ : ι₁ ≫ hB = f ≫ p) (h₃ : i ▷ _ ≫ hB = hE ≫ p) :
+    ∃ l : L ⊗ Δ[1] ⟶ E, ι₁ ≫ l = f ∧ i ▷ _ ≫ l = hE ∧ l ≫ p = hB := by
+  sorry
+
 end SSet
