@@ -20,24 +20,24 @@ variable {m n : SimplexCategoryᵒᵖ} (f : m ⟶ n) (z : (X ⊗ Y).obj m)
 
 end
 
-@[simp] lemma prod_δ_fst {n : ℕ} (i : Fin (n + 2)) (z : (X ⊗ Y : SSet.{u}) _[n + 1]) :
+@[simp] lemma prod_δ_fst {n : ℕ} (i : Fin (n + 2)) (z : (X ⊗ Y : SSet.{u}) _⦋n + 1⦌) :
     ((X ⊗ Y).δ i z).1 = X.δ i z.1 := rfl
-@[simp] lemma prod_δ_snd {n : ℕ} (i : Fin (n + 2)) (z : (X ⊗ Y : SSet.{u}) _[n + 1]) :
+@[simp] lemma prod_δ_snd {n : ℕ} (i : Fin (n + 2)) (z : (X ⊗ Y : SSet.{u}) _⦋n + 1⦌) :
     ((X ⊗ Y).δ i z).2 = Y.δ i z.2 := rfl
-@[simp] lemma prod_σ_fst {n : ℕ} (i : Fin (n + 1)) (z : (X ⊗ Y : SSet.{u}) _[n]) :
+@[simp] lemma prod_σ_fst {n : ℕ} (i : Fin (n + 1)) (z : (X ⊗ Y : SSet.{u}) _⦋n⦌) :
     ((X ⊗ Y).σ i z).1 = X.σ i z.1 := rfl
-@[simp] lemma prod_σ_snd {n : ℕ} (i : Fin (n + 1)) (z : (X ⊗ Y : SSet.{u}) _[n]) :
+@[simp] lemma prod_σ_snd {n : ℕ} (i : Fin (n + 1)) (z : (X ⊗ Y : SSet.{u}) _⦋n⦌) :
     ((X ⊗ Y).σ i z).2 = Y.σ i z.2 := rfl
 
 end
 
-namespace standardSimplex
+namespace stdSimplex
 
 lemma objMk_injective {n : SimplexCategory} {m : SimplexCategoryᵒᵖ} :
     Function.Injective (objMk (n := n) (m := m)) := fun _ _ ↦
-  congr_arg (SimplexCategory.Hom.toOrderHom ∘ objEquiv _ _)
+  congr_arg (SimplexCategory.Hom.toOrderHom ∘ objEquiv)
 
-def objMk₁ {n : ℕ} (i : Fin (n + 2)) : Δ[1] _[n] :=
+def objMk₁ {n : ℕ} (i : Fin (n + 2)) : Δ[1] _⦋n⦌ :=
   objMk
     { toFun j := if j.castSucc < i then 0 else 1
       monotone' j₁ j₂ h := by
@@ -146,7 +146,7 @@ lemma objMk₁_surjective {n : ℕ} : Function.Surjective (objMk₁ (n := n)) :=
         not_lt] at h
       obtain ⟨j, hj, hij⟩ := h
       replace hj : f j = 1 := by simpa [S] using hj
-      have : f j ≤ f i := (objEquiv _ _ f).toOrderHom.monotone hij
+      have : f j ≤ f i := (objEquiv f).toOrderHom.monotone hij
       exact le_antisymm (by simpa [hj] using this) (by omega)
   · refine ⟨Fin.last _, ?_⟩
     ext i : 1
@@ -157,44 +157,44 @@ lemma objMk₁_surjective {n : ℕ} : Function.Surjective (objMk₁ (n := n)) :=
     · simp [hj]
     · exact (hS ⟨i, by simpa [S]⟩).elim
 
-end standardSimplex
+end stdSimplex
 
-namespace prodStandardSimplex
+namespace prodStdSimplex
 
 variable {p q : ℕ}
 
 def objEquiv {n : ℕ} :
-    (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n] ≃ (Fin (n + 1) →o Fin (p + 1) × Fin (q + 1)) where
+    (Δ[p] ⊗ Δ[q] : SSet.{u}) _⦋n⦌ ≃ (Fin (n + 1) →o Fin (p + 1) × Fin (q + 1)) where
   toFun := fun ⟨x, y⟩ ↦ OrderHom.prod
-      ((standardSimplex.objEquiv [p] (op [n]) x).toOrderHom)
-      ((standardSimplex.objEquiv [q] (op [n]) y).toOrderHom)
+      ((stdSimplex.objEquiv x).toOrderHom)
+      ((stdSimplex.objEquiv y).toOrderHom)
   invFun f :=
-    ⟨(standardSimplex.objEquiv [p] (op [n])).symm
+    ⟨stdSimplex.objEquiv.symm
       (SimplexCategory.Hom.mk (OrderHom.fst.comp f)),
-      (standardSimplex.objEquiv [q] (op [n])).symm
+      stdSimplex.objEquiv.symm
       (SimplexCategory.Hom.mk (OrderHom.snd.comp f))⟩
   left_inv := fun ⟨x, y⟩ ↦ by simp
   right_inv _ := rfl
 
 @[simp]
-lemma objEquiv_apply_fst {n : ℕ} (x : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) (i : Fin (n + 1)) :
+lemma objEquiv_apply_fst {n : ℕ} (x : (Δ[p] ⊗ Δ[q] : SSet.{u}) _⦋n⦌) (i : Fin (n + 1)) :
     (objEquiv x i).1 = x.1 i := rfl
 
 @[simp]
-lemma objEquiv_apply_snd {n : ℕ} (x : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) (i : Fin (n + 1)) :
+lemma objEquiv_apply_snd {n : ℕ} (x : (Δ[p] ⊗ Δ[q] : SSet.{u}) _⦋n⦌) (i : Fin (n + 1)) :
     (objEquiv x i).2 = x.2 i := rfl
 
-lemma objEquiv_naturality {m n : ℕ} (f : ([m] : SimplexCategory) ⟶ [n])
-    (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) :
+lemma objEquiv_naturality {m n : ℕ} (f : ⦋m⦌ ⟶ ⦋n⦌)
+    (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _⦋n⦌) :
     (objEquiv z).comp f.toOrderHom = objEquiv ((Δ[p] ⊗ Δ[q]).map f.op z) :=
   rfl
 
 lemma objEquiv_map_apply {n m : ℕ}
-    (x : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) (f : ([m] : SimplexCategory) ⟶ [n]) (i : Fin (m + 1)) :
+    (x : (Δ[p] ⊗ Δ[q] : SSet.{u}) _⦋n⦌) (f : ⦋m⦌ ⟶ ⦋n⦌) (i : Fin (m + 1)) :
       objEquiv ((Δ[p] ⊗ Δ[q]).map f.op x) i =  objEquiv x (f.toOrderHom i) :=
   rfl
 
-def obj₀Equiv : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[0] ≃ Fin (p + 1) × Fin (q + 1) :=
+def obj₀Equiv : (Δ[p] ⊗ Δ[q] : SSet.{u}) _⦋0⦌ ≃ Fin (p + 1) × Fin (q + 1) :=
   objEquiv.trans Fin.oneOrderHomEquiv
 
 noncomputable abbrev subsimplex {n : ℕ} (f : Fin (n + 1) →o Fin (p + 1) × Fin (q + 1)) :
@@ -202,23 +202,24 @@ noncomputable abbrev subsimplex {n : ℕ} (f : Fin (n + 1) →o Fin (p + 1) × F
   Subcomplex.ofSimplex (objEquiv.symm f)
 
 lemma subsimplex_obj_zero {n : ℕ} (f : Fin (n + 1) →o Fin (p + 1) × Fin (q + 1)) :
-    (subsimplex f).obj (op [0]) =
+    (subsimplex f).obj (op ⦋0⦌) =
       Set.image (obj₀Equiv.{u}).symm (Set.range f) := by
   ext x
   simp [subsimplex]
+  rw [mem_ofSimplex_obj_iff']
   constructor
-  · rintro ⟨x, rfl⟩
-    obtain ⟨i, rfl⟩ := standardSimplex.obj₀Equiv.symm.surjective x
+  · rintro ⟨y, rfl⟩
+    obtain ⟨i, rfl⟩ := stdSimplex.obj₀Equiv.symm.surjective y
     exact ⟨i, rfl⟩
   · rintro ⟨i, hx⟩
-    exact ⟨standardSimplex.obj₀Equiv.symm i, obj₀Equiv.injective (by rw [← hx]; rfl)⟩
+    exact ⟨stdSimplex.obj₀Equiv.symm i, obj₀Equiv.injective (by rw [← hx]; rfl)⟩
 
 lemma mem_subsimplex_iff {n : ℕ} (f : Fin (n + 1) →o Fin (p + 1) × Fin (q + 1)) {m : ℕ}
     (x : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[m]) :
     x ∈ (subsimplex f).obj _ ↔ Set.range (objEquiv x) ⊆ Set.range f := by
   constructor
   · rintro ⟨x, rfl⟩ _ ⟨i, rfl⟩
-    obtain ⟨g, rfl⟩ := (standardSimplex.objEquiv _ _).symm.surjective x
+    obtain ⟨g, rfl⟩ := (stdSimplex.objEquiv _ _).symm.surjective x
     exact ⟨g.toOrderHom i, rfl⟩
   · intro hf
     let S (i : Fin (m + 1)) : Finset (Fin (n + 1)) := { j | f j = objEquiv x i }
@@ -228,7 +229,7 @@ lemma mem_subsimplex_iff {n : ℕ} (f : Fin (n + 1) →o Fin (p + 1) × Fin (q +
     let φ (i : Fin (m + 1)) : Fin (n + 1) := (S i).min' (hS i)
     have hφ (i : Fin (m + 1)) : f (φ i) = objEquiv x i := by
       simpa [S] using (S i).min'_mem (hS i)
-    refine ⟨standardSimplex.objMk { toFun := φ, monotone' := ?_ }, ?_⟩
+    refine ⟨stdSimplex.objMk { toFun := φ, monotone' := ?_ }, ?_⟩
     · intro i₁ i₂ h₁
       obtain h₂ | h₂ := ((objEquiv x).monotone h₁).lt_or_eq
       · simp only [← hφ] at h₂
@@ -292,7 +293,7 @@ lemma non_degenerate_iff' (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _[n]) :
       Function.Injective (((SSet.yonedaEquiv _ _ ).symm z).app (op [0])) := by
   have this : ((((Δ[p] ⊗ Δ[q]).yonedaEquiv [n]).symm z).app (op [0])) =
       obj₀Equiv.{u}.invFun.comp ((objEquiv z).toFun.comp
-        standardSimplex.obj₀Equiv.{u}.toFun) := by
+        stdSimplex.obj₀Equiv.{u}.toFun) := by
     ext i
     exact obj₀Equiv.injective (by rfl)
   simp [objEquiv_non_degenerate_iff, this]
@@ -396,8 +397,8 @@ lemma _root_.Fin.prod_lt_last_last_iff (i : Fin (p + 1) × Fin (q + 1)) :
     · exact Or.inr ⟨by rw [h₁], by simpa [h₁] using h⟩
 
 lemma _root_.SSet.yonedaEquiv_symm_app_apply {X : SSet.{u}} {n : SimplexCategoryᵒᵖ}
-    (x : X.obj n) {m : SimplexCategoryᵒᵖ} (y : (standardSimplex.obj n.unop).obj m) :
-    ((X.yonedaEquiv n.unop).symm x).app m y = X.map (standardSimplex.objEquiv _ _ y).op x :=
+    (x : X.obj n) {m : SimplexCategoryᵒᵖ} (y : (stdSimplex.obj n.unop).obj m) :
+    ((X.yonedaEquiv n.unop).symm x).app m y = X.map (stdSimplex.objEquiv _ _ y).op x :=
   rfl
 
 lemma _root_.Fin.prod_exists_intermediate (k₀ k₂ : Fin (p + 1) × Fin (q + 1))
@@ -444,7 +445,7 @@ lemma nondegenerate_mem_ofSimplex_aux {d : ℕ}
               using S.min'_mem hS)
       exact ⟨⟨_, (objEquiv_non_degenerate_iff
         (objEquiv.{u}.symm ⟨_, h.monotone⟩)).2 h.injective⟩,
-        (standardSimplex.objEquiv _ _).symm
+        (stdSimplex.objEquiv _ _).symm
           (SimplexCategory.δ 0), objEquiv.injective rfl⟩
     · obtain ⟨k, hk₁, hk₂⟩ := Fin.prod_exists_intermediate (objEquiv x.1 i₀.castSucc)
         (objEquiv x.1 i₀.succ) ((objEquiv x.1).monotone i₀.castSucc_le_succ) (by
@@ -459,7 +460,7 @@ lemma nondegenerate_mem_ofSimplex_aux {d : ℕ}
         (strictMono_of_nonDegenerate x) i₀ k hk₁ hk₂
       refine ⟨⟨_, (objEquiv_non_degenerate_iff
         (objEquiv.{u}.symm ⟨_, h.monotone⟩)).2 h.injective⟩,
-        (standardSimplex.objEquiv _ _).symm
+        (stdSimplex.objEquiv _ _).symm
           (SimplexCategory.δ i₀.succ.castSucc), objEquiv.injective ?_⟩
       ext j : 2
       rw [SSet.yonedaEquiv_symm_app_apply, Equiv.apply_symm_apply, objEquiv_map_apply,
@@ -474,7 +475,7 @@ lemma nondegenerate_mem_ofSimplex_aux {d : ℕ}
         simpa [← hS, S] using Finset.not_mem_empty (Fin.last d))
     refine ⟨⟨_, (objEquiv_non_degenerate_iff
       (objEquiv.{u}.symm ⟨_, h.monotone⟩)).2 h.injective⟩,
-      (standardSimplex.objEquiv _ _).symm
+      (stdSimplex.objEquiv _ _).symm
         (SimplexCategory.δ (Fin.last _)), objEquiv.injective ?_⟩
     ext j : 2
     rw [SSet.yonedaEquiv_symm_app_apply, Equiv.apply_symm_apply, objEquiv_map_apply,
@@ -530,7 +531,7 @@ instance {k : ℕ} (x : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonDegenerate k) :
 noncomputable def isoOfNonDegenerate
     {k : ℕ} (x : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonDegenerate k) :
     Δ[k] ≅ Subcomplex.ofSimplex x.1 :=
-  standardSimplex.isoOfRepresentableBy
+  stdSimplex.isoOfRepresentableBy
     (Subcomplex.ofSimplexRepresentableBy x.1)
 
 @[reassoc (attr := simp)]
@@ -541,13 +542,13 @@ lemma isoOfNonDegenerate_hom_ι {k : ℕ} (x : (Δ[p] ⊗ Δ[q] : SSet.{u}).NonD
 namespace nonDegenerateEquiv₁
 
 def toFun (i : Fin (q + 1)) : (Δ[1] ⊗ Δ[q]).NonDegenerate (q + 1) :=
-  ⟨⟨standardSimplex.objMk₁ i.succ.castSucc,
-    (standardSimplex.objEquiv _ _).symm (SimplexCategory.σ i)⟩, by
+  ⟨⟨stdSimplex.objMk₁ i.succ.castSucc,
+    (stdSimplex.objEquiv _ _).symm (SimplexCategory.σ i)⟩, by
       rw [objEquiv_non_degenerate_iff, Fin.orderHom_injective_iff]
       intro j h
       have h₁ := congr_arg Prod.fst h
       have h₂ := congr_arg Prod.snd h
-      simp [objEquiv, standardSimplex.objMk₁, SimplexCategory.σ] at h₁ h₂
+      simp [objEquiv, stdSimplex.objMk₁, SimplexCategory.σ] at h₁ h₂
       by_cases h₃ : j ≤ i
       · have h₂' := congr_arg Fin.val h₂
         rw [Fin.predAbove_of_le_castSucc _ _  h₃] at h₂'
@@ -581,9 +582,9 @@ noncomputable def nonDegenerateEquiv₁ :
   Equiv.ofBijective nonDegenerateEquiv₁.toFun (by
     constructor
     · intro i j h
-      simpa using standardSimplex.objMk₁_injective (congr_arg (Prod.fst ∘ Subtype.val) h)
+      simpa using stdSimplex.objMk₁_injective (congr_arg (Prod.fst ∘ Subtype.val) h)
     · intro x
-      obtain ⟨i, hi⟩ := standardSimplex.objMk₁_surjective x.1.1
+      obtain ⟨i, hi⟩ := stdSimplex.objMk₁_surjective x.1.1
       have hx := (non_degenerate_iff _ (add_comm 1 q)).1 x.2
       obtain ⟨i, rfl⟩ := Fin.eq_succ_of_ne_zero (i := i) (by
         rintro rfl
@@ -594,7 +595,7 @@ noncomputable def nonDegenerateEquiv₁ :
       · exact ⟨i, nonDegenerate_ext (add_comm _ _) hi⟩
       · replace hi : x.1.1 (Fin.last _) = 0 := by
           rw [hi.symm]
-          simp [standardSimplex.objMk₁, Fin.ext_iff]
+          simp [stdSimplex.objMk₁, Fin.ext_iff]
         have := DFunLike.congr_fun hx (Fin.last _)
         dsimp at this
         simp only [hi, Fin.isValue, Fin.val_zero, zero_add, Fin.ext_iff, Fin.val_last] at this
@@ -603,13 +604,13 @@ noncomputable def nonDegenerateEquiv₁ :
 @[simp]
 lemma nonDegenerateEquiv₁_fst (i : Fin (q + 1)) :
     (nonDegenerateEquiv₁ i).1.1 =
-      standardSimplex.objMk₁ i.succ.castSucc := rfl
+      stdSimplex.objMk₁ i.succ.castSucc := rfl
 
 @[simp]
 lemma nonDegenerateEquiv₁_snd (i : Fin (q + 1)) :
     (nonDegenerateEquiv₁ i).1.2 =
-      (standardSimplex.objEquiv _ _).symm (SimplexCategory.σ i) := rfl
+      (stdSimplex.objEquiv _ _).symm (SimplexCategory.σ i) := rfl
 
-end prodStandardSimplex
+end prodStdSimplex
 
 end SSet

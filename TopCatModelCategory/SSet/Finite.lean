@@ -9,20 +9,20 @@ namespace SSet
 variable (X : SSet.{u})
 
 class IsFinite : Prop where
-  finite : Finite (Σ (n : ℕ), X.NonDegenerate n)
+  finite : Finite (Σ (n : ℕ), X.nonDegenerate n)
 
 attribute [instance] IsFinite.finite
 
-instance [X.IsFinite] (n : ℕ) : Finite (X.NonDegenerate n) :=
-  Finite.of_injective (fun x ↦ (⟨n, x⟩ : Σ (d : ℕ), X.NonDegenerate d))
+instance [X.IsFinite] (n : ℕ) : Finite (X.nonDegenerate n) :=
+  Finite.of_injective (fun x ↦ (⟨n, x⟩ : Σ (d : ℕ), X.nonDegenerate d))
     (fun _ _ ↦ by simp)
 
 lemma isFinite_of_hasDimensionLT (d : ℕ) [X.HasDimensionLT d]
-    (h : ∀ (i : ℕ) (_ : i < d), Finite (X.NonDegenerate i)) :
+    (h : ∀ (i : ℕ) (_ : i < d), Finite (X.nonDegenerate i)) :
     X.IsFinite where
   finite := by
-    have (i : Fin d) : Finite (X.NonDegenerate i) := h i.1 i.2
-    apply Finite.of_surjective (α := Σ (i : Fin d), X.NonDegenerate i)
+    have (i : Fin d) : Finite (X.nonDegenerate i) := h i.1 i.2
+    apply Finite.of_surjective (α := Σ (i : Fin d), X.nonDegenerate i)
       (f := fun ⟨i, x⟩ ↦ ⟨i.1, x⟩)
     rintro ⟨j, ⟨x, hx⟩⟩
     by_cases hj : j < d
@@ -34,8 +34,8 @@ instance (n : ℕ) : (Δ[n] : SSet.{u}).IsFinite :=
 
 lemma hasDimensionLT_of_isFinite [X.IsFinite] :
     ∃ (d : ℕ), X.HasDimensionLT d := by
-  have : Fintype (Σ (n : ℕ), X.NonDegenerate n) := Fintype.ofFinite _
-  let φ : (Σ (n : ℕ), X.NonDegenerate n) → ℕ := Sigma.fst
+  have : Fintype (Σ (n : ℕ), X.nonDegenerate n) := Fintype.ofFinite _
+  let φ : (Σ (n : ℕ), X.nonDegenerate n) → ℕ := Sigma.fst
   obtain ⟨d, hd⟩ : ∃ (d : ℕ), ∀ (s : ℕ) (_ : s ∈ Finset.image φ ⊤), s < d := by
     by_cases h : (Finset.image φ ⊤).Nonempty
     · obtain ⟨d, hd⟩ := Finset.max_of_nonempty h
@@ -49,7 +49,7 @@ lemma hasDimensionLT_of_isFinite [X.IsFinite] :
       exact ⟨0, fun s hs ↦ by simp at hs⟩
   refine ⟨d, ⟨fun n hn ↦ ?_⟩⟩
   ext x
-  simp only [mem_degenerate_iff_non_mem_nondegenerate, Set.top_eq_univ,
+  simp only [mem_degenerate_iff_not_mem_nonDegenerate, Set.top_eq_univ,
     Set.mem_univ, iff_true]
   intro hx
   have := hd (φ ⟨n, ⟨x, hx⟩⟩) (by simp)
@@ -59,10 +59,10 @@ lemma hasDimensionLT_of_isFinite [X.IsFinite] :
 instance [X.IsFinite] (n : SimplexCategoryᵒᵖ) : Finite (X.obj n) := by
   obtain ⟨n⟩ := n
   induction' n using SimplexCategory.rec with n
-  let φ : (Σ (m : Fin (n + 1)) (f : ([n] : SimplexCategory) ⟶ [m.1]),
-    X.NonDegenerate m.1) → X _[n] := fun ⟨m, f, x⟩ ↦ X.map f.op x.1
+  let φ : (Σ (m : Fin (n + 1)) (f : ⦋n⦌ ⟶ ⦋m.1⦌),
+    X.nonDegenerate m.1) → X _⦋n⦌ := fun ⟨m, f, x⟩ ↦ X.map f.op x.1
   have hφ : Function.Surjective φ := fun x ↦ by
-    obtain ⟨m, f, hf, y, rfl⟩ := X.exists_non_degenerate x
+    obtain ⟨m, f, hf, y, rfl⟩ := X.exists_nonDegenerate x
     have := SimplexCategory.le_of_epi hf
     exact ⟨⟨⟨m, by omega⟩, f, y⟩, rfl⟩
   exact Finite.of_surjective _ hφ
