@@ -6,7 +6,7 @@ universe u
 
 open CategoryTheory Limits HomotopicalAlgebra
 
-namespace TopCat
+/-namespace TopCat
 
 namespace RelativeCWComplex
 
@@ -35,4 +35,4 @@ open RelativeCWComplex in
 abbrev RelativeCWComplex {X Y : TopCat.{u}} (f : X ⟶ Y) := RelativeCellComplex basicCell f
 abbrev CWComplex (X : TopCat.{u}) := RelativeCWComplex (initial.to X)
 
-end TopCat
+end TopCat-/

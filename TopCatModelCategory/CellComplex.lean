@@ -6,7 +6,7 @@ universe w t w' v u
 
 open CategoryTheory Limits Category
 
-namespace CategoryTheory
+/-namespace CategoryTheory
 
 variable {C : Type u} [Category.{v} C]
   (J : Type w') [LinearOrder J] [OrderBot J]
@@ -95,4 +95,4 @@ lemma hom_ext {Z : C} {φ₁ φ₂ : Y ⟶ Z} (h₀ : f ≫ φ₁ = f ≫ φ₂)
 
 end RelativeCellComplex
 
-end HomotopicalAlgebra
+end HomotopicalAlgebra-/

@@ -1,9 +1,10 @@
 import TopCatModelCategory.ColimitsType
 import Mathlib.CategoryTheory.Limits.TypesFiltered
+import Mathlib.CategoryTheory.Limits.Set
 
 open CategoryTheory Limits
 
-namespace CompleteLattice
+/-namespace CompleteLattice
 
 variable {J : Type*} [Category J] {X : Type*} [CompleteLattice X]
   (F : J ⥤ X)
@@ -30,7 +31,7 @@ end CompleteLattice
 namespace Set
 
 instance {J : Type*} [Category J] {X : Type*} [IsFilteredOrEmpty J] :
-    PreservesColimitsOfShape J (toTypes (X := X)) where
+    PreservesColimitsOfShape J (functorToTypes (X := X)) where
   preservesColimit {F} := by
     apply preservesColimit_of_preserves_colimit_cocone (CompleteLattice.isColimitCocone F)
     apply Types.FilteredColimit.isColimitOf
@@ -42,4 +43,4 @@ instance {J : Type*} [Category J] {X : Type*} [IsFilteredOrEmpty J] :
       obtain rfl : x = y := by simpa using h
       exact ⟨IsFiltered.max i j, IsFiltered.leftToMax i j, IsFiltered.rightToMax i j, rfl⟩
 
-end Set
+end Set-/

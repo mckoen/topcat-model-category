@@ -8,7 +8,7 @@ namespace SSet
 
 @[mk_iff]
 class HasDimensionLT (X : SSet.{u}) (d : ℕ) : Prop where
-  degenerate_eq_top (n : ℕ) (hn : d ≤ n) : X.Degenerate n = ⊤
+  degenerate_eq_top (n : ℕ) (hn : d ≤ n) : X.degenerate n = ⊤
 
 abbrev HasDimensionLE (X : SSet.{u}) (d : ℕ) := X.HasDimensionLT (d + 1)
 
@@ -16,19 +16,19 @@ section
 
 variable (X : SSet.{u}) (d : ℕ) [X.HasDimensionLT d] (n : ℕ)
 
-lemma degenerate_eq_top_of_hasDimensionLT (hn : d ≤ n) : X.Degenerate n = ⊤ :=
+lemma degenerate_eq_top_of_hasDimensionLT (hn : d ≤ n) : X.degenerate n = ⊤ :=
   HasDimensionLT.degenerate_eq_top n hn
 
-lemma nondegenerate_eq_bot_of_hasDimensionLT (hn : d ≤ n) : X.NonDegenerate n = ⊥ := by
-  simp [NonDegenerate, X.degenerate_eq_top_of_hasDimensionLT d n hn]
+lemma nondegenerate_eq_bot_of_hasDimensionLT (hn : d ≤ n) : X.nonDegenerate n = ⊥ := by
+  simp [nonDegenerate, X.degenerate_eq_top_of_hasDimensionLT d n hn]
 
-lemma dim_lt_of_nondegenerate {n : ℕ} (x : X.NonDegenerate n) (d : ℕ)
+lemma dim_lt_of_nondegenerate {n : ℕ} (x : X.nonDegenerate n) (d : ℕ)
     [X.HasDimensionLT d] : n < d := by
   by_contra!
   obtain ⟨x, hx⟩ := x
   simp [X.nondegenerate_eq_bot_of_hasDimensionLT d n this] at hx
 
-lemma dim_le_of_nondegenerate {n : ℕ} (x : X.NonDegenerate n) (d : ℕ)
+lemma dim_le_of_nondegenerate {n : ℕ} (x : X.nonDegenerate n) (d : ℕ)
     [X.HasDimensionLE d] : n ≤ d :=
   Nat.le_of_lt_succ (X.dim_lt_of_nondegenerate x (d + 1))
 
@@ -48,7 +48,7 @@ instance (d : ℕ) [X.HasDimensionLT d] : HasDimensionLT A d where
     simp [A.mem_degenerate_iff, X.degenerate_eq_top_of_hasDimensionLT d n hd]
 
 lemma eq_top_iff_of_hasDimensionLT (d : ℕ) [X.HasDimensionLT d] :
-    A = ⊤ ↔ ∀ (i : ℕ) (_ : i < d), X.NonDegenerate i ⊆ A.obj _ := by
+    A = ⊤ ↔ ∀ (i : ℕ) (_ : i < d), X.nonDegenerate i ⊆ A.obj _ := by
   constructor
   · rintro rfl
     simp
@@ -79,7 +79,7 @@ lemma hasDimensionLT_of_epi {X Y : SSet.{u}} (f : X ⟶ Y) [Epi f] (d : ℕ)
   degenerate_eq_top n hn := by
     ext y
     simp only [Set.top_eq_univ, Set.mem_univ, iff_true]
-    obtain ⟨x, rfl⟩ := epi_iff_surjective (f := (f.app (op [n]))).1 inferInstance y
+    obtain ⟨x, rfl⟩ := epi_iff_surjective (f := (f.app (op ⦋n⦌))).1 inferInstance y
     apply degenerate_map
     simp [X.degenerate_eq_top_of_hasDimensionLT d n hn]
 

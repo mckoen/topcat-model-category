@@ -2,14 +2,16 @@ import Mathlib.CategoryTheory.Limits.Shapes.Pullback.CommSq
 import Mathlib.CategoryTheory.Limits.Shapes.Multiequalizer
 import Mathlib.CategoryTheory.Limits.Shapes.Types
 import Mathlib.CategoryTheory.MorphismProperty.Limits
+import Mathlib.Order.CompleteLattice.MulticoequalizerDiagram
 import Mathlib.Data.Set.Lattice
+import Mathlib.Data.Set.FunctorToTypes
 import TopCatModelCategory.Multiequalizer
 
 universe v u
 
 open CategoryTheory Limits
 
-namespace Lattice
+/-namespace Lattice
 
 variable {T : Type u} (x₁ x₂ x₃ x₄ : T) [Lattice T]
 
@@ -33,12 +35,9 @@ lemma commSq : CommSq (homOfLE sq.le₁₂) (homOfLE sq.le₁₃)
 
 end BicartSq
 
-end Lattice
+end Lattice-/
 
-@[simps obj map]
-def Set.toTypes {X : Type u} : Set X ⥤ Type u where
-  obj S := S
-  map {S T} f := fun ⟨x, hx⟩ ↦ ⟨x, leOfHom f hx⟩
+@[deprecated (since := "2025-03-18")] alias Set.toTypes := Set.functorToTypes
 
 namespace CategoryTheory.Limits.Types
 
@@ -54,9 +53,9 @@ def pushoutCoconeOfPullbackSets :
       (fun ⟨a', ha'⟩ ↦ ⟨f a', by
         rw [hA'] at ha'
         exact ha'.1⟩ : _ ⟶ (A : Type u) )
-      (Set.toTypes.map (homOfLE (by rw [hA']; exact inf_le_right)) : (A' : Type u) ⟶ B') :=
+      (Set.functorToTypes.map (homOfLE (by rw [hA']; exact inf_le_right)) : (A' : Type u) ⟶ B') :=
   PushoutCocone.mk (W := (B : Type u))
-    (Set.toTypes.map (homOfLE (by rw [hB]; exact le_sup_left)) : (A : Type u) ⟶ B)
+    (Set.functorToTypes.map (homOfLE (by rw [hB]; exact le_sup_left)) : (A : Type u) ⟶ B)
     (fun ⟨b', hb'⟩ ↦ ⟨f b', by rw [hB]; exact Or.inr (by aesop)⟩) rfl
 
 variable (T : Set X)
@@ -69,7 +68,7 @@ noncomputable def isColimitPushoutCoconeOfPullbackSets
         rw [hA'] at ha'
         exact ha'.1⟩
   let g₂ : (A' : Type u) ⟶ B' :=
-    (Set.toTypes.map (homOfLE (by rw [hA']; exact inf_le_right)) : (A' : Type u) ⟶ B')
+    (Set.functorToTypes.map (homOfLE (by rw [hA']; exact inf_le_right)) : (A' : Type u) ⟶ B')
   have imp {b : X} (hb : b ∈ B) (hb' : b ∉ A) : b ∈ f '' B' := by
     simp only [hB, Set.sup_eq_union, Set.mem_union] at hb
     tauto
@@ -124,9 +123,9 @@ section
 variable {X : Type u} {A₁ A₂ A₃ A₄ : Set X} (sq : Lattice.BicartSq A₁ A₂ A₃ A₄)
 
 def pushoutCoconeOfBicartSqOfSets :
-    PushoutCocone (Set.toTypes.map (homOfLE sq.le₁₂))
-      (Set.toTypes.map (homOfLE sq.le₁₃)) :=
-  PushoutCocone.mk _ _ (sq.commSq.map Set.toTypes).w
+    PushoutCocone (Set.functorToTypes.map (homOfLE sq.le₁₂))
+      (Set.functorToTypes.map (homOfLE sq.le₁₃)) :=
+  PushoutCocone.mk _ _ (sq.commSq.map Set.functorToTypes).w
 
 noncomputable def isColimitPushoutCoconeOfBicartSqOfSets :
     IsColimit (pushoutCoconeOfBicartSqOfSets sq) :=
@@ -140,7 +139,7 @@ end Pushouts
 
 end CategoryTheory.Limits.Types
 
-namespace CompleteLattice
+/-namespace CompleteLattice
 
 variable {T : Type*} [CompleteLattice T] {ι : Type*} (X : T) (U : ι → T) (V : ι → ι → T)
 
@@ -201,7 +200,7 @@ def multicofork' : Multicofork d.multispanIndex' :=
 
 end MulticoequalizerDiagram
 
-end CompleteLattice
+end CompleteLattice-/
 
 namespace CategoryTheory.Limits
 
@@ -217,7 +216,7 @@ namespace isColimitMulticoforkMapSetToTypes
 include d in
 lemma exists_index (x : X) : ∃ (i : ι), x.1 ∈ U i := by
   obtain ⟨x, hx⟩ := x
-  rw [d.hX] at hx
+  rw [← d.iSup_eq] at hx
   aesop
 
 noncomputable def index (x : X) : ι := (exists_index d x).choose
@@ -226,22 +225,22 @@ lemma mem (x : X) : x.1 ∈ U (index d x) := (exists_index d x).choose_spec
 
 section
 
-variable {d} (s : Multicofork (d.multispanIndex.map Set.toTypes))
+variable {d} (s : Multicofork (d.multispanIndex.map Set.functorToTypes))
 
 noncomputable def desc (x : X) : s.pt := s.π (index d x) ⟨x, mem d x⟩
 
 lemma fac_apply (i : ι) (u : U i) :
-    desc s ⟨u, by simp only [d.hX]; aesop⟩ = s.π i u :=
+    desc s ⟨u, by simp only [← d.iSup_eq]; aesop⟩ = s.π i u :=
   congr_fun (s.condition ⟨index d _, i⟩) ⟨u, by
     dsimp
-    simp only [d.hV, Set.inf_eq_inter, Set.mem_inter_iff, Subtype.coe_prop, and_true]
+    simp only [← d.min_eq, Set.inf_eq_inter, Set.mem_inter_iff, Subtype.coe_prop, and_true]
     apply mem⟩
 
 end
 
-section
+/-section
 
-variable [LinearOrder ι] {d} (s : Multicofork (d.multispanIndex'.map Set.toTypes))
+variable [LinearOrder ι] {d} (s : Multicofork (d.multispanIndex'.map Set.functorToTypes))
 
 noncomputable def desc' (x : X) : s.pt := s.π (index d x) ⟨x, mem d x⟩
 
@@ -262,23 +261,28 @@ lemma fac'_apply (i : ι) (u : U i) :
     desc' s ⟨u, by simp only [d.hX]; aesop⟩ = s.π i u := by
   apply condition'_apply
 
-end
+end-/
 
 end isColimitMulticoforkMapSetToTypes
 
 open isColimitMulticoforkMapSetToTypes in
 noncomputable def isColimitMulticoforkMapSetToTypes :
-    IsColimit (d.multicofork.map Set.toTypes) :=
+    IsColimit (d.multicofork.map Set.functorToTypes) :=
   Multicofork.IsColimit.mk _ desc (fun s i ↦ by ext x; apply fac_apply) (fun s m hm ↦ by
     ext x
     exact congr_fun (hm (index d x)) ⟨x.1, mem d x⟩)
 
 open isColimitMulticoforkMapSetToTypes in
 noncomputable def isColimitMulticoforkMapSetToTypes' [LinearOrder ι] :
-    IsColimit (d.multicofork'.map Set.toTypes) :=
-  Multicofork.IsColimit.mk _ desc' (fun s i ↦ by ext x; apply fac'_apply) (fun s m hm ↦ by
-    ext x
-    exact congr_fun (hm (index d x)) ⟨x.1, mem d x⟩)
+    IsColimit (d.multicofork.toLinearOrder.map Set.functorToTypes) :=
+  Multicofork.isColimitToLinearOrder
+    (d.multicofork.map Set.functorToTypes) (isColimitMulticoforkMapSetToTypes _)
+    { iso i j := Set.functorToTypes.mapIso (eqToIso (by
+        dsimp
+        rw [← d.min_eq, ← d.min_eq, inf_comm]))
+      iso_hom_fst _ _ := rfl
+      iso_hom_snd _ _ := rfl
+      fst_eq_snd _ := rfl }
 
 end
 

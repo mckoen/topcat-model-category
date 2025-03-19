@@ -1,10 +1,13 @@
 import Mathlib.Algebra.Group.Nat.Defs
 import Mathlib.Order.Fin.Basic
+import Mathlib.Order.Fin.Finset
 import Mathlib.Data.Fintype.Card
+import Mathlib.Data.Fintype.EquivFin
 import Mathlib.Tactic.FinCases
 
 namespace Fin
 
+/-
 @[simps]
 def orderIsoSingleton {α : Type*} [Preorder α] (a : α) :
     Fin 1 ≃o ({a} : Finset α) where
@@ -69,8 +72,7 @@ noncomputable def orderIsoTriple {α : Type*} [Preorder α] [DecidableEq α] (a 
       have := lt_of_le_of_lt h hij
       simp at this
     fin_cases i <;> fin_cases j <;> try simp <;> try assumption
-    all_goals apply h; assumption
-
+    all_goals apply h; assumption-/
 
 lemma eq_last_or_eq_castSucc {n : ℕ} (i : Fin (n + 1)) :
     i = Fin.last _ ∨ ∃ (j : Fin n), i = j.castSucc := by
@@ -95,7 +97,7 @@ lemma monotone_iff {α : Type u} [Preorder α] {n : ℕ} (f : Fin (n + 1) → α
       simp only [← add_assoc]
       exact (hk i (by omega)).trans (hf ⟨i + k, by omega⟩)
 
-lemma orderHom_injective_iff {α : Type*} [PartialOrder α] {n : ℕ} (f : Fin (n + 1) →o α) :
+/-lemma orderHom_injective_iff {α : Type*} [PartialOrder α] {n : ℕ} (f : Fin (n + 1) →o α) :
     Function.Injective f ↔ ∀ (i : Fin n), f i.castSucc ≠ f i.succ := by
   constructor
   · intro hf i h
@@ -114,7 +116,7 @@ lemma orderHom_injective_iff {α : Type*} [PartialOrder α] {n : ℕ} (f : Fin (
         have h₂ : f i < f j := lt_of_lt_of_le h₁ (f.monotone (by
           simp only [Fin.le_def, val_succ, l]
           omega))
-        exact (h₂.ne h).elim
+        exact (h₂.ne h).elim-/
 
 lemma strictMono_iff {α : Type*} [PartialOrder α] {n : ℕ} (f : Fin (n + 1) → α) :
     StrictMono f ↔ ∀ (i : Fin n), f i.castSucc < f i.succ := by
@@ -206,7 +208,7 @@ variable {α : Type*}
 
 section
 
-variable (f : Fin n → α)
+variable {n : ℕ} (f : Fin n → α)
 
 def insert (i₀ : Fin (n + 1)) (x : α) (i : Fin (n + 1)) : α :=
   if h₀ : i = i₀ then x
@@ -262,7 +264,7 @@ end
 
 section
 
-variable [Preorder α]
+variable [Preorder α] {n : ℕ}
 
 lemma monotone_insert_zero (f : Fin (n + 1) →o α) (x : α) (hx : x ≤ f 0) :
     Monotone (insert f 0 x) := by

@@ -8,7 +8,7 @@ open Simplicial CategoryTheory MonoidalCategory
 namespace SSet
 
 @[simps arrow]
-def pathOfArrows (X : SSet.{u}) {n : ℕ} (ar : Fin (n + 1) → X _[1])
+def pathOfArrows (X : SSet.{u}) {n : ℕ} (ar : Fin (n + 1) → X _⦋1⦌)
     (h : ∀ (i : Fin n), X.δ 0 (ar i.castSucc) = X.δ 1 (ar i.succ)) :
     Path X (n + 1) where
   vertex j := match j with
@@ -33,6 +33,5 @@ noncomputable def Path.tensor {X Y : SSet.{u}} {n : ℕ} (p : Path X n) (q : Pat
     dsimp
     rw [← p.arrow_tgt i, ← q.arrow_tgt i]
     rfl
-
 
 end SSet
