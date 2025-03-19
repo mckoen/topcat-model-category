@@ -178,13 +178,13 @@ lemma sSup_obj (S : Set X.Subcomplex) (n : SimplexCategoryᵒᵖ) :
 @[simp]
 lemma iSup_obj {ι : Type*} (S : ι → X.Subcomplex) (n : SimplexCategoryᵒᵖ) :
     (iSup S).obj n = iSup (fun i ↦ (S i).obj n) := by
-  simp [iSup, sSup_obj]
+  simp [iSup, sSup_obj]-/
 
 lemma iSup_inf {ι : Type*} (S : ι → X.Subcomplex) (T : X.Subcomplex):
     (⨆ i, S i) ⊓ T = ⨆ i, (S i ⊓ T)  := by
   aesop
 
-instance :
+/-instance :
     letI src : SSet := S
     letI f : src ⟶ _ := S.ι
     Mono f := by
@@ -441,6 +441,10 @@ def fromPreimage (A : X.Subcomplex) (p : Y ⟶ X) :
     dsimp
     ext
     exact FunctorToTypes.naturality _ _ p f y
+
+lemma ofSimplex_eq_range {X : SSet.{u}} {n : ℕ} (x : X _⦋n⦌) :
+    Subcomplex.ofSimplex x = range (yonedaEquiv.symm x) := by
+  simp only [Subcomplex.range_eq_ofSimplex, Equiv.apply_symm_apply]
 
 /-def ofSimplex {n : ℕ} (x : X _[n]) : X.Subcomplex :=
   range ((X.yonedaEquiv (.mk n)).symm x)-/
