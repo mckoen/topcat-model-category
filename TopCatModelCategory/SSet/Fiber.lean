@@ -11,8 +11,8 @@ namespace SSet
 
 instance (n : SimplexCategoryᵒᵖ) : Subsingleton (Δ[0].obj n) where
   allEq f g := by
-    obtain ⟨f, rfl⟩ := (standardSimplex.objEquiv _ _).symm.surjective f
-    obtain ⟨g, rfl⟩ := (standardSimplex.objEquiv _ _).symm.surjective g
+    obtain ⟨f, rfl⟩ := stdSimplex.objEquiv.symm.surjective f
+    obtain ⟨g, rfl⟩ := stdSimplex.objEquiv.symm.surjective g
     obtain rfl : f = g := by
       ext i : 3
       dsimp
@@ -20,7 +20,7 @@ instance (n : SimplexCategoryᵒᵖ) : Subsingleton (Δ[0].obj n) where
     rfl
 
 instance (n : SimplexCategoryᵒᵖ) : Unique (Δ[0].obj n) where
-  default := (standardSimplex.objEquiv  _ _ ).symm (SimplexCategory.const _ _ 0)
+  default := stdSimplex.objEquiv.symm (SimplexCategory.const _ _ 0)
   uniq _ := Subsingleton.elim _ _
 
 variable {X Y : SSet.{u}}
@@ -33,47 +33,49 @@ def isTerminal (F : SSet.{u}) [∀ (n : SimplexCategoryᵒᵖ), Unique (F.obj n)
       naturality _ _ _ := by ext; apply Subsingleton.elim _ _ })
     (fun X m ↦ by ext : 2; apply Subsingleton.elim)
 
-def standardSimplex.objZeroIsTerminal :
+def stdSimplex.objZeroIsTerminal :
     IsTerminal (Δ[0] : SSet.{u}) := isTerminal _
 
 namespace Subcomplex
 
-instance {n : SimplexCategoryᵒᵖ} (x : X _[0]) :
+instance {n : SimplexCategoryᵒᵖ} (x : X _⦋0⦌) :
     Unique ((ofSimplex x).obj n) where
   default := ⟨X.map ((SimplexCategory.const _ _ 0).op) x, _, rfl⟩
   uniq := by
-    rintro ⟨_, f, rfl⟩
-    obtain ⟨f, rfl⟩ := (standardSimplex.objEquiv _ _).symm.surjective f
+    rintro ⟨y, hy⟩
+    simp only [mem_ofSimplex_obj_iff] at hy
+    obtain ⟨f, rfl⟩ := hy
     obtain rfl := Subsingleton.elim f (SimplexCategory.const _ _ 0)
     rfl
 
-instance {n : SimplexCategoryᵒᵖ} (x : X _[0]) :
+instance {n : SimplexCategoryᵒᵖ} (x : X _⦋0⦌) :
     Unique ((ofSimplex x : SSet.{u}).obj n) :=
   inferInstanceAs (Unique ((ofSimplex x).obj n))
 
-noncomputable def ofSimplexIsTerminal (x : X _[0]) :
+noncomputable def ofSimplexIsTerminal (x : X _⦋0⦌) :
     IsTerminal (ofSimplex x : SSet.{u}) :=
   isTerminal _
 
-lemma ofSimplex_ι_app_zero (x : X _[0]) (y) :
-    (ofSimplex x).ι.app (op [0]) y = x := by
+lemma ofSimplex_ι_app_zero (x : X _⦋0⦌) (y) :
+    (ofSimplex x).ι.app (op ⦋0⦌) y = x := by
   rw [Subsingleton.elim y ⟨x, by exact mem_ofSimplex_obj x⟩, Subpresheaf.ι_app]
 
 @[simp]
-lemma ofSimplex_ι (x : X _[0]) : (ofSimplex x).ι = SSet.const x := by
-  ext n ⟨_, u, rfl⟩
-  simp
+lemma ofSimplex_ι (x : X _⦋0⦌) : (ofSimplex x).ι = SSet.const x := by
+  ext n ⟨_, ⟨u⟩, rfl⟩
+  obtain rfl := Subsingleton.elim u (SimplexCategory.const _ _ 0)
+  rfl
 
 @[simp]
-lemma ofSimplex_obj₀ (x : X _[0]) :
-    (ofSimplex x).obj (op [0]) = {x} := by
+lemma ofSimplex_obj₀ (x : X _⦋0⦌) :
+    (ofSimplex x).obj (op ⦋0⦌) = {x} := by
   ext y
-  simp only [Set.mem_singleton_iff]
+  simp only [Set.mem_singleton_iff, mem_ofSimplex_obj_iff']
   constructor
   · rintro ⟨y, _, rfl⟩
     simp
   · rintro rfl
-    apply mem_ofSimplex_obj
+    exact ⟨yonedaEquiv (𝟙 _), by simp⟩
 
 lemma preimage_isPullback (B : Y.Subcomplex) (f : X ⟶ Y) :
     IsPullback (B.preimage f).ι (B.fromPreimage f) f B.ι where
@@ -99,12 +101,12 @@ instance (B : Y.Subcomplex) (f : X ⟶ Y) [hf : Fibration f] :
 
 section
 
-variable (f : X ⟶ Y) (y : Y _[0])
+variable (f : X ⟶ Y) (y : Y _⦋0⦌)
 
 def fiber : X.Subcomplex := (Subcomplex.ofSimplex y).preimage f
 
-lemma mem_fiber_obj_zero_iff (x : X _[0]) :
-    x ∈ (fiber f y).obj (op [0]) ↔ f.app _ x = y := by
+lemma mem_fiber_obj_zero_iff (x : X _⦋0⦌) :
+    x ∈ (fiber f y).obj (op ⦋0⦌) ↔ f.app _ x = y := by
   simp [fiber]
 
 @[simp]
@@ -130,8 +132,8 @@ instance isFibrant_fiber [Fibration f] : IsFibrant (C := SSet.{u}) (fiber f y) :
     ((Subcomplex.ofSimplex y).fromPreimage f) (isTerminal _)).2 inferInstance
 
 lemma fiber_isPullback :
-    IsPullback (fiber f y).ι (standardSimplex.objZeroIsTerminal.from _) f
-      ((yonedaEquiv _ _).symm y) := by
+    IsPullback (fiber f y).ι (stdSimplex.objZeroIsTerminal.from _) f
+      (yonedaEquiv.symm y) := by
   let e : Subpresheaf.toPresheaf (Subcomplex.ofSimplex y) ≅ Δ[0] :=
     IsTerminal.uniqueUpToIso (isTerminal _) (isTerminal _)
   refine IsPullback.of_iso ((Subcomplex.ofSimplex y).preimage_isPullback f)

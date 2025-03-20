@@ -4,9 +4,9 @@ import Mathlib.Topology.Category.TopCat.Limits.Basic
 
 universe u
 
-open CategoryTheory Limits HomotopicalAlgebra
+/-open CategoryTheory Limits HomotopicalAlgebra
 
-/-namespace TopCat
+namespace TopCat
 
 namespace RelativeCWComplex
 

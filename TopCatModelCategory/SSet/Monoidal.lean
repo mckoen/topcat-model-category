@@ -16,24 +16,30 @@ section
 
 variable {X : SSet.{u}}
 
-noncomputable abbrev ι₀ {X : SSet.{u}} : X ⟶ X ⊗ Δ[1] :=
+noncomputable def ι₀ {X : SSet.{u}} : X ⟶ X ⊗ Δ[1] :=
   lift (𝟙 X) (const (stdSimplex.obj₀Equiv.{u}.symm 0))
 
 @[reassoc (attr := simp)]
 lemma ι₀_comp {X Y : SSet.{u}} (f : X ⟶ Y) :
     ι₀ ≫ f ▷ _ = f ≫ ι₀ := rfl
 
-@[reassoc]
+@[reassoc (attr := simp)]
 lemma ι₀_fst (X : SSet.{u}) : ι₀ ≫ fst X _ = 𝟙 X := rfl
+
+@[reassoc (attr := simp)]
+lemma ι₀_snd (X : SSet.{u}) : ι₀ ≫ snd X _ = (const (stdSimplex.obj₀Equiv.{u}.symm 0)) := rfl
 
 @[simp]
 lemma ι₀_app_fst {X : SSet.{u}} {m} (x : X.obj m) : (ι₀.app _ x).1 = x := rfl
 
-noncomputable abbrev ι₁ {X : SSet.{u}} : X ⟶ X ⊗ Δ[1] :=
+noncomputable def ι₁ {X : SSet.{u}} : X ⟶ X ⊗ Δ[1] :=
   lift (𝟙 X) (const (stdSimplex.obj₀Equiv.{u}.symm 1))
 
-@[reassoc]
+@[reassoc (attr := simp)]
 lemma ι₁_fst (X : SSet.{u}) : ι₁ ≫ fst X _ = 𝟙 X := rfl
+
+@[reassoc (attr := simp)]
+lemma ι₁_snd (X : SSet.{u}) : ι₁ ≫ snd X _ = (const (stdSimplex.obj₀Equiv.{u}.symm 1)) := rfl
 
 @[reassoc (attr := simp)]
 lemma ι₁_comp {X Y : SSet.{u}} (f : X ⟶ Y) :

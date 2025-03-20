@@ -11,11 +11,11 @@ namespace KanComplex
 
 namespace HomotopySequence
 
-variable {E B : SSet.{u}} (p : E ⟶ B) {b : B _[0]}
-  {e : E _[0]} (he : p.app _ e = b)
+variable {E B : SSet.{u}} (p : E ⟶ B) {b : B _⦋0⦌}
+  {e : E _⦋0⦌} (he : p.app _ e = b)
 
 @[simps]
-def basePoint : (Subcomplex.fiber p b : SSet) _[0] :=
+def basePoint : (Subcomplex.fiber p b : SSet) _⦋0⦌ :=
   ⟨e, by simpa [Subcomplex.fiber]⟩
 
 def map₁ (n : ℕ) : π n (Subcomplex.fiber p b) (basePoint p he) → π n E e :=
@@ -29,10 +29,10 @@ structure DeltaStruct {n : ℕ} (s : B.PtSimplex (n + 1) b)
     (t : PtSimplex _ n (basePoint p he)) (i : Fin (n + 2)) where
   map : Δ[n + 1] ⟶ E
   map_p : map ≫ p = s.map := by aesop_cat
-  δ_map : standardSimplex.map (SimplexCategory.δ i) ≫ map =
+  δ_map : stdSimplex.map (SimplexCategory.δ i) ≫ map =
     t.map ≫ (Subcomplex.fiber p b).ι := by aesop_cat
   δ_map_eq_const (j : Fin (n + 2)) (hi : j ≠ i) :
-    standardSimplex.map (SimplexCategory.δ j) ≫ map = const e := by aesop_cat
+    stdSimplex.map (SimplexCategory.δ j) ≫ map = const e := by aesop_cat
 
 namespace DeltaStruct
 
@@ -80,17 +80,17 @@ variable (he) {n : ℕ}
 lemma exists_deltaStruct [Fibration p] (s : B.PtSimplex (n + 1) b) (i : Fin (n + 2)) :
     ∃ (t : PtSimplex _ n (basePoint p he)),
           Nonempty (DeltaStruct s t i) := by
-  have sq : CommSq (const e) (subcomplexHorn (n + 1) i).ι p s.map := ⟨by
-    have := Subcomplex.homOfLE (subcomplexHorn_le_subcomplexBoundary i) ≫=
+  have sq : CommSq (const e) (horn (n + 1) i).ι p s.map := ⟨by
+    have := Subcomplex.homOfLE (horn_le_boundary i) ≫=
       s.comm
     simp only [Subcomplex.homOfLE_ι_assoc, Subcomplex.ofSimplex_ι] at this
     rw [this, const_comp, comp_const, comp_const, he]⟩
   refine ⟨⟨Subcomplex.lift
-      (standardSimplex.map (SimplexCategory.δ i) ≫ sq.lift) ?_, ?_⟩, ⟨{
+      (stdSimplex.map (SimplexCategory.δ i) ≫ sq.lift) ?_, ?_⟩, ⟨{
     map := sq.lift
     map_p := by simp
     δ_map := rfl
-    δ_map_eq_const j hj := subcomplexHorn.ι _ _ hj ≫= sq.fac_left }⟩⟩
+    δ_map_eq_const j hj := horn.ι _ _ hj ≫= sq.fac_left }⟩⟩
   · apply le_antisymm (by simp)
     rw [← Subcomplex.image_le_iff, Subcomplex.image_top,
       Subcomplex.range_le_fiber_iff,
@@ -102,15 +102,17 @@ lemma exists_deltaStruct [Fibration p] (s : B.PtSimplex (n + 1) b) (i : Fin (n +
     · ext x hx
       simp at hx
       exact ((Set.mem_empty_iff_false _).1 hx.2).elim
-    · apply subcomplexBoundary.hom_ext
+    · apply boundary.hom_ext
       intro j
-      rw [subcomplexBoundary.ι_ι_assoc, ← Functor.map_comp_assoc, comp_const]
-      have fac (k : Fin (n + 3)) (hk : k ≠ i) := subcomplexHorn.ι i k hk ≫= sq.fac_left
-      simp only [comp_const, subcomplexHorn.ι_ι_assoc] at fac
+      rw [boundary.ι_ι_assoc, ← Functor.map_comp_assoc, comp_const]
+      have fac (k : Fin (n + 3)) (hk : k ≠ i) := horn.ι i k hk ≫= sq.fac_left
+      simp only [comp_const, horn.ι_ι_assoc] at fac
       obtain rfl | ⟨i, rfl⟩ := i.eq_zero_or_eq_succ
       · have := SimplexCategory.δ_comp_δ (n := n) (i := 0) (j := j) (by simp)
         dsimp at this
-        rw [← this, Functor.map_comp_assoc, fac _ (by simp [Fin.ext_iff]), comp_const]
+        rw [← this, Functor.map_comp_assoc, fac _ (fun h ↦ by
+          rw [Fin.ext_iff] at h
+          simp at h), comp_const]
       · by_cases hj : j ≤ i
         · rw [SimplexCategory.δ_comp_δ hj, Functor.map_comp_assoc,
             fac, comp_const]

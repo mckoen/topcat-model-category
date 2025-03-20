@@ -21,11 +21,11 @@ def evaluation (X : SSet.{u}) (j : SimplexCategoryᵒᵖ) :
 instance {J : Type*} [Category J] {X : SSet.{u}} [IsFilteredOrEmpty J] :
     PreservesColimitsOfShape J (Subcomplex.toPresheafFunctor (X := X)) where
   preservesColimit {F} :=
-    preservesColimit_of_preserves_colimit_cocone (CompleteLattice.isColimitCocone F)
+    preservesColimit_of_preserves_colimit_cocone (CompleteLattice.colimitCocone F).isColimit
       (evaluationJointlyReflectsColimits _ (fun j ↦
-        IsColimit.ofIsoColimit (isColimitOfPreserves Set.toTypes
-          (CompleteLattice.isColimitCocone (F ⋙ evaluation _ j)))
-            (Cocones.ext (Set.toTypes.mapIso (eqToIso (by simp))))))
+        IsColimit.ofIsoColimit (isColimitOfPreserves Set.functorToTypes
+          (CompleteLattice.colimitCocone (F ⋙ evaluation _ j)).isColimit)
+            (Cocones.ext (Set.functorToTypes.mapIso (eqToIso (by aesop))))))
 
 end SSet.Subcomplex
 
@@ -39,42 +39,42 @@ namespace SSet
 
 variable {E B : SSet.{u}} (p : E ⟶ B)
 
-structure SimplexOverRelStruct {n : ℕ} (x y : E _[n]) where
+structure SimplexOverRelStruct {n : ℕ} (x y : E _⦋n⦌) where
   h : Δ[n] ⊗ Δ[1] ⟶ E
-  h₀ : ι₀ ≫ h = (yonedaEquiv _ _).symm x
-  h₁ : ι₁ ≫ h = (yonedaEquiv _ _).symm y
+  h₀ : ι₀ ≫ h = yonedaEquiv.symm x
+  h₁ : ι₁ ≫ h = yonedaEquiv.symm y
   π : Δ[n] ⟶ B
-  d : ∂Δ[n] ⟶ E
+  d : (∂Δ[n] : SSet) ⟶ E
   hπ : h ≫ p = fst _ _ ≫ π
-  hd : (subcomplexBoundary.{u} n).ι ▷ Δ[1] ≫ h = fst _ _ ≫ d
+  hd : (boundary.{u} n).ι ▷ Δ[1] ≫ h = fst _ _ ≫ d
 
 namespace SimplexOverRelStruct
 
 section
 
-variable {p} {n : ℕ} {x y : E _[n]} (rel : SimplexOverRelStruct p x y)
+variable {p} {n : ℕ} {x y : E _⦋n⦌} (rel : SimplexOverRelStruct p x y)
 
-lemma π_eq₁ : rel.π = (yonedaEquiv _ _).symm x ≫ p := by
-  rw [← rel.h₀, Category.assoc, rel.hπ, lift_fst_assoc, id_comp]
+lemma π_eq₁ : rel.π = yonedaEquiv.symm x ≫ p := by
+  rw [← rel.h₀, Category.assoc, rel.hπ, ι₀_fst_assoc]
 
-lemma π_eq₂ : rel.π = (yonedaEquiv _ _).symm y ≫ p := by
-  rw [← rel.h₁, Category.assoc, rel.hπ, lift_fst_assoc, id_comp]
+lemma π_eq₂ : rel.π = yonedaEquiv.symm y ≫ p := by
+  rw [← rel.h₁, Category.assoc, rel.hπ, ι₁_fst_assoc]
 
-lemma d_eq₁ : rel.d = (subcomplexBoundary n).ι ≫ (yonedaEquiv _ _).symm x := by
+lemma d_eq₁ : rel.d = (boundary n).ι ≫ yonedaEquiv.symm x := by
   rw [← rel.h₀, ← ι₀_comp_assoc, rel.hd]
   rfl
 
-lemma d_eq₂ : rel.d = (subcomplexBoundary n).ι ≫ (yonedaEquiv _ _).symm y := by
+lemma d_eq₂ : rel.d = (boundary n).ι ≫ yonedaEquiv.symm y := by
   rw [← rel.h₁, ← ι₁_comp_assoc, rel.hd]
   rfl
 
-lemma sq : CommSq rel.d (subcomplexBoundary.{u} n).ι p rel.π := ⟨by simp [π_eq₁, d_eq₁]⟩
+lemma sq : CommSq rel.d (boundary.{u} n).ι p rel.π := ⟨by simp [π_eq₁, d_eq₁]⟩
 
 end
 
 variable {p} in
 @[ext]
-lemma ext {n : ℕ} {x y : E _[n]}
+lemma ext {n : ℕ} {x y : E _⦋n⦌}
     {rel₁ rel₂ : SimplexOverRelStruct p x y} (h : rel₁.h = rel₂.h) :
     rel₁ = rel₂ := by
   suffices rel₁.π = rel₂.π ∧ rel₁.d = rel₂.d by
@@ -86,25 +86,25 @@ lemma ext {n : ℕ} {x y : E _[n]}
     rfl
   simp [π_eq₁, d_eq₁]
 
-noncomputable def refl (x : E _[n]) : SimplexOverRelStruct p x x where
-  h := fst _ _ ≫ (yonedaEquiv _ _).symm x
+noncomputable def refl (x : E _⦋n⦌) : SimplexOverRelStruct p x x where
+  h := fst _ _ ≫ yonedaEquiv.symm x
   h₀ := rfl
   h₁ := rfl
-  π := (yonedaEquiv _ _).symm x ≫ p
-  d := (subcomplexBoundary.{u} n).ι ≫ (yonedaEquiv _ _).symm x
+  π := yonedaEquiv.symm x ≫ p
+  d := (boundary.{u} n).ι ≫ yonedaEquiv.symm x
   hπ := rfl
   hd := rfl
 
 section
 
-variable {p} {n : ℕ} {π : Δ[n] ⟶ B} {d : ∂Δ[n] ⟶ E}
-  (sq : CommSq d (subcomplexBoundary.{u} n).ι p π)
+variable {p} {n : ℕ} {π : Δ[n] ⟶ B} {d : (∂Δ[n] : SSet) ⟶ E}
+  (sq : CommSq d (boundary.{u} n).ι p π)
 
-noncomputable def ihomToPullbackFiberMk (x : E _[n])
-    (hx₁ : (subcomplexBoundary n).ι ≫ (yonedaEquiv _ _).symm x = d)
-    (hx₂ : (yonedaEquiv _ _).symm x ≫ p = π) :
-    (ihomToPullbackFiber sq : SSet) _[0] :=
-  ⟨ihom₀Equiv.symm ((yonedaEquiv _ _).symm x), by
+noncomputable def ihomToPullbackFiberMk (x : E _⦋n⦌)
+    (hx₁ : (boundary n).ι ≫ yonedaEquiv.symm x = d)
+    (hx₂ : yonedaEquiv.symm x ≫ p = π) :
+    (ihomToPullbackFiber sq : SSet) _⦋0⦌ :=
+  ⟨ihom₀Equiv.symm (yonedaEquiv.symm x), by
     rw [ihom₀Equiv_symm_mem_ihomToPullbackFiber_obj_zero_iff]
     exact ⟨hx₁, hx₂⟩⟩
 
@@ -114,11 +114,11 @@ namespace equiv
 
 open MonoidalClosed
 
-variable (x y : E _[n])
-    {hx₁ : (subcomplexBoundary n).ι ≫ (yonedaEquiv _ _).symm x = d}
-    {hx₂ : (yonedaEquiv _ _).symm x ≫ p = π}
-    {hy₁ : (subcomplexBoundary n).ι ≫ (yonedaEquiv _ _).symm y = d}
-    {hy₂ : (yonedaEquiv _ _).symm y ≫ p = π}
+variable (x y : E _⦋n⦌)
+    {hx₁ : (boundary n).ι ≫ yonedaEquiv.symm x = d}
+    {hx₂ : yonedaEquiv.symm x ≫ p = π}
+    {hy₁ : (boundary n).ι ≫ yonedaEquiv.symm y = d}
+    {hy₂ : yonedaEquiv.symm y ≫ p = π}
 
 @[simps! map]
 noncomputable def toFun (rel : SimplexOverRelStruct p x y) :
@@ -137,12 +137,12 @@ noncomputable def toFun (rel : SimplexOverRelStruct p x y) :
           ← curry_natural_left]
         -- could be better with `curry'`
         apply uncurry_injective
-        rw [uncurry_curry, ← cancel_epi (standardSimplex.rightUnitor _).inv]
+        rw [uncurry_curry, ← cancel_epi (stdSimplex.rightUnitor _).inv]
         exact rel.h₀) (by
         rw [← cancel_mono (Subpresheaf.ι _), Category.assoc, Subcomplex.lift_ι,
           ← curry_natural_left]
         apply uncurry_injective
-        rw [uncurry_curry, ← cancel_epi (standardSimplex.rightUnitor _).inv]
+        rw [uncurry_curry, ← cancel_epi (stdSimplex.rightUnitor _).inv]
         exact rel.h₁)
 
 @[simps]
@@ -151,11 +151,11 @@ noncomputable def invFun (e : Edge (.mk (ihomToPullbackFiberMk sq x hx₁ hx₂)
     SimplexOverRelStruct p x y where
   h := uncurry (e.map ≫ Subpresheaf.ι _)
   h₀ := by
-    rw [← standardSimplex.rightUnitor_inv_map_δ_one, Category.assoc,
+    rw [← stdSimplex.rightUnitor_inv_map_δ_one, Category.assoc,
       uncurry_natural_left, ← MonoidalCategory.whiskerLeft_comp_assoc, e.comm₀]
     rfl
   h₁ := by
-    rw [← standardSimplex.rightUnitor_inv_map_δ_zero, Category.assoc,
+    rw [← stdSimplex.rightUnitor_inv_map_δ_zero, Category.assoc,
       uncurry_natural_left, ← MonoidalCategory.whiskerLeft_comp_assoc, e.comm₁]
     rfl
   π := π
@@ -170,11 +170,11 @@ noncomputable def invFun (e : Edge (.mk (ihomToPullbackFiberMk sq x hx₁ hx₂)
 
 end equiv
 
-noncomputable def equiv (x y : E _[n])
-    (hx₁ : (subcomplexBoundary n).ι ≫ (yonedaEquiv _ _).symm x = d)
-    (hx₂ : (yonedaEquiv _ _).symm x ≫ p = π)
-    (hy₁ : (subcomplexBoundary n).ι ≫ (yonedaEquiv _ _).symm y = d)
-    (hy₂ : (yonedaEquiv _ _).symm y ≫ p = π) :
+noncomputable def equiv (x y : E _⦋n⦌)
+    (hx₁ : (boundary n).ι ≫ yonedaEquiv.symm x = d)
+    (hx₂ : yonedaEquiv.symm x ≫ p = π)
+    (hy₁ : (boundary n).ι ≫ yonedaEquiv.symm y = d)
+    (hy₂ : yonedaEquiv.symm y ≫ p = π) :
     SimplexOverRelStruct p x y ≃
       Edge (.mk (ihomToPullbackFiberMk sq x hx₁ hx₂))
         (.mk (ihomToPullbackFiberMk sq y hy₁ hy₂)) where
@@ -185,14 +185,14 @@ noncomputable def equiv (x y : E _[n])
 
 end
 
-variable {p}
+variable {p} {n : ℕ}
 
-noncomputable def symm {x y : E _[n]} [Fibration p] (h : SimplexOverRelStruct p x y) :
+noncomputable def symm {x y : E _⦋n⦌} [Fibration p] (h : SimplexOverRelStruct p x y) :
     SimplexOverRelStruct p y x :=
   (equiv h.sq y x _ _ _ _).symm
     (equiv h.sq x y h.d_eq₁.symm h.π_eq₁.symm h.d_eq₂.symm h.π_eq₂.symm h).inv
 
-noncomputable def trans {x y z : E _[n]} [Fibration p] (h : SimplexOverRelStruct p x y)
+noncomputable def trans {x y z : E _⦋n⦌} [Fibration p] (h : SimplexOverRelStruct p x y)
     (h' : SimplexOverRelStruct p y z) :
     SimplexOverRelStruct p x z :=
   (equiv h.sq x z _ _ _ _).symm
@@ -203,8 +203,8 @@ noncomputable def trans {x y z : E _[n]} [Fibration p] (h : SimplexOverRelStruct
 
 end SimplexOverRelStruct
 
-inductive SimplexOverRel {n : ℕ} : E _[n] → E _[n] → Prop
-  | mk {x y : E _[n]} (h : SimplexOverRelStruct p x y) : SimplexOverRel x y
+inductive SimplexOverRel {n : ℕ} : E _⦋n⦌ → E _⦋n⦌ → Prop
+  | mk {x y : E _⦋n⦌} (h : SimplexOverRelStruct p x y) : SimplexOverRel x y
 
 lemma SimplexOverRel.equivalence [Fibration p] (n : ℕ) :
     _root_.Equivalence (SimplexOverRel p (n := n)) where
@@ -212,8 +212,8 @@ lemma SimplexOverRel.equivalence [Fibration p] (n : ℕ) :
   symm := fun ⟨h⟩ ↦ .mk h.symm
   trans := fun ⟨h₁⟩ ⟨h₂⟩ ↦ .mk (h₁.trans h₂)
 
-class MinimalFibration extends Fibration p : Prop where
-  minimal {n : ℕ} {x y : E _[n]} (rel : SimplexOverRelStruct p x y) : x = y
+class MinimalFibration : Prop extends Fibration p where
+  minimal {n : ℕ} {x y : E _⦋n⦌} (rel : SimplexOverRelStruct p x y) : x = y
 
 def minimalFibrations : MorphismProperty (SSet.{u}) :=
   fun _ _ p ↦ MinimalFibration p
@@ -222,9 +222,10 @@ lemma minimalFibrations_iff : minimalFibrations p ↔ MinimalFibration p := Iff.
 
 instance : MinimalFibration (𝟙 B) where
   minimal {n x y} rel := by
-    apply (yonedaEquiv _ _).symm.injective
-    simp only [← rel.h₀, ← rel.h₁, ← cancel_mono (𝟙 B), assoc, rel.hπ,
-      lift_fst_assoc, id_comp]
+    apply yonedaEquiv.symm.injective
+    have := rel.hπ
+    simp only [comp_id] at this
+    rw [← rel.h₀, ← rel.h₁, this, ι₀_fst_assoc, ι₁_fst_assoc]
 
 instance : minimalFibrations.{u}.ContainsIdentities where
   id_mem B := by
@@ -235,34 +236,34 @@ namespace SimplexOverRelStruct
 
 attribute [reassoc] h₀ h₁ hπ hd
 
-variable {p} {n : ℕ} {x y : E _[n]} (rel : SimplexOverRelStruct p x y)
+variable {p} {n : ℕ} {x y : E _⦋n⦌} (rel : SimplexOverRelStruct p x y)
 
 include rel in
 @[reassoc]
-lemma hπ' : (yonedaEquiv _ _).symm x ≫ p = (yonedaEquiv _ _).symm y ≫ p := by
-  simp only [← rel.h₀, ← rel.h₁, assoc, rel.hπ, lift_fst_assoc, id_comp]
+lemma hπ' : yonedaEquiv.symm x ≫ p = yonedaEquiv.symm y ≫ p := by
+  simp only [← rel.h₀, ← rel.h₁, assoc, rel.hπ, ι₀_fst_assoc, ι₁_fst_assoc]
 
 include rel in
 lemma eq [MinimalFibration p] : x = y := MinimalFibration.minimal rel
 
 include rel in
-lemma eq_of_degenerate (hx : x ∈ E.Degenerate n) (hy : y ∈ E.Degenerate n) :
+lemma eq_of_degenerate (hx : x ∈ E.degenerate n) (hy : y ∈ E.degenerate n) :
     x = y := by
   obtain _ | n := n
   · simp at hx
-  have h₀ := (subcomplexBoundary.{u} (n + 1)).ι ≫= rel.h₀
-  have h₁ := (subcomplexBoundary.{u} (n + 1)).ι ≫= rel.h₁
+  have h₀ := (boundary.{u} (n + 1)).ι ≫= rel.h₀
+  have h₁ := (boundary.{u} (n + 1)).ι ≫= rel.h₁
   erw [← ι₀_comp_assoc, rel.hd, ι₀_fst_assoc] at h₀
   erw [← ι₁_comp_assoc, rel.hd, ι₁_fst_assoc] at h₁
   refine eq_of_degenerate_of_δ_eq hx hy (fun i ↦ ?_)
-  have := subcomplexBoundary.ι i ≫= (h₀.symm.trans h₁)
-  rw [subcomplexBoundary.ι_ι_assoc, subcomplexBoundary.ι_ι_assoc,
+  have := boundary.ι i ≫= (h₀.symm.trans h₁)
+  rw [boundary.ι_ι_assoc, boundary.ι_ι_assoc,
     ← yonedaEquiv_symm_map, ← yonedaEquiv_symm_map] at this
-  exact (yonedaEquiv _ _).symm.injective this
+  exact yonedaEquiv.symm.injective this
 
 noncomputable def map
     {E' B' : SSet.{u}} {p' : E' ⟶ B'} (φ : Arrow.mk p ⟶ Arrow.mk p')
-    {x' y' : E' _[n]} (hx' : φ.left.app _ x = x') (hy' : φ.left.app _ y = y') :
+    {x' y' : E' _⦋n⦌} (hx' : φ.left.app _ x = x') (hy' : φ.left.app _ y = y') :
     SimplexOverRelStruct p' x' y' where
   h := rel.h ≫ φ.left
   h₀ := by rw [rel.h₀_assoc, ← hx', yonedaEquiv_symm_comp]
@@ -306,25 +307,25 @@ instance : minimalFibrations.{u}.IsStableUnderBaseChange where
     intro n x y hxy
     apply (h.map ((evaluation _ _).obj _)).types_ext
     · exact (hxy.map (Arrow.homMk t b h.w) rfl rfl).eq
-    · apply (yonedaEquiv _ _).symm.injective
+    · apply yonedaEquiv.symm.injective
       simp [← yonedaEquiv_symm_comp, hxy.hπ']
 
 namespace MinimalFibration
 
 structure Selection where
-  set (n : ℕ) : Set (E _[n])
-  le_set (n : ℕ) : E.Degenerate n ≤ set n
-  unique {n : ℕ} {x y : E _[n]} (hx : x ∈ set n) (hy : y ∈ set n)
+  set (n : ℕ) : Set (E _⦋n⦌)
+  le_set (n : ℕ) : E.degenerate n ≤ set n
+  unique {n : ℕ} {x y : E _⦋n⦌} (hx : x ∈ set n) (hy : y ∈ set n)
     (h : SimplexOverRelStruct p x y) : x = y
-  nonempty {n : ℕ} (x : E _[n]) : ∃ (y : E _[n]) (_ : y ∈ set n),
+  nonempty {n : ℕ} (x : E _⦋n⦌) : ∃ (y : E _⦋n⦌) (_ : y ∈ set n),
     Nonempty (SimplexOverRelStruct p x y)
 
 -- use that `SimplexOverRel` is an equivalence relation,
 -- "select" all degenerate simplices,
 -- and an element in each other equivalence class
 instance [Fibration p] : Nonempty (Selection p) := by
-  let S (n : ℕ) : Set (E _[n]) :=
-    setOf (fun x ↦ ¬ (∃ (y : E.Degenerate n), SimplexOverRel p x y))
+  let S (n : ℕ) : Set (E _⦋n⦌) :=
+    setOf (fun x ↦ ¬ (∃ (y : E.degenerate n), SimplexOverRel p x y))
   let s (n : ℕ) : Setoid (S n) :=
     { r x y := SimplexOverRel p x.1 y.1
       iseqv := (SimplexOverRel.equivalence p n).comap Subtype.val }
@@ -336,15 +337,15 @@ instance [Fibration p] : Nonempty (Selection p) := by
   have rel {n : ℕ} (x : S n) : SimplexOverRelStruct p x.1 (σ ⟦x⟧).1 := Nonempty.some (by
     obtain ⟨h⟩ := Quotient.eq.1 (hσ _ ⟦x⟧).symm
     exact ⟨h⟩)
-  let T (n : ℕ) : Set (E _[n]) := Set.range (Subtype.val ∘ σ)
-  have hT {n x y} (hxy : SimplexOverRelStruct p x y) (hy : y ∈ E.Degenerate n) :
+  let T (n : ℕ) : Set (E _⦋n⦌) := Set.range (Subtype.val ∘ σ)
+  have hT {n x y} (hxy : SimplexOverRelStruct p x y) (hy : y ∈ E.degenerate n) :
       x ∉ T n := fun hx ↦ by
     simp only [Set.mem_range, Function.comp_apply, T] at hx
     obtain ⟨z, rfl⟩ := hx
     obtain ⟨⟨w, hw⟩, rfl⟩ := Quotient.mk_surjective z
     exact hw ⟨⟨_, hy⟩, ⟨(rel ⟨w, hw⟩).trans hxy⟩⟩
   exact ⟨
-    { set n := E.Degenerate n ⊔ T n
+    { set n := E.degenerate n ⊔ T n
       le_set n := le_sup_left
       unique {n x y} hx hy hxy := by
         simp only [Set.sup_eq_union, Set.mem_union] at hx hy
@@ -391,8 +392,8 @@ lemma subcomplex_obj_le (n : ℕ) : selection.subcomplex.obj ⟨.mk n⟩ ≤ sel
 lemma le_subcomplex (Y : selection.SubcomplexOfSelected) : Y.1 ≤ selection.subcomplex :=
   le_top (α := selection.SubcomplexOfSelected)
 
-lemma mem_subcomplex_of_boundary {n : ℕ} (x : E _[n]) (hx : x ∈ selection.set n)
-    (hx' : subcomplexBoundary n ≤ selection.subcomplex.preimage ((yonedaEquiv _ _).symm x)) :
+lemma mem_subcomplex_of_boundary {n : ℕ} (x : E _⦋n⦌) (hx : x ∈ selection.set n)
+    (hx' : boundary n ≤ selection.subcomplex.preimage (yonedaEquiv.symm x)) :
     x ∈ selection.subcomplex.obj ⟨.mk n⟩ := by
   refine selection.le_subcomplex ⟨selection.subcomplex ⊔ Subcomplex.ofSimplex x, ?_⟩ _
     (Or.inr (Subcomplex.mem_ofSimplex_obj x))
@@ -400,15 +401,17 @@ lemma mem_subcomplex_of_boundary {n : ℕ} (x : E _[n]) (hx : x ∈ selection.se
   simp only [Subpresheaf.max_obj, Set.le_eq_subset, Set.union_subset_iff]
   constructor
   · apply subcomplex_obj_le
-  · rintro _ ⟨s, rfl⟩
-    by_cases hs : s ∈ Degenerate _ _
+  · rintro y hy
+    simp only [mem_ofSimplex_obj_iff'] at hy
+    obtain ⟨s, rfl⟩ := hy
+    by_cases hs : s ∈ degenerate _ _
     · exact selection.le_set _ (degenerate_map hs _)
-    · rw [← mem_nondegenerate_iff_not_mem_degenerate] at hs
+    · rw [← mem_nonDegenerate_iff_not_mem_degenerate] at hs
       obtain h | rfl := (dim_le_of_nondegenerate _ ⟨s, hs⟩ n).lt_or_eq
       · apply subcomplex_obj_le
         apply hx'
-        simp only [subcomplexBoundary_obj_eq_top _ _ h, Set.top_eq_univ, Set.mem_univ]
-      · rw [standardSimplex.non_degenerate_top_dim, Set.mem_singleton_iff] at hs
+        simp only [boundary_obj_eq_top _ _ h, Set.top_eq_univ, Set.mem_univ]
+      · rw [stdSimplex.non_degenerate_top_dim, Set.mem_singleton_iff] at hs
         simpa [hs] using hx
 
 structure Extension where
@@ -436,7 +439,7 @@ lemma hi : e.i ▷ _ ≫ e.h = fst _ _ ≫ selection.subcomplex.ι := e.hi'
 
 @[reassoc (attr := simp)]
 lemma wr : e.r ≫ selection.subcomplex.ι ≫ p = e.A.ι ≫ p := by
-  rw [← ι₀_h_assoc, wh, lift_fst_assoc, id_comp]
+  rw [← ι₀_h_assoc, wh, ι₀_fst_assoc]
 
 end Extension
 
@@ -445,7 +448,11 @@ instance : PartialOrder selection.Extension where
   le_refl f := ⟨by rfl, rfl⟩
   le_trans f₁ f₂ f₃ := by
     rintro ⟨le₁₂, fac₁₂⟩ ⟨le₂₃, fac₂₃⟩
-    exact ⟨le₁₂.trans le₂₃, by rw [fac₁₂, fac₂₃]; rfl⟩
+    refine ⟨le₁₂.trans le₂₃, ?_⟩
+    rw [fac₁₂, fac₂₃]
+    ext
+    dsimp
+    rfl
   le_antisymm := by
     rintro ⟨A₁, _, h₁, _, r₁, _, ι₀_h₁, _, _⟩ ⟨A₂, _, h₂, _, r₂, _, ι₀_h₂, _, _⟩
       ⟨le₁₂, fac₁₂⟩ ⟨le₂₁, fac₂₁⟩
@@ -453,7 +460,7 @@ instance : PartialOrder selection.Extension where
     obtain rfl : h₁ = h₂ := fac₁₂
     obtain rfl : r₁ = r₂ := by
       rw [← cancel_mono selection.subcomplex.ι, ← ι₀_h₁, ← ι₀_h₂]
-    rfl
+    dsimp
 
 variable {selection} in
 @[reassoc]
@@ -484,7 +491,7 @@ lemma exists_maximal_extension : ∃ (f : selection.Extension), IsMax f := by
     let Φ : S ⥤ E.Subcomplex :=
       (Extension.monotone_A.comp (Subtype.mono_coe S)).functor
     have H := isColimitOfPreserves (Subcomplex.toPresheafFunctor)
-      (CompleteLattice.isColimitCocone Φ )
+      (CompleteLattice.colimitCocone Φ).isColimit
     let ch : Cocone ((Φ ⋙ Subcomplex.toPresheafFunctor) ⋙ tensorRight Δ[1]) :=
       Cocone.mk E
         { app s := s.1.h
@@ -522,7 +529,9 @@ lemma exists_maximal_extension : ∃ (f : selection.Extension), IsMax f := by
         dsimp [Φ] at this ⊢
         rw [← ι₁_comp_assoc, this]
         dsimp only [ch, cr]
-        rw [s.ι₁_h, Subcomplex.homOfLE_ι])
+        rw [s.ι₁_h]
+        symm
+        apply Subcomplex.homOfLE_ι)
       wh := (isColimitOfPreserves (tensorRight Δ[1]) H).hom_ext (fun ⟨s, hs⟩ ↦ by
         have := (isColimitOfPreserves (tensorRight Δ[1]) H).fac ch ⟨s, hs⟩
         dsimp at this ⊢
@@ -537,16 +546,16 @@ lemma Extension.A_eq_top_of_isMax [Fibration p] (f : selection.Extension)
     (hf : IsMax f) : f.A = ⊤ := by
   by_contra!
   obtain ⟨A', lt, n, t, b, isPushout⟩ :=
-    subcomplexBoundary.exists_isPushout_of_ne_top f.A this
+    boundary.exists_isPushout_of_ne_top f.A this
   obtain ⟨α, β, hβ, hα₁, hα₂, hα₃, hα₄⟩ :
     ∃ (α : Δ[n] ⊗ Δ[1] ⟶ E) (β : Δ[n] ⟶ selection.subcomplex),
-      Subpresheaf.ι (subcomplexBoundary n) ≫ β = t ≫ f.r ∧
-      (subcomplexBoundary n).ι ▷ Δ[1] ≫ α = t ▷ Δ[1] ≫ f.h ∧
+      Subpresheaf.ι (boundary n) ≫ β = t ≫ f.r ∧
+      (boundary n).ι ▷ Δ[1] ≫ α = t ▷ Δ[1] ≫ f.h ∧
       ι₁ ≫ α = b ≫ A'.ι ∧
       α ≫ p = fst _ _ ≫ b ≫ A'.ι ≫ p ∧
       ι₀ ≫ α = β ≫ Subpresheaf.ι selection.subcomplex := by
     have := exist_path_composition_above_of_fibration
-      (ihomToPullback (subcomplexBoundary n).ι p)
+      (ihomToPullback (boundary n).ι p)
     sorry
   obtain ⟨h, h₁, h₂⟩ := (isPushout.map (tensorRight Δ[1])).exists_desc f.h α hα₁.symm
   obtain ⟨r, hr₁, hr₂⟩ := isPushout.exists_desc f.r β hβ.symm
@@ -600,7 +609,7 @@ noncomputable def relativeDeformationRetract [Fibration p] :
   retract := selection.extension.i_r
   h := ((Subcomplex.topIso E).inv ≫ (Subcomplex.isoOfEq (by simp)).inv) ▷ _ ≫
       selection.extension.h
-  hi := selection.extension.hi
+  hi := by exact selection.extension.hi
   h₀ := by
     dsimp
     rw [ι₀_comp_assoc, assoc, assoc, assoc, Extension.ι₀_h]
@@ -618,7 +627,7 @@ noncomputable def relativeDeformationRetract [Fibration p] :
     rfl
 
 instance [Fibration p] :
-    Fibration (C := SSet) (selection.subcomplex.ι ≫ p) := by
+    Fibration (selection.subcomplex.ι ≫ p) := by
   rw [fibration_iff]
   apply MorphismProperty.of_retract selection.relativeDeformationRetract.retractArrow
   rwa [← fibration_iff]

@@ -8,7 +8,7 @@ import Mathlib.CategoryTheory.MorphismProperty.Limits
 import Mathlib.CategoryTheory.MorphismProperty.Retract
 import Mathlib.CategoryTheory.MorphismProperty.TransfiniteComposition
 
-open HomotopicalAlgebra CategoryTheory Limits SSet.ModelCategory MonoidalCategory
+open HomotopicalAlgebra CategoryTheory Limits SSet.modelCategory MonoidalCategory
   Simplicial Opposite
 
 universe u
@@ -48,9 +48,9 @@ lemma of_isIso {X Y : SSet.{u}} (f : X ⟶ Y) [IsIso f] :
     anodyneExtensions f :=
   MorphismProperty.of_isIso _ _
 
-lemma subcomplexHorn_ι_mem (n : ℕ) (i : Fin (n + 2)) :
-    anodyneExtensions (subcomplexHorn.{u} (n + 1) i).ι := by
-  apply MorphismProperty.le_rlp_llp
+lemma horn_ι_mem (n : ℕ) (i : Fin (n + 2)) :
+    anodyneExtensions (horn.{u} (n + 1) i).ι := by
+  apply MorphismProperty.le_llp_rlp
   simp only [J, MorphismProperty.iSup_iff]
   exact ⟨n, ⟨i⟩⟩
 

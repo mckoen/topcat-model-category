@@ -1,15 +1,16 @@
 import TopCatModelCategory.ModelCategoryTopCat
 import TopCatModelCategory.SSet.CategoryWithFibrations
+import Mathlib.CategoryTheory.SmallObject.Basic
 
-open HomotopicalAlgebra CategoryTheory
+open HomotopicalAlgebra CategoryTheory Limits
 
 namespace SSet
 
-namespace ModelCategory
+namespace modelCategory
 
 open MorphismProperty SmallObject
 
-instance (K : Type u) [Preorder K] : HasIterationOfShape SSet.{u} K where
+instance (K : Type u) [LinearOrder K] : HasIterationOfShape K SSet.{u} where
 
 attribute [local instance] Cardinal.aleph0_isRegular
   Cardinal.orderbot_aleph0_ord_to_type
@@ -70,7 +71,7 @@ lemma transfiniteCompositions_pushouts_coproducts :
   sorry
 
 lemma rlp_I_le_rlp_J : I.{u}.rlp ≤ J.{u}.rlp := by
-  rw [← le_llp_iff_le_rlp, rlp_llp_of_isCardinalForSmallObjectArgument _ .aleph0,
+  rw [← le_llp_iff_le_rlp, llp_rlp_of_isCardinalForSmallObjectArgument _ .aleph0,
     transfiniteCompositions_pushouts_coproducts]
   exact J_le_monomorphisms.trans (le_retracts _)
 
@@ -78,10 +79,10 @@ instance : HasFunctorialFactorization (trivialCofibrations SSet) (fibrations SSe
   refine MorphismProperty.hasFunctorialFactorization_of_le (W₁ := J.rlp.llp)
     (W₂ := J.rlp) ?_ (by rfl)
   rw [trivialCofibrations, le_inf_iff,
-    rlp_llp_of_isCardinalForSmallObjectArgument _ .aleph0]
+    llp_rlp_of_isCardinalForSmallObjectArgument _ .aleph0]
   constructor
   · rw [cofibrations_eq]
-    refine le_trans (monotone_retracts ?_) (retracts_le _)
+    refine le_trans (retracts_monotone ?_) (retracts_le _)
     sorry -- use monotonicity
   · sorry -- J is mapped by the realization functor to trivial cofibrations in `TopCat`
 
@@ -108,13 +109,13 @@ lemma rlp_I_eq_trivialFibrations :
 instance : HasFunctorialFactorization (cofibrations SSet) (trivialFibrations SSet) := by
   refine MorphismProperty.hasFunctorialFactorization_of_le (W₁ := I.rlp.llp) (W₂ := I.rlp) ?_
     (by rw [rlp_I_eq_trivialFibrations])
-  rw [rlp_llp_of_isCardinalForSmallObjectArgument _ .aleph0, cofibrations_eq,
+  rw [llp_rlp_of_isCardinalForSmallObjectArgument _ .aleph0, cofibrations_eq,
     transfiniteCompositions_pushouts_coproducts]
   apply retracts_le
 
-end ModelCategory
+end modelCategory
 
-open ModelCategory
+open modelCategory
 
 instance : ModelCategory SSet.{0} where
   cm4a := sorry

@@ -332,10 +332,10 @@ def Subcomplex.range : Y.Subcomplex where
     rintro Δ Δ' φ _ ⟨x, rfl⟩
     exact ⟨X.map φ x, by simp⟩-/
 
---@[simp]
---lemma Subcomplex.range_ι (A : X.Subcomplex) :
---    Subpresheaf.range A.ι = A := by
---  rw [Subpresheaf.range_ι]
+@[simp]
+lemma Subcomplex.range_ι (A : X.Subcomplex) :
+    Subpresheaf.range A.ι = A := by
+  rw [Subpresheaf.range_ι]
 
 abbrev toRangeSubcomplex : X ⟶ Subcomplex.range f := Subpresheaf.toRange f
 

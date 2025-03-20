@@ -6,23 +6,23 @@ import TopCatModelCategory.SSet.ProdSimplexOne
 universe u
 
 open HomotopicalAlgebra CategoryTheory Simplicial Limits MonoidalCategory
-  ChosenFiniteProducts
+  ChosenFiniteProducts Opposite
 
 namespace SSet
 
 variable (X : SSet.{u})
 
-abbrev PtSimplex (n : ℕ) (x : X _[0]) : Type u :=
+abbrev PtSimplex (n : ℕ) (x : X _⦋0⦌) : Type u :=
   Subcomplex.RelativeMorphism
-    (subcomplexBoundary n) (Subcomplex.ofSimplex x)
+    (boundary n) (Subcomplex.ofSimplex x)
       (const ⟨x, Subcomplex.mem_ofSimplex_obj x⟩)
 
 namespace PtSimplex
 
-variable {X} {n : ℕ} {x : X _[0]}
+variable {X} {n : ℕ} {x : X _⦋0⦌}
 
 @[simps]
-def pushforward (z : X.PtSimplex n x) {Y : SSet.{u}} (f : X ⟶ Y) (y : Y _[0])
+def pushforward (z : X.PtSimplex n x) {Y : SSet.{u}} (f : X ⟶ Y) (y : Y _⦋0⦌)
     (hy : f.app _ x = y) : Y.PtSimplex n y where
   map := z.map ≫ f
   comm := by
@@ -32,17 +32,17 @@ def pushforward (z : X.PtSimplex n x) {Y : SSet.{u}} (f : X ⟶ Y) (y : Y _[0])
 
 @[simps]
 def mk (f : Δ[n + 1] ⟶ X)
-    (hf : ∀ i, standardSimplex.map (SimplexCategory.δ i) ≫ f = const x) :
+    (hf : ∀ i, stdSimplex.map (SimplexCategory.δ i) ≫ f = const x) :
     X.PtSimplex (n +1) x where
   map := f
   comm := by
     ext i : 1
-    rw [Subcomplex.ofSimplex_ι, subcomplexBoundary.ι_ι_assoc, hf _, comp_const, comp_const]
+    rw [Subcomplex.ofSimplex_ι, boundary.ι_ι_assoc, hf _, comp_const, comp_const]
 
-def equiv₀ : X.PtSimplex 0 x ≃ X _[0] where
-  toFun f := yonedaEquiv _ _ f.map
+def equiv₀ : X.PtSimplex 0 x ≃ X _⦋0⦌ where
+  toFun f := yonedaEquiv f.map
   invFun y :=
-    { map := (yonedaEquiv _ _).symm y
+    { map := yonedaEquiv.symm y
       comm := by
         ext _ ⟨x, hx⟩
         simp at hx }
@@ -64,32 +64,32 @@ lemma comp_map_eq_const
   refine (Subcomplex.lift φ ?_) ≫= s.comm
   apply le_antisymm (by simp)
   rw [← Subcomplex.image_le_iff, Subcomplex.image_top,
-    standardSimplex.subcomplex_le_boundary_iff]
+    stdSimplex.subcomplex_le_boundary_iff]
   intro h
-  replace h : standardSimplex.id n ∈ (Subcomplex.range φ).obj _ := by simp [h]
+  replace h : yonedaEquiv (𝟙 _) ∈ (Subcomplex.range φ).obj (op ⦋n⦌) := by simp [h]
   obtain ⟨x, hx⟩ := h
-  have : ¬ (x ∈ Y.Degenerate n) := by
+  have : ¬ (x ∈ Y.degenerate n) := by
     intro hx'
     have := degenerate_map hx' φ
-    simp [hx, mem_degenerate_iff_non_mem_nondegenerate,
-      standardSimplex.non_degenerate_top_dim] at this
+    simp [hx, mem_degenerate_iff_not_mem_nonDegenerate,
+      stdSimplex.non_degenerate_top_dim] at this
   simp [Y.degenerate_eq_top_of_hasDimensionLT n n (by rfl)] at this
 
 @[reassoc (attr := simp)]
 lemma δ_map (f : X.PtSimplex (n + 1) x) (i : Fin (n + 2)) :
-    standardSimplex.map (SimplexCategory.δ i) ≫ f.map = const x :=
+    stdSimplex.map (SimplexCategory.δ i) ≫ f.map = const x :=
   comp_map_eq_const _ _
 
 end
 
 structure RelStruct (f g : X.PtSimplex n x) (i : Fin (n + 1)) where
   map : Δ[n + 1] ⟶ X
-  δ_castSucc_map : standardSimplex.map (SimplexCategory.δ i.castSucc) ≫ map = f.map := by aesop_cat
-  δ_succ_map : standardSimplex.map (SimplexCategory.δ i.succ) ≫ map = g.map := by aesop_cat
+  δ_castSucc_map : stdSimplex.map (SimplexCategory.δ i.castSucc) ≫ map = f.map := by aesop_cat
+  δ_succ_map : stdSimplex.map (SimplexCategory.δ i.succ) ≫ map = g.map := by aesop_cat
   δ_map_of_lt (j : Fin (n + 2)) (hj : j < i.castSucc) :
-    standardSimplex.map (SimplexCategory.δ j) ≫ map = const x := by aesop_cat
+    stdSimplex.map (SimplexCategory.δ j) ≫ map = const x := by aesop_cat
   δ_map_of_gt (j : Fin (n + 2)) (hj : i.succ < j) :
-    standardSimplex.map (SimplexCategory.δ j) ≫ map = const x := by aesop_cat
+    stdSimplex.map (SimplexCategory.δ j) ≫ map = const x := by aesop_cat
 
 def RelStruct₀ (f g : X.PtSimplex n x) := RelStruct f g 0
 
@@ -121,16 +121,16 @@ end RelStruct₀
 
 structure MulStruct (f g fg : X.PtSimplex n x) (i : Fin n) where
   map : Δ[n + 1] ⟶ X
-  δ_succ_succ_map : standardSimplex.map (SimplexCategory.δ (i.succ.succ)) ≫ map = f.map :=
+  δ_succ_succ_map : stdSimplex.map (SimplexCategory.δ (i.succ.succ)) ≫ map = f.map :=
     by aesop_cat
-  δ_castSucc_castSucc_map : standardSimplex.map
+  δ_castSucc_castSucc_map : stdSimplex.map
     (SimplexCategory.δ (i.castSucc.castSucc)) ≫ map = g.map := by aesop_cat
-  δ_castSucc_succ_map : standardSimplex.map (SimplexCategory.δ (i.succ.castSucc)) ≫ map =
+  δ_castSucc_succ_map : stdSimplex.map (SimplexCategory.δ (i.succ.castSucc)) ≫ map =
     fg.map := by aesop_cat
   δ_map_of_lt (j : Fin (n + 2)) (hj : j < i.castSucc.castSucc) :
-    standardSimplex.map (SimplexCategory.δ j) ≫ map = const x := by aesop_cat
+    stdSimplex.map (SimplexCategory.δ j) ≫ map = const x := by aesop_cat
   δ_map_of_gt (j : Fin (n + 2)) (hj : i.succ.succ < j) :
-    standardSimplex.map (SimplexCategory.δ j) ≫ map = const x := by aesop_cat
+    stdSimplex.map (SimplexCategory.δ j) ≫ map = const x := by aesop_cat
 
 namespace RelStruct
 
@@ -138,7 +138,7 @@ attribute [reassoc (attr := simp)] δ_castSucc_map δ_succ_map
   δ_map_of_lt δ_map_of_gt
 
 def refl (f : X.PtSimplex n x) (i : Fin (n + 1)) : RelStruct f f i where
-  map := standardSimplex.map (SimplexCategory.σ i) ≫ f.map
+  map := stdSimplex.map (SimplexCategory.σ i) ≫ f.map
   δ_castSucc_map := by
     simp [← Functor.map_comp_assoc, SimplexCategory.δ_comp_σ_self]
   δ_succ_map := by
@@ -186,13 +186,13 @@ attribute [reassoc (attr := simp)] δ_succ_succ_map δ_castSucc_castSucc_map
 @[reassoc (attr := simp)]
 lemma δ_succ_castSucc_map {f g fg : X.PtSimplex n x} {i : Fin n}
     (h : MulStruct f g fg i) :
-    standardSimplex.map (SimplexCategory.δ i.castSucc.succ) ≫ h.map = fg.map := by
+    stdSimplex.map (SimplexCategory.δ i.castSucc.succ) ≫ h.map = fg.map := by
   simp [Fin.succ_castSucc]
 
 @[simps]
 def pushforward {f g fg : X.PtSimplex n x} {i : Fin n}
-    (h : MulStruct f g fg i) {Y : SSet.{u}} (φ : X ⟶ Y) (y : Y _[0])
-    (hxy : φ.app (Opposite.op [0]) x = y) :
+    (h : MulStruct f g fg i) {Y : SSet.{u}} (φ : X ⟶ Y) (y : Y _⦋0⦌)
+    (hxy : φ.app (op ⦋0⦌) x = y) :
     MulStruct (f.pushforward φ y hxy) (g.pushforward φ y hxy) (fg.pushforward φ y hxy) i where
   map := h.map ≫ φ
   δ_map_of_lt j hj := by simp [h.δ_map_of_lt_assoc j hj, hxy]
@@ -281,7 +281,7 @@ noncomputable def assoc
     all_goals
       simp [Fin.lt_iff_val_lt_val, Fin.ext_iff] at hα ⊢
       omega
-  obtain ⟨β, hβ⟩ := subcomplexHorn.exists_desc α (by
+  obtain ⟨β, hβ⟩ := horn.exists_desc α (by
     rintro ⟨j, hj⟩ ⟨k, hk⟩ hjk
     dsimp at hjk
     simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hj hk
@@ -350,14 +350,14 @@ noncomputable def assoc
                         exact hk₁
                       · rw [hα₀ _ hj₁, comp_const])
   obtain ⟨γ, hγ⟩ := anodyneExtensions.exists_lift_of_isFibrant β
-    (anodyneExtensions.subcomplexHorn_ι_mem _ _)
+    (anodyneExtensions.horn_ι_mem _ _)
   replace hγ (j : Fin (n + 3)) (hj : j ≠ i.succ.castSucc.castSucc) :
-      standardSimplex.map (SimplexCategory.δ j) ≫ γ = α ⟨j, hj⟩ := by
-    rw [← hβ ⟨j, hj⟩, ← hγ, subcomplexHorn.ι_ι_assoc]
-  let μ := standardSimplex.map (SimplexCategory.δ i.succ.castSucc.castSucc) ≫ γ
+      stdSimplex.map (SimplexCategory.δ j) ≫ γ = α ⟨j, hj⟩ := by
+    rw [← hβ ⟨j, hj⟩, ← hγ, horn.ι_ι_assoc]
+  let μ := stdSimplex.map (SimplexCategory.δ i.succ.castSucc.castSucc) ≫ γ
   have hμ (j : Fin (n + 2)) (hj : j ≤ i.castSucc.castSucc) :
-      standardSimplex.map (SimplexCategory.δ j) ≫ μ =
-        standardSimplex.map (SimplexCategory.δ i.castSucc.castSucc) ≫
+      stdSimplex.map (SimplexCategory.δ j) ≫ μ =
+        stdSimplex.map (SimplexCategory.δ i.castSucc.castSucc) ≫
           α ⟨j.castSucc, by
             simp only [Set.mem_compl_iff, Set.mem_singleton_iff, Fin.castSucc_inj]
             rintro rfl
@@ -371,8 +371,8 @@ noncomputable def assoc
           rintro rfl
           simp at hj)]
   have hμ' (j : Fin (n + 2)) (hj : i.succ.castSucc ≤ j) :
-      standardSimplex.map (SimplexCategory.δ j) ≫ μ =
-        standardSimplex.map (SimplexCategory.δ i.succ.castSucc) ≫
+      stdSimplex.map (SimplexCategory.δ j) ≫ μ =
+        stdSimplex.map (SimplexCategory.δ i.succ.castSucc) ≫
           α ⟨j.succ, by
             simp [← Fin.succ_castSucc]
             rintro rfl
@@ -570,13 +570,13 @@ lemma nonempty (i : Fin (n + 1)) :
     all_goals
       simp [Fin.ext_iff, Fin.lt_iff_val_lt_val] at hj ⊢
       omega
-  obtain ⟨β, hβ⟩ := subcomplexHorn.exists_desc (fun j ↦ (α j).map) (by simp)
+  obtain ⟨β, hβ⟩ := horn.exists_desc (fun j ↦ (α j).map) (by simp)
   obtain ⟨γ, hγ⟩ := anodyneExtensions.exists_lift_of_isFibrant β
-    (anodyneExtensions.subcomplexHorn_ι_mem _ _)
+    (anodyneExtensions.horn_ι_mem _ _)
   replace hγ (j : Fin (n + 3)) (hj : j ≠ i.succ.castSucc) :
-      standardSimplex.map (SimplexCategory.δ j) ≫ γ = (α ⟨j, hj⟩).map := by
-    rw [← hβ, ← hγ, subcomplexHorn.ι_ι_assoc]
-  refine ⟨.mk (standardSimplex.map (SimplexCategory.δ i.succ.castSucc) ≫ γ) ?_, ⟨?_⟩⟩
+      stdSimplex.map (SimplexCategory.δ j) ≫ γ = (α ⟨j, hj⟩).map := by
+    rw [← hβ, ← hγ, horn.ι_ι_assoc]
+  refine ⟨.mk (stdSimplex.map (SimplexCategory.δ i.succ.castSucc) ≫ γ) ?_, ⟨?_⟩⟩
   · intro j
     rw [← Functor.map_comp_assoc, ← Fin.succ_castSucc]
     by_cases hj : j ≤ i.castSucc
@@ -623,31 +623,31 @@ noncomputable def relStruct₀ (h : p.Homotopy q) : RelStruct₀ p q := by
   obtain _ | n := n
   · refine (RelStruct₀.equiv₀.symm
       (KanComplex.FundamentalGroupoid.Edge.mk
-        ((standardSimplex.leftUnitor _).inv ≫ h.h) ?_ ?_)).symm
+        ((stdSimplex.leftUnitor _).inv ≫ h.h) ?_ ?_)).symm
     · dsimp
-      rw [← standardSimplex.ι₀_standardSimplex_zero_assoc, h.h₀, map_eq_const_equiv₀]
+      rw [← stdSimplex.ι₀_stdSimplex_zero_assoc, h.h₀, map_eq_const_equiv₀]
     · dsimp
-      rw [← standardSimplex.ι₁_standardSimplex_zero_assoc, h.h₁, map_eq_const_equiv₀]
-  have hrel (k : Fin (n + 2)) : standardSimplex.map (SimplexCategory.δ k) ▷ Δ[1] ≫ h.h =
+      rw [← stdSimplex.ι₁_stdSimplex_zero_assoc, h.h₁, map_eq_const_equiv₀]
+  have hrel (k : Fin (n + 2)) : stdSimplex.map (SimplexCategory.δ k) ▷ Δ[1] ≫ h.h =
     const x := by
-      have := subcomplexBoundary.ι k ▷ _ ≫= h.rel
-      rw [← comp_whiskerRight_assoc, subcomplexBoundary.ι_ι, Subcomplex.ofSimplex_ι,
+      have := boundary.ι k ▷ _ ≫= h.rel
+      rw [← comp_whiskerRight_assoc, boundary.ι_ι, Subcomplex.ofSimplex_ι,
         comp_const, comp_const, comp_const] at this
       exact this
   have hrel₁ (i : Fin (n + 2)) (j : Fin (n + 3)) (hij : i.succ < j) :
-      standardSimplex.map (SimplexCategory.δ j) ≫
-        prodStandardSimplex₁.ι i ≫ h.h = const x := by
-    rw [prodStandardSimplex₁.δ_ι_of_succ_lt_assoc _ _ hij, hrel, comp_const]
+      stdSimplex.map (SimplexCategory.δ j) ≫
+        prodStdSimplex₁.ι i ≫ h.h = const x := by
+    rw [prodStdSimplex₁.δ_ι_of_succ_lt_assoc _ _ hij, hrel, comp_const]
   have hrel₂ (i : Fin (n + 2)) (j : Fin (n + 3)) (hij : j < i.castSucc) :
-      standardSimplex.map (SimplexCategory.δ j) ≫
-        prodStandardSimplex₁.ι i ≫ h.h = const x := by
-    rw [prodStandardSimplex₁.δ_ι_of_lt_assoc _ _ hij, hrel, comp_const]
+      stdSimplex.map (SimplexCategory.δ j) ≫
+        prodStdSimplex₁.ι i ≫ h.h = const x := by
+    rw [prodStdSimplex₁.δ_ι_of_lt_assoc _ _ hij, hrel, comp_const]
   let src (i : Fin (n + 2)) : X.PtSimplex (n + 1) x :=
-    { map := standardSimplex.map (SimplexCategory.δ i.castSucc) ≫
-        prodStandardSimplex₁.ι.{u} i ≫ h.h
+    { map := stdSimplex.map (SimplexCategory.δ i.castSucc) ≫
+        prodStdSimplex₁.ι.{u} i ≫ h.h
       comm := by
         ext j : 1
-        rw [subcomplexBoundary.ι_ι_assoc, Subcomplex.ofSimplex_ι,
+        rw [boundary.ι_ι_assoc, Subcomplex.ofSimplex_ι,
           comp_const, comp_const]
         by_cases hij : i < j
         · rw [← Functor.map_comp_assoc, ← SimplexCategory.δ_comp_δ hij.le,
@@ -655,20 +655,20 @@ noncomputable def relStruct₀ (h : p.Homotopy q) : RelStruct₀ p q := by
         · simp only [not_lt] at hij
           obtain rfl | ⟨i, rfl⟩ := i.eq_zero_or_eq_succ
           · dsimp
-            rw [prodStandardSimplex₁.δ_ι_zero_assoc, h.h₁, δ_map]
+            rw [prodStdSimplex₁.δ_ι_zero_assoc, h.h₁, δ_map]
           · obtain hij | rfl := hij.lt_or_eq
             · rw [← Fin.succ_castSucc, ← Functor.map_comp_assoc,
                 SimplexCategory.δ_comp_δ (Fin.le_castSucc_iff.2 hij),
                 Functor.map_comp_assoc, hrel₂ _ _ hij, comp_const]
-            · rw [prodStandardSimplex₁.δ_succ_castSucc_ι_succ_assoc,
+            · rw [prodStdSimplex₁.δ_succ_castSucc_ι_succ_assoc,
                 ← Functor.map_comp_assoc, SimplexCategory.δ_comp_δ_self,
                 Functor.map_comp_assoc, hrel₁ _ _ (by simp), comp_const] }
   let tgt (i : Fin (n + 2)) : X.PtSimplex (n + 1) x :=
-    { map := standardSimplex.map (SimplexCategory.δ i.succ) ≫
-      prodStandardSimplex₁.ι.{u} i ≫ h.h
+    { map := stdSimplex.map (SimplexCategory.δ i.succ) ≫
+      prodStdSimplex₁.ι.{u} i ≫ h.h
       comm := by
         ext j : 1
-        rw [subcomplexBoundary.ι_ι_assoc, Subcomplex.ofSimplex_ι,
+        rw [boundary.ι_ι_assoc, Subcomplex.ofSimplex_ι,
           comp_const, comp_const]
         by_cases hij : j ≤ i
         · rw [← Functor.map_comp_assoc, SimplexCategory.δ_comp_δ hij,
@@ -677,8 +677,8 @@ noncomputable def relStruct₀ (h : p.Homotopy q) : RelStruct₀ p q := by
           · rw [hrel₂ _ _ (by simpa), comp_const]
           · obtain rfl | ⟨j, rfl⟩ := j.eq_zero_or_eq_succ
             · dsimp
-              rw [prodStandardSimplex₁.δ_ι_zero_assoc, h.h₁, δ_map]
-            · rw [prodStandardSimplex₁.δ_succ_castSucc_ι_succ_assoc,
+              rw [prodStdSimplex₁.δ_ι_zero_assoc, h.h₁, δ_map]
+            · rw [prodStdSimplex₁.δ_succ_castSucc_ι_succ_assoc,
                 ← Functor.map_comp_assoc, SimplexCategory.δ_comp_δ_self,
                 Functor.map_comp_assoc, hrel₁ _ _ (by simp), comp_const]
         · simp only [not_le] at hij
@@ -687,21 +687,21 @@ noncomputable def relStruct₀ (h : p.Homotopy q) : RelStruct₀ p q := by
             ← SimplexCategory.δ_comp_δ (by simpa),
             Functor.map_comp_assoc, hrel₁ _ _ (by simpa), comp_const] }
   have ρ (i : Fin (n + 2)) : RelStruct (src i) (tgt i) i :=
-    { map := prodStandardSimplex₁.ι i ≫ h.h
+    { map := prodStdSimplex₁.ι i ≫ h.h
       δ_castSucc_map := rfl
       δ_succ_map := rfl
       δ_map_of_gt j hij := hrel₁ _ _ hij
       δ_map_of_lt j hij := hrel₂ _ _ hij}
   have h₀ : src 0 = q := by
     ext : 1
-    simp [src, prodStandardSimplex₁.δ_ι_zero_assoc]
+    simp [src, prodStdSimplex₁.δ_ι_zero_assoc]
   have h₁ (i : Fin (n + 1)) : src i.succ = tgt i.castSucc := by
     ext : 1
     dsimp only [src, tgt]
-    rw [prodStandardSimplex₁.δ_succ_castSucc_ι_succ_assoc, Fin.succ_castSucc]
+    rw [prodStdSimplex₁.δ_succ_castSucc_ι_succ_assoc, Fin.succ_castSucc]
   have h₂ : tgt (Fin.last _) = p := by
     ext : 1
-    simp [tgt, prodStandardSimplex₁.δ_ι_last_assoc]
+    simp [tgt, prodStdSimplex₁.δ_ι_last_assoc]
   have (i : Fin (n + 2)) : RelStruct₀ q (tgt i) := by
     induction i using Fin.induction with
     | zero => simpa only [← h₀] using ρ 0
@@ -716,9 +716,9 @@ noncomputable def RelStruct₀.homotopy (h : RelStruct₀ p q) : p.Homotopy q :=
   · refine ⟨{
       h := snd _ _ ≫ h.symm.map
       h₀ := by
-        rw [← h.symm.δ_succ_map, lift_snd_assoc, standardSimplex.obj₀Equiv_symm_apply,
+        rw [← h.symm.δ_succ_map, ι₀_snd_assoc, stdSimplex.obj₀Equiv_symm_apply,
           const_comp, Fin.succ_zero_eq_one]
-        apply (yonedaEquiv _ _).injective
+        apply (yonedaEquiv).injective
         rw [yonedaEquiv₀, yonedaEquiv_map_comp]
         erw [← FunctorToTypes.naturality]
         apply congr_arg
@@ -726,9 +726,9 @@ noncomputable def RelStruct₀.homotopy (h : RelStruct₀ p q) : p.Homotopy q :=
         fin_cases i
         rfl
       h₁ := by
-        rw [← h.symm.δ_castSucc_map, lift_snd_assoc, standardSimplex.obj₀Equiv_symm_apply,
+        rw [← h.symm.δ_castSucc_map, ι₁_snd_assoc, stdSimplex.obj₀Equiv_symm_apply,
           const_comp]
-        apply (yonedaEquiv _ _).injective
+        apply yonedaEquiv.injective
         rw [yonedaEquiv₀, yonedaEquiv_map_comp]
         erw [← FunctorToTypes.naturality]
         apply congr_arg
@@ -743,11 +743,11 @@ noncomputable def RelStruct₀.homotopy (h : RelStruct₀ p q) : p.Homotopy q :=
   have h' := h.symm.relStruct (Fin.last (n + 1))
   let α : Fin (n + 2) → (Δ[n + 2] ⟶ X) :=
     Fin.lastCases h'.map (fun i ↦
-      standardSimplex.map (SimplexCategory.σ i.castSucc) ≫ q.map)
+      stdSimplex.map (SimplexCategory.σ i.castSucc) ≫ q.map)
   have hα₁ (i : Fin (n + 1)) :
-      α i.castSucc = standardSimplex.map (SimplexCategory.σ i.castSucc) ≫ q.map := by simp [α]
+      α i.castSucc = stdSimplex.map (SimplexCategory.σ i.castSucc) ≫ q.map := by simp [α]
   have hα₂ : α (Fin.last (n + 1)) = h'.map := by simp [α]
-  obtain ⟨φ, hφ⟩ := prodStandardSimplex₁.exists_desc α (fun i ↦ by
+  obtain ⟨φ, hφ⟩ := prodStdSimplex₁.exists_desc α (fun i ↦ by
     obtain ⟨i, rfl⟩ | rfl := i.eq_castSucc_or_eq_last
     · rw [hα₁, Fin.succ_castSucc, hα₁, ← Functor.map_comp_assoc,
         ← Functor.map_comp_assoc,
@@ -759,22 +759,22 @@ noncomputable def RelStruct₀.homotopy (h : RelStruct₀ p q) : p.Homotopy q :=
   exact ⟨{
     h := φ
     h₀ := by
-      rw [← prodStandardSimplex₁.δ_ι_last_assoc, hφ, hα₂]
+      rw [← prodStdSimplex₁.δ_ι_last_assoc, hφ, hα₂]
       exact h'.δ_succ_map
     h₁ := by
       have eq₁ := hα₁ 0
       have eq₂ := SimplexCategory.δ_comp_σ_self (i := (0 : Fin (n + 2)))
       dsimp at eq₁ eq₂
-      rw [← prodStandardSimplex₁.δ_ι_zero_assoc, hφ, eq₁,
-        ← standardSimplex.map_comp_assoc, eq₂,
+      rw [← prodStdSimplex₁.δ_ι_zero_assoc, hφ, eq₁,
+        ← stdSimplex.map_comp_assoc, eq₂,
         CategoryTheory.Functor.map_id, Category.id_comp]
-    rel := subcomplexBoundary.hom_ext_tensorRight (fun i ↦ by
+    rel := boundary.hom_ext_tensorRight (fun i ↦ by
       rw [Subcomplex.ofSimplex_ι, comp_const, comp_const, comp_const,
-        ← comp_whiskerRight_assoc, subcomplexBoundary.ι_ι]
+        ← comp_whiskerRight_assoc, boundary.ι_ι]
       ext j : 1
       rw [comp_const]
       by_cases hi : i ≤ j.castSucc
-      · rw [prodStandardSimplex₁.ι_whiskerRight_δ_of_le_assoc _ _ hi, hφ]
+      · rw [prodStdSimplex₁.ι_whiskerRight_δ_of_le_assoc _ _ hi, hφ]
         obtain ⟨j, rfl⟩ | rfl := j.eq_castSucc_or_eq_last
         · rw [Fin.succ_castSucc, hα₁, ← Functor.map_comp_assoc, ← Fin.succ_castSucc,
             SimplexCategory.δ_comp_σ_of_le hi,
@@ -783,7 +783,7 @@ noncomputable def RelStruct₀.homotopy (h : RelStruct₀ p q) : p.Homotopy q :=
           apply h'.δ_map_of_lt i.castSucc
           rwa [Fin.castSucc_lt_castSucc_iff, ← Fin.succ_last, ← Fin.le_castSucc_iff]
       · simp only [not_le] at hi
-        rw [prodStandardSimplex₁.ι_whiskerRight_δ_of_gt_assoc _ _ hi, hφ, hα₁,
+        rw [prodStdSimplex₁.ι_whiskerRight_δ_of_gt_assoc _ _ hi, hφ, hα₁,
           ← Functor.map_comp_assoc, SimplexCategory.δ_comp_σ_of_gt hi,
           Functor.map_comp_assoc, δ_map, comp_const] ) }⟩
 

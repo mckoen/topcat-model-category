@@ -34,10 +34,10 @@ def localLiftingProperty : MorphismProperty (Cᵒᵖ ⥤ D) := fun F G f ↦
     liftingSieve sq ∈ J _
 
 def trivialLocalFibrations : MorphismProperty (Cᵒᵖ ⥤ SSet.{u}) :=
-  ⨅ (n : ℕ), J.localLiftingProperty (SSet.subcomplexBoundary.{u} n).ι
+  ⨅ (n : ℕ), J.localLiftingProperty (SSet.boundary.{u} n).ι
 
 def localFibrations : MorphismProperty (Cᵒᵖ ⥤ SSet.{u}) :=
-  ⨅ (n : ℕ) (i : Fin (n + 2)), J.localLiftingProperty (SSet.subcomplexHorn.{u} (n + 1) i).ι
+  ⨅ (n : ℕ) (i : Fin (n + 2)), J.localLiftingProperty (SSet.horn.{u} (n + 1) i).ι
 
 end GrothendieckTopology
 
