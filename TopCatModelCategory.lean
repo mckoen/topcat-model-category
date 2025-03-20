@@ -28,8 +28,10 @@ import TopCatModelCategory.SSet.Basic
 import TopCatModelCategory.SSet.Boundary
 import TopCatModelCategory.SSet.CategoryWithFibrations
 import TopCatModelCategory.SSet.ChosenFiniteProducts
+import TopCatModelCategory.SSet.Coproducts
 import TopCatModelCategory.SSet.DeformationRetract
 import TopCatModelCategory.SSet.Degenerate
+import TopCatModelCategory.SSet.DimensionCoproducts
 import TopCatModelCategory.SSet.DimensionProd
 import TopCatModelCategory.SSet.Fiber
 import TopCatModelCategory.SSet.Fibrations
@@ -42,6 +44,7 @@ import TopCatModelCategory.SSet.HomotopyBasic
 import TopCatModelCategory.SSet.HomotopyGroup
 import TopCatModelCategory.SSet.HomotopySequence
 import TopCatModelCategory.SSet.Horn
+import TopCatModelCategory.SSet.IsFiniteCoproducts
 import TopCatModelCategory.SSet.KanComplexW
 import TopCatModelCategory.SSet.MinimalFibrations
 import TopCatModelCategory.SSet.MonoCoprod
