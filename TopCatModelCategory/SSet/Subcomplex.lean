@@ -470,8 +470,8 @@ lemma ofSimplex_le_iff {n : ℕ} (x : X _[n]) (A : X.Subcomplex) :
     obtain ⟨f, rfl⟩ := (standardSimplex.objEquiv _ _).symm.surjective y
     exact A.map f.op h-/
 
-lemma mem_ofSimplex_obj_iff {m n : ℕ} (x : X _⦋n⦌) (y : X _⦋m⦌) :
-    y ∈ (ofSimplex x).obj _ ↔ ∃ (f : ⦋m⦌ ⟶ ⦋n⦌), X.map f.op x = y := by
+lemma mem_ofSimplex_obj_iff {n : ℕ} (x : X _⦋n⦌) {m : SimplexCategoryᵒᵖ} (y : X.obj m) :
+    y ∈ (ofSimplex x).obj m ↔ ∃ (f : m.unop ⟶ ⦋n⦌), X.map f.op x = y := by
   simp [ofSimplex, Subpresheaf.ofSection]
   aesop
 
