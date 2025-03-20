@@ -2,7 +2,7 @@ import TopCatModelCategory.SSet.StandardSimplex
 
 universe u
 
-open Simplicial
+open Simplicial CategoryTheory
 
 namespace SSet
 
@@ -66,5 +66,39 @@ instance [X.IsFinite] (n : SimplexCategoryᵒᵖ) : Finite (X.obj n) := by
     have := SimplexCategory.le_of_epi hf
     exact ⟨⟨⟨m, by omega⟩, f, y⟩, rfl⟩
   exact Finite.of_surjective _ hφ
+
+instance [X.IsFinite] (A : X.Subcomplex) : IsFinite A := by
+  obtain ⟨d, _⟩ := X.hasDimensionLT_of_isFinite
+  refine isFinite_of_hasDimensionLT _ d (fun i hi ↦ ?_)
+  apply Finite.of_injective (f := fun a ↦ a.1.1)
+  rintro ⟨⟨x, _⟩, _⟩ ⟨⟨y, _⟩, _⟩ rfl
+  rfl
+
+variable {X}
+
+lemma isFinite_of_mono {Y : SSet.{u}} [Y.IsFinite] (f : X ⟶ Y) [hf : Mono f] : X.IsFinite := by
+  obtain ⟨d, _⟩ := Y.hasDimensionLT_of_isFinite
+  have := hasDimensionLT_of_mono f d
+  refine isFinite_of_hasDimensionLT _ d (fun i hi ↦ ?_)
+  apply Finite.of_injective (f := fun a ↦ f.app _ a.1)
+  rintro ⟨x, _⟩ ⟨y, _⟩ h
+  obtain rfl : x = y := by
+    rw [NatTrans.mono_iff_mono_app] at hf
+    simp only [mono_iff_injective] at hf
+    exact hf _ h
+  rfl
+
+lemma isFinite_of_epi {Y : SSet.{u}} [X.IsFinite] (f : X ⟶ Y) [hf : Epi f] : Y.IsFinite := by
+  obtain ⟨d, _⟩ := X.hasDimensionLT_of_isFinite
+  have := hasDimensionLT_of_epi f d
+  refine isFinite_of_hasDimensionLT _ d (fun i hi ↦ ?_)
+  have : Finite (Y _⦋i⦌) := by
+    rw [NatTrans.epi_iff_epi_app] at hf
+    simp only [epi_iff_surjective] at hf
+    exact Finite.of_surjective _ (hf _)
+  infer_instance
+
+lemma isFinite_of_iso {Y : SSet.{u}} (e : X ≅ Y) [X.IsFinite] : Y.IsFinite :=
+  isFinite_of_mono e.inv
 
 end SSet

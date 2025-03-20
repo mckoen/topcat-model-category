@@ -71,4 +71,22 @@ instance [X₁.IsFinite] [X₂.IsFinite] : (X₁ ⊗ X₂).IsFinite := by
   have : Finite ((X₁ ⊗ X₂).obj (op ⦋i⦌)) := inferInstanceAs (Finite (X₁ _⦋i⦌ × X₂ _⦋i⦌))
   infer_instance
 
+variable {X₁ X₂} {X₃ X₄ : SSet.{u}}
+
+lemma isFinite_of_isPullback {t : X₁ ⟶ X₂} {l : X₁ ⟶ X₃} {r : X₂ ⟶ X₄} {b : X₃ ⟶ X₄}
+    (sq : IsPullback t l r b) [X₂.IsFinite] [X₃.IsFinite] : X₁.IsFinite := by
+  let φ : X₁ ⟶ X₂ ⊗ X₃ := ChosenFiniteProducts.lift t l
+  have hφ : Mono φ := by
+    rw [NatTrans.mono_iff_mono_app]
+    intro k
+    rw [mono_iff_injective]
+    intro x₁ y₁ h
+    rw [Prod.ext_iff] at h
+    exact Limits.Types.ext_of_isPullback (sq.map ((evaluation _ _).obj k)) h.1 h.2
+  exact isFinite_of_mono φ
+
+instance [X₂.IsFinite] [X₃.IsFinite] (r : X₂ ⟶ X₄) (b : X₃ ⟶ X₄) :
+    (Limits.pullback r b).IsFinite :=
+  isFinite_of_isPullback (IsPullback.of_hasPullback r b)
+
 end SSet

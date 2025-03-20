@@ -15,6 +15,7 @@ import TopCatModelCategory.JoyalTrickDual
 import TopCatModelCategory.ModelCategoryCopy
 import TopCatModelCategory.ModelCategorySSet
 import TopCatModelCategory.ModelCategoryTopCat
+import TopCatModelCategory.MonoCoprod
 import TopCatModelCategory.MonoidalClosed
 import TopCatModelCategory.MorphismProperty
 import TopCatModelCategory.Multiequalizer
@@ -43,6 +44,7 @@ import TopCatModelCategory.SSet.HomotopySequence
 import TopCatModelCategory.SSet.Horn
 import TopCatModelCategory.SSet.KanComplexW
 import TopCatModelCategory.SSet.MinimalFibrations
+import TopCatModelCategory.SSet.MonoCoprod
 import TopCatModelCategory.SSet.Monoidal
 import TopCatModelCategory.SSet.NonDegenerateProdSimplex
 import TopCatModelCategory.SSet.Paths
