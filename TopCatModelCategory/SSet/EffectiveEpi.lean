@@ -4,7 +4,7 @@ import TopCatModelCategory.ColimitsType
 
 universe u
 
-open CategoryTheory Limits
+open CategoryTheory Category Limits
 
 namespace SSet
 
@@ -36,7 +36,7 @@ lemma exists_img {j : SimplexCategoryᵒᵖ} (x : X.obj j) :
 noncomputable def descApp (j : SimplexCategoryᵒᵖ) : X.obj j ⟶ T.obj j :=
   fun x ↦ (exists_img f hf x).choose
 
-lemma descApp_eq (j : SimplexCategoryᵒᵖ) (y : Y.obj j) :
+lemma descApp_eq {j : SimplexCategoryᵒᵖ} (y : Y.obj j) :
     descApp f hf j (p.app _ y) = f.app _ y :=
   ((exists_img f hf (p.app _ y)).choose_spec _ rfl).symm
 
@@ -67,5 +67,19 @@ noncomputable def effectiveEpiStructOfEpi : EffectiveEpiStruct p where
 
 lemma effectiveEpi_of_epi : EffectiveEpi p where
   effectiveEpi := ⟨effectiveEpiStructOfEpi p⟩
+
+noncomputable def isCoequalizerOfEpiOfIsPullback {Z : SSet.{u}} {p₁ p₂ : Z ⟶ Y}
+    (sq : IsPullback p₁ p₂ p p) {W : SSet.{u}} (q : W ⟶ Z) [Epi q] :
+    IsColimit (Cofork.ofπ (f := q ≫ p₁) (g := q ≫ p₂) p (by simp only [assoc, sq.w])) :=
+  Cofork.IsColimit.mk _ (fun s ↦ (effectiveEpiStructOfEpi p).desc s.π (fun {T} g₁ g₂ h ↦ by
+      obtain ⟨l, rfl, rfl⟩ : ∃ l, l ≫ p₁ = g₁ ∧ l ≫ p₂ = g₂ :=
+        ⟨sq.lift g₁ g₂ h, by simp, by simp⟩
+      have := s.condition
+      simp only [assoc, cancel_epi] at this
+      simp only [assoc, this]))
+    (fun s ↦ (effectiveEpiStructOfEpi p).fac _ _)
+    (fun s m hm ↦ by
+      dsimp at m hm ⊢
+      rw [← cancel_epi p, hm, (effectiveEpiStructOfEpi p).fac])
 
 end SSet

@@ -33,6 +33,7 @@ import TopCatModelCategory.SSet.DeformationRetract
 import TopCatModelCategory.SSet.Degenerate
 import TopCatModelCategory.SSet.DimensionCoproducts
 import TopCatModelCategory.SSet.DimensionProd
+import TopCatModelCategory.SSet.EffectiveEpi
 import TopCatModelCategory.SSet.Fiber
 import TopCatModelCategory.SSet.Fibrations
 import TopCatModelCategory.SSet.Finite
@@ -51,6 +52,7 @@ import TopCatModelCategory.SSet.MonoCoprod
 import TopCatModelCategory.SSet.Monoidal
 import TopCatModelCategory.SSet.NonDegenerateProdSimplex
 import TopCatModelCategory.SSet.Paths
+import TopCatModelCategory.SSet.Presentable
 import TopCatModelCategory.SSet.ProdSimplexOne
 import TopCatModelCategory.SSet.PtSimplex
 import TopCatModelCategory.SSet.SimplexCategory
