@@ -1,10 +1,13 @@
 import TopCatModelCategory.ModelCategoryTopCat
 import TopCatModelCategory.SSet.CategoryWithFibrations
+import TopCatModelCategory.SSet.Presentable
 import Mathlib.CategoryTheory.SmallObject.Basic
 
 open HomotopicalAlgebra CategoryTheory Limits
 
 namespace SSet
+
+attribute [local instance] Cardinal.fact_isRegular_aleph0
 
 namespace modelCategory
 
@@ -15,10 +18,18 @@ instance (K : Type u) [LinearOrder K] : HasIterationOfShape K SSet.{u} where
 attribute [local instance] Cardinal.aleph0_isRegular
   Cardinal.orderbot_aleph0_ord_to_type
 
+instance (J : Type u) [SmallCategory J] [IsFiltered J] (X : SSet.{u}) [X.IsFinite] :
+    PreservesColimitsOfShape J (coyoneda.obj (Opposite.op X)) := by
+  have : IsCardinalFiltered J Cardinal.aleph0.{u} := by
+    rwa [isCardinalFiltered_aleph0_iff]
+  exact preservesColimitsOfShape_of_isCardinalPresentable _ (Cardinal.aleph0.{u}) _
+
 instance isCardinalForSmallObjectArgument_I :
     I.{u}.IsCardinalForSmallObjectArgument Cardinal.aleph0.{u} where
   hasIterationOfShape := by infer_instance
-  preservesColimit := sorry
+  preservesColimit {A _ _ _} i hi f hf := by
+    obtain ⟨n⟩ := hi
+    infer_instance
   isSmall := by
     dsimp [I]
     infer_instance
@@ -26,7 +37,10 @@ instance isCardinalForSmallObjectArgument_I :
 instance isCardinalForSmallObjectArgument_J :
     J.{u}.IsCardinalForSmallObjectArgument Cardinal.aleph0.{u} where
   hasIterationOfShape := by infer_instance
-  preservesColimit := sorry
+  preservesColimit {A _ _ _} i hi f hf := by
+    simp [J] at hi
+    obtain ⟨n, ⟨i⟩⟩ := hi
+    infer_instance
   isSmall := by
     dsimp [J]
     infer_instance
