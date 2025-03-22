@@ -1,4 +1,4 @@
-import TopCatModelCategory.SSet.CategoryWithFibrations
+
 import TopCatModelCategory.SSet.DeformationRetract
 import TopCatModelCategory.SSet.Degenerate
 import TopCatModelCategory.SSet.Fibrations
@@ -562,7 +562,11 @@ lemma Extension.A_eq_top_of_isMax [Fibration p] (f : selection.Extension)
     obtain ⟨y, hy, ⟨ρ⟩⟩ := selection.nonempty (yonedaEquiv (ι₀ ≫ ψ))
     replace hy : y ∈ selection.subcomplex.obj _ :=
       mem_subcomplex_of_boundary _ _ hy (by
-        sorry)
+        rw [← Subcomplex.image_le_iff, Subcomplex.image_eq_range,
+          ← ρ.d_eq₂, ρ.d_eq₁, Equiv.symm_apply_apply,
+          ← ι₀_comp_assoc, hψ₂, ι₀_comp_assoc, f.ι₀_h, ← Category.assoc,
+          Subcomplex.range_comp]
+        exact (Subcomplex.image_le_range _ _).trans (by simp))
     replace ρ := ρ.symm
     let b₀ := (ihomToPullback (boundary n).ι p).app _ (ihom₀Equiv.symm (ι₀ ≫ ψ))
     obtain ⟨x, hx₁, hx₂, hx₃⟩ := exists_path_composition_above_of_fibration'
@@ -573,13 +577,16 @@ lemma Extension.A_eq_top_of_isMax [Fibration p] (f : selection.Extension)
             ext : 1
             · dsimp [b₀]
               rw [Category.assoc, pullback.lift_fst, const_comp,
-                ← FunctorToTypes.comp, pullback.lift_fst]
-              have pif := ρ.π_eq₁
-              sorry
+                ← FunctorToTypes.comp, pullback.lift_fst,
+                ← curry_whiskerRight_comp, ρ.hd, ρ.d_eq₂,
+                Equiv.symm_apply_apply, ← ihom₀Equiv_symm_comp]
+              rfl
             · dsimp [b₀]
               rw [Category.assoc, pullback.lift_snd, const_comp,
-                ← FunctorToTypes.comp, pullback.lift_snd]
-              sorry)
+                ← FunctorToTypes.comp, pullback.lift_snd,
+                ← ihom₀Equiv_symm_comp', ← curry_natural_right, ρ.hπ,
+                ρ.π_eq₂, Equiv.symm_apply_apply]
+              rfl)
     have hx₄ := hx₃ =≫ pullback.fst _ _
     have hx₅ := hx₃ =≫ pullback.snd _ _
     simp only [Category.assoc, limit.lift_π, PullbackCone.mk_pt, PullbackCone.mk_π_app] at hx₄
@@ -681,6 +688,12 @@ instance minimalFibration_ι_comp [Fibration p] :
       (h.map selection.relativeDeformationRetract.retractArrow.i rfl rfl)
 
 end Selection
+
+lemma existence [Fibration p] :
+    ∃ (A : E.Subcomplex) (_ : A.RelativeDeformationRetract p),
+      MinimalFibration (A.ι ≫ p) := by
+  let selection : Selection p := Classical.arbitrary _
+  exact ⟨selection.subcomplex, selection.relativeDeformationRetract, inferInstance⟩
 
 end MinimalFibration
 

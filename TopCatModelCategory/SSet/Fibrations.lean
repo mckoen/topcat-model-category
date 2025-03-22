@@ -473,13 +473,14 @@ lemma exists_path_composition_above_of_fibration'
   rw [eq₃, ← Functor.map_comp_assoc, this, CategoryTheory.Functor.map_id, Category.id_comp]
 
 lemma homotopy_extension_property₁ {E K L : SSet.{u}} (i : K ⟶ L) (p : E ⟶ B) [Fibration p]
+    [Mono i]
     (hE : K ⊗ Δ[1] ⟶ E) (f : L ⟶ E) (h₁ : i ≫ f = ι₁ ≫ hE)
     (hB : L ⊗ Δ[1] ⟶ B) (h₂ : ι₁ ≫ hB = f ≫ p) (h₃ : i ▷ _ ≫ hB = hE ≫ p)  :
     ∃ ψ : L ⊗ Δ[1] ⟶ E, ι₁ ≫ ψ = f ∧ i ▷ _ ≫ ψ = hE ∧ ψ ≫ p = hB := by
   have h := IsPushout.of_hasPushout i ι₁
   let l : pushout i ι₁ ⟶ L ⊗ Δ[1] := pushout.desc ι₁ (i ▷ _) (by simp)
-  have : anodyneExtensions l := sorry
-  have := anodyneExtensions.hasLeftLiftingProperty this p
+  have : anodyneExtensions l := anodyneExtensions.pushout_desc_ι₁_whiskerRight_mono i
+  have := this.hasLeftLiftingProperty p
   obtain ⟨t, ht₁, ht₂⟩ := h.exists_desc _ _ h₁
   have sq : CommSq t l p hB := ⟨by aesop⟩
   refine ⟨sq.lift, ?_, ?_, ?_⟩

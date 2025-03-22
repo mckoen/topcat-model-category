@@ -317,6 +317,9 @@ lemma subcomplex_unionProd_mem_of_right {X Y : SSet.{u}}
     (Arrow.isoMk (Subcomplex.unionProd.symmIso _ _) (β_ _ _))).2
     (subcomplex_unionProd_mem_of_left B A hB)
 
+lemma pushout_desc_ι₁_whiskerRight_mono {X Y : SSet.{u}} (i : X ⟶ Y) [Mono i] :
+    anodyneExtensions (pushout.desc (f := i) (g := ι₁) ι₁ (i ▷ Δ[1]) (by simp)) := sorry
+
 end anodyneExtensions
 
 end SSet

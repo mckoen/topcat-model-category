@@ -518,6 +518,13 @@ lemma image_iSup {ι : Type*} (S : ι → X.Subcomplex) (f : X ⟶ Y) :
   aesop
 
 @[simp]
+lemma preimage_range : (range f).preimage f = ⊤ :=
+  le_antisymm (by simp) (by rw [← image_le_iff, image_top])
+
+lemma image_le_range : S.image f ≤ range f := by
+  simp only [image_le_iff, preimage_range, le_top]
+
+@[simp]
 lemma image_ofSimplex {n : ℕ} (x : X _⦋n⦌) (f : X ⟶ Y) :
     (ofSimplex x).image f = ofSimplex (f.app _ x) := by
   apply le_antisymm
