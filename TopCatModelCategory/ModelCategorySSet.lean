@@ -1,6 +1,11 @@
-import TopCatModelCategory.ModelCategoryTopCat
+import Mathlib.CategoryTheory.SmallObject.Basic
+import Mathlib.AlgebraicTopology.SingularSet
+import TopCatModelCategory.MorphismProperty
+import TopCatModelCategory.Factorization
+--import TopCatModelCategory.ModelCategoryTopCat
 import TopCatModelCategory.SSet.CategoryWithFibrations
 import TopCatModelCategory.SSet.Presentable
+import TopCatModelCategory.JoyalTrickDual
 import Mathlib.CategoryTheory.SmallObject.Basic
 
 open HomotopicalAlgebra CategoryTheory Limits
@@ -27,7 +32,7 @@ instance (J : Type u) [SmallCategory J] [IsFiltered J] (X : SSet.{u}) [X.IsFinit
 instance isCardinalForSmallObjectArgument_I :
     I.{u}.IsCardinalForSmallObjectArgument Cardinal.aleph0.{u} where
   hasIterationOfShape := by infer_instance
-  preservesColimit {A _ _ _} i hi f hf := by
+  preservesColimit i hi f hf := by
     obtain ⟨n⟩ := hi
     infer_instance
   isSmall := by
@@ -37,8 +42,8 @@ instance isCardinalForSmallObjectArgument_I :
 instance isCardinalForSmallObjectArgument_J :
     J.{u}.IsCardinalForSmallObjectArgument Cardinal.aleph0.{u} where
   hasIterationOfShape := by infer_instance
-  preservesColimit {A _ _ _} i hi f hf := by
-    simp [J] at hi
+  preservesColimit i hi f hf := by
+    simp only [J, iSup_iff] at hi
     obtain ⟨n, ⟨i⟩⟩ := hi
     infer_instance
   isSmall := by
@@ -50,6 +55,10 @@ instance : HasSmallObjectArgument.{u} I.{u} where
 
 instance : HasSmallObjectArgument.{u} J.{u} where
   exists_cardinal := ⟨Cardinal.aleph0.{u}, inferInstance, inferInstance, inferInstance⟩
+
+instance : CategoryWithWeakEquivalences TopCat.{0} := sorry
+instance : (weakEquivalences TopCat).HasTwoOutOfThreeProperty := sorry
+instance : (weakEquivalences TopCat).IsStableUnderRetracts := sorry
 
 instance : CategoryWithWeakEquivalences SSet.{0} where
   weakEquivalences :=
@@ -84,6 +93,9 @@ lemma transfiniteCompositions_pushouts_coproducts :
     transfiniteCompositions.{u} I.coproducts.{u}.pushouts = monomorphisms SSet.{u} :=
   sorry
 
+lemma I_rlp_eq_monomorphisms_rlp : I.{u}.rlp = (monomorphisms SSet.{u}).rlp := by
+  sorry
+
 lemma rlp_I_le_rlp_J : I.{u}.rlp ≤ J.{u}.rlp := by
   rw [← le_llp_iff_le_rlp, llp_rlp_of_isCardinalForSmallObjectArgument _ .aleph0,
     transfiniteCompositions_pushouts_coproducts]
@@ -101,9 +113,9 @@ instance : HasFunctorialFactorization (trivialCofibrations SSet) (fibrations SSe
   · sorry -- J is mapped by the realization functor to trivial cofibrations in `TopCat`
 
 -- the topological realization of a fibration of simplicial sets is a Serre fibration
-instance {X Y : SSet.{0}} (f : X ⟶ Y) [Fibration f] :
-    Fibration (toTop.map f) :=
-  sorry
+--instance {X Y : SSet.{0}} (f : X ⟶ Y) [Fibration f] :
+--    Fibration (toTop.map f) :=
+--  sorry
 
 lemma weakEquivalence_iff_of_fibration {X Y : SSet.{0}} (f : X ⟶ Y) [Fibration f] :
     I.rlp f ↔ WeakEquivalence f :=
@@ -127,12 +139,21 @@ instance : HasFunctorialFactorization (cofibrations SSet) (trivialFibrations SSe
     transfiniteCompositions_pushouts_coproducts]
   apply retracts_le
 
+instance {A B X Y : SSet.{0}} (i : A ⟶ B) (p : X ⟶ Y)
+    [Cofibration i] [Fibration p] [hp : WeakEquivalence p] :
+    HasLiftingProperty i p := by
+  have : I.rlp p := by
+    rw [rlp_I_eq_trivialFibrations]
+    exact mem_trivialFibrations p
+  rw [I_rlp_eq_monomorphisms_rlp] at this
+  exact this _ (mono_of_cofibration _)
+
 end modelCategory
 
 open modelCategory
 
 instance : ModelCategory SSet.{0} where
-  cm4a := sorry
-  cm4b := sorry
+  cm4a i p _ _ _ := ModelCategory.joyal_trick_dual
+    (by intros; infer_instance) _ _
 
 end SSet
