@@ -340,19 +340,24 @@ section
 
 variable {t : A ⟶ X} {i : A ⟶ B} {p : X ⟶ Y} {b : B ⟶ Y} (sq : CommSq t i p b)
 
-noncomputable def ihomToPullbackFiber : ((ihom B).obj X).Subcomplex :=
-  Subcomplex.fiber (ihomToPullback i p)
-    (yonedaEquiv (pullback.lift (yonedaEquiv.symm (ihom₀Equiv.symm t))
+include sq in
+noncomputable def ihomToPullbackTgt₀Mk :
+    pullback ((ihom A).map p) ((pre i).app Y) _⦋0⦌ :=
+  yonedaEquiv (pullback.lift (yonedaEquiv.symm (ihom₀Equiv.symm t))
       (yonedaEquiv.symm (ihom₀Equiv.symm b))
         (yonedaEquiv.injective (ihom₀Equiv.injective (by
         simp only [yonedaEquiv_symm_zero, const_comp, yonedaEquiv₀,
-          ← ihom₀Equiv_symm_comp, ← ihom₀Equiv_symm_comp', sq.w])))))
+          ← ihom₀Equiv_symm_comp, ← ihom₀Equiv_symm_comp', sq.w]))))
+
+noncomputable def ihomToPullbackFiber : ((ihom B).obj X).Subcomplex :=
+  Subcomplex.fiber (ihomToPullback i p)
+    (ihomToPullbackTgt₀Mk sq)
 
 lemma range_le_ihomToPullbackFiber_iff {Z : SSet.{u}} (f : Z ⟶ (ihom B).obj X) :
     Subcomplex.range f ≤ ihomToPullbackFiber sq ↔
       f ≫ (pre i).app X = SSet.const (ihom₀Equiv.symm t) ∧
       f ≫ (ihom B).map p = SSet.const (ihom₀Equiv.symm b) := by
-  rw [ihomToPullbackFiber, Subcomplex.le_fiber_iff, ihomToPullback,
+  rw [ihomToPullbackFiber, ihomToPullbackTgt₀Mk, Subcomplex.le_fiber_iff, ihomToPullback,
     pullback.hom_ext_iff, Category.assoc, Category.assoc, pullback.lift_fst,
       pullback.lift_snd, const_comp, const_comp, yonedaEquiv_apply,
       ← FunctorToTypes.comp, ← FunctorToTypes.comp,
@@ -406,7 +411,7 @@ end
 -- a consequence of the right lifting property with respect
 -- to the horn inclusion `Λ[2, 1] ⟶ Δ[2]`: it is possible
 -- to compose path above if we provide a composition below
-lemma exist_path_composition_above_of_fibration
+lemma exists_path_composition_above_of_fibration
     (p : X ⟶ Y) [Fibration p] (x₀₁ x₁₂ : Δ[1] ⟶ X)
     (h : stdSimplex.map (SimplexCategory.δ 0) ≫ x₀₁ =
       stdSimplex.map (SimplexCategory.δ 1) ≫ x₁₂)
@@ -440,7 +445,7 @@ lemma exist_path_composition_above_of_fibration
     rw [this]
   · rw [Category.assoc, sq.fac_right]
 
-lemma exist_path_composition_above_of_fibration'
+lemma exists_path_composition_above_of_fibration'
     (p : X ⟶ Y) [Fibration p] (x₀₁ x₁₂ : Δ[1] ⟶ X) (b : Y _⦋0⦌)
     (h : stdSimplex.map (SimplexCategory.δ 0) ≫ x₀₁ =
       stdSimplex.map (SimplexCategory.δ 1) ≫ x₁₂)
@@ -451,7 +456,7 @@ lemma exist_path_composition_above_of_fibration'
       stdSimplex.map (SimplexCategory.δ 0) ≫ x₀₂ =
         stdSimplex.map (SimplexCategory.δ 0) ≫ x₁₂ ∧
         x₀₂ ≫ p = x₁₂ ≫ p := by
-  obtain ⟨x₀₂, eq₁, eq₂, eq₃⟩ := exist_path_composition_above_of_fibration p x₀₁ x₁₂ h
+  obtain ⟨x₀₂, eq₁, eq₂, eq₃⟩ := exists_path_composition_above_of_fibration p x₀₁ x₁₂ h
     (stdSimplex.map (SimplexCategory.σ 0) ≫ x₁₂ ≫ p) (by
       have := h =≫ p
       simp only [Category.assoc] at this
@@ -467,7 +472,7 @@ lemma exist_path_composition_above_of_fibration'
   dsimp at this
   rw [eq₃, ← Functor.map_comp_assoc, this, CategoryTheory.Functor.map_id, Category.id_comp]
 
-lemma homotopy_extension_property₁ {K L : SSet.{u}} (i : K ⟶ L) (p : E ⟶ B) [Fibration p]
+lemma homotopy_extension_property₁ {E K L : SSet.{u}} (i : K ⟶ L) (p : E ⟶ B) [Fibration p]
     (hE : K ⊗ Δ[1] ⟶ E) (f : L ⟶ E) (h₁ : i ≫ f = ι₁ ≫ hE)
     (hB : L ⊗ Δ[1] ⟶ B) (h₂ : ι₁ ≫ hB = f ≫ p) (h₃ : i ▷ _ ≫ hB = hE ≫ p)  :
     ∃ ψ : L ⊗ Δ[1] ⟶ E, ι₁ ≫ ψ = f ∧ i ▷ _ ≫ ψ = hE ∧ ψ ≫ p = hB := by

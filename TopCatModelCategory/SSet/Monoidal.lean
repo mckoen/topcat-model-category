@@ -123,6 +123,16 @@ lemma rightUnitor_inv_map_δ_one :
     (stdSimplex.rightUnitor X).inv ≫ X ◁ stdSimplex.map (SimplexCategory.δ 1) =
       ι₀ := rfl
 
+@[reassoc (attr := simp)]
+lemma rightUnitor_hom_ι₀ :
+    (stdSimplex.rightUnitor X).hom ≫ ι₀ = X ◁ stdSimplex.map (SimplexCategory.δ 1) := by
+  rw [← rightUnitor_inv_map_δ_one, Iso.hom_inv_id_assoc]
+
+@[reassoc (attr := simp)]
+lemma rightUnitor_hom_ι₁ :
+    (stdSimplex.rightUnitor X).hom ≫ ι₁ = X ◁ stdSimplex.map (SimplexCategory.δ 0) := by
+  rw [← rightUnitor_inv_map_δ_zero, Iso.hom_inv_id_assoc]
+
 end stdSimplex
 
 instance : MonoidalClosed (SSet.{u}) :=

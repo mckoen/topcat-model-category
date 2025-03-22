@@ -541,6 +541,7 @@ lemma exists_maximal_extension : ∃ (f : selection.Extension), IsMax f := by
     dsimp at this ⊢
     simp [this, ch]
 
+open MonoidalClosed in
 variable {selection} in
 lemma Extension.A_eq_top_of_isMax [Fibration p] (f : selection.Extension)
     (hf : IsMax f) : f.A = ⊤ := by
@@ -549,14 +550,54 @@ lemma Extension.A_eq_top_of_isMax [Fibration p] (f : selection.Extension)
     boundary.exists_isPushout_of_ne_top f.A this
   obtain ⟨α, β, hβ, hα₁, hα₂, hα₃, hα₄⟩ :
     ∃ (α : Δ[n] ⊗ Δ[1] ⟶ E) (β : Δ[n] ⟶ selection.subcomplex),
-      Subpresheaf.ι (boundary n) ≫ β = t ≫ f.r ∧
+      (boundary n).ι ≫ β = t ≫ f.r ∧
       (boundary n).ι ▷ Δ[1] ≫ α = t ▷ Δ[1] ≫ f.h ∧
       ι₁ ≫ α = b ≫ A'.ι ∧
       α ≫ p = fst _ _ ≫ b ≫ A'.ι ≫ p ∧
       ι₀ ≫ α = β ≫ Subpresheaf.ι selection.subcomplex := by
-    have := exist_path_composition_above_of_fibration
-      (ihomToPullback (boundary n).ι p)
-    sorry
+    obtain ⟨ψ, hψ₁, hψ₂, hψ₃⟩ :=
+      homotopy_extension_property₁ (boundary n).ι p (t ▷ _ ≫ f.h) (b ≫ A'.ι)
+        (by simp [← isPushout.w_assoc]) (fst _ _ ≫ b ≫ A'.ι ≫ p) rfl
+        (by simp [← isPushout.w_assoc])
+    obtain ⟨y, hy, ⟨ρ⟩⟩ := selection.nonempty (yonedaEquiv (ι₀ ≫ ψ))
+    replace hy : y ∈ selection.subcomplex.obj _ :=
+      mem_subcomplex_of_boundary _ _ hy (by
+        sorry)
+    replace ρ := ρ.symm
+    let b₀ := (ihomToPullback (boundary n).ι p).app _ (ihom₀Equiv.symm (ι₀ ≫ ψ))
+    obtain ⟨x, hx₁, hx₂, hx₃⟩ := exists_path_composition_above_of_fibration'
+      (ihomToPullback (boundary n).ι p) (curry ρ.h) (curry ψ) b₀ (by
+          rw [← curry_natural_left, ← stdSimplex.rightUnitor_hom_ι₁_assoc, ρ.h₁,
+            Equiv.symm_apply_apply, stdSimplex.rightUnitor_hom_ι₀_assoc,
+            curry_natural_left]) (by
+            ext : 1
+            · dsimp [b₀]
+              rw [Category.assoc, pullback.lift_fst, const_comp,
+                ← FunctorToTypes.comp, pullback.lift_fst]
+              have pif := ρ.π_eq₁
+              sorry
+            · dsimp [b₀]
+              rw [Category.assoc, pullback.lift_snd, const_comp,
+                ← FunctorToTypes.comp, pullback.lift_snd]
+              sorry)
+    have hx₄ := hx₃ =≫ pullback.fst _ _
+    have hx₅ := hx₃ =≫ pullback.snd _ _
+    simp only [Category.assoc, limit.lift_π, PullbackCone.mk_pt, PullbackCone.mk_π_app] at hx₄
+    simp only [Category.assoc, limit.lift_π, PullbackCone.mk_pt, PullbackCone.mk_π_app] at hx₅
+    refine ⟨uncurry x, yonedaEquiv.symm ⟨y, hy⟩, ?_, ?_, ?_, ?_, ?_⟩
+    · rw [← cancel_mono (Subcomplex.ι _), Category.assoc, yonedaEquiv_symm_comp,
+        Category.assoc, Subpresheaf.ι_app, ← f.ι₀_h, ← ι₀_comp_assoc, ← hψ₂,
+        ι₀_comp_assoc, ← ρ.d_eq₁, ρ.d_eq₂, Equiv.symm_apply_apply]
+    · apply curry_injective
+      rw [whiskerRight_comp_uncurry, hx₄, curry_uncurry, ← hψ₂, curry_whiskerRight_comp]
+    · rw [← cancel_epi (stdSimplex.rightUnitor _).hom, ← Category.assoc,
+        stdSimplex.rightUnitor_hom_ι₁, ← uncurry_natural_left, hx₂, ← hψ₁,
+        stdSimplex.rightUnitor_hom_ι₁_assoc, uncurry_natural_left, uncurry_curry]
+    · rw [← uncurry_natural_right, hx₅, uncurry_natural_right, uncurry_curry, hψ₃]
+    · rw [yonedaEquiv_symm_comp, Subpresheaf.ι_app, ← ρ.h₀]
+      rw [← cancel_epi (stdSimplex.rightUnitor _).hom,
+        stdSimplex.rightUnitor_hom_ι₀_assoc, ← uncurry_natural_left, hx₁,
+        stdSimplex.rightUnitor_hom_ι₀_assoc, uncurry_natural_left, uncurry_curry]
   obtain ⟨h, h₁, h₂⟩ := (isPushout.map (tensorRight Δ[1])).exists_desc f.h α hα₁.symm
   obtain ⟨r, hr₁, hr₂⟩ := isPushout.exists_desc f.r β hβ.symm
   dsimp at h₁ h₂
