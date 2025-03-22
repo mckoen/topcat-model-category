@@ -55,8 +55,6 @@ instance : Category π.Cat := inferInstanceAs (Category T)
 def I : MorphismProperty π.Cat := π.I'
 def J : MorphismProperty π.Cat := π.J'
 
---lemma J_le_I : π.J ≤ π.I := π.J_le_I'
-
 instance : LocallySmall.{w} π.Cat := π.locallySmall
 
 instance : HasFiniteLimits π.Cat := π.hasFiniteLimits
@@ -144,7 +142,8 @@ lemma transfiniteCompositionsOfShape_aleph0_le_weakEquivalences :
     (coproducts.{w} π.J).pushouts.transfiniteCompositionsOfShape
       Cardinal.aleph0.{w}.ord.toType ≤ weakEquivalences π.Cat := by
   refine le_trans ?_ π.infiniteCompositions_le_weakEquivalences
-  rw [transfiniteCompositionsOfShape_aleph0]
+  sorry
+  --rw [transfiniteCompositionsOfShape_aleph0]
 
 lemma J_rlp_llp_le_weakEquivalences : π.J.rlp.llp ≤ weakEquivalences π.Cat := by
   rw [SmallObject.llp_rlp_of_isCardinalForSmallObjectArgument' π.J Cardinal.aleph0.{w}]
