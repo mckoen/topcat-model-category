@@ -3,9 +3,22 @@ import Mathlib.CategoryTheory.LiftingProperties.ParametrizedAdjunction
 
 universe u
 
-open CategoryTheory MonoidalCategory Limits Simplicial
+open CategoryTheory MonoidalCategory Limits Simplicial HomotopicalAlgebra
 
 namespace SSet
+
+def hornOneUnionProdInclusions : MorphismProperty SSet.{u} :=
+  ⨆ (i : Fin 2) (X : SSet.{u}),
+    .ofHoms (fun (A : X.Subcomplex) ↦ ((horn.{u} 1 i).unionProd A).ι)
+
+lemma mem_hornOneUnionProdInclusions (i : Fin 2) {X : SSet.{u}} (A : X.Subcomplex) :
+    hornOneUnionProdInclusions ((horn.{u} 1 i).unionProd A).ι := by
+  simp only [hornOneUnionProdInclusions, MorphismProperty.iSup_iff]
+  exact ⟨i, X, ⟨A⟩⟩
+
+lemma hornOneUnionProdInclusions_rlp :
+    hornOneUnionProdInclusions.{u}.rlp = fibrations SSet := by
+  sorry
 
 section
 
