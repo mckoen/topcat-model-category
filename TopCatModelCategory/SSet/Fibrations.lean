@@ -1,4 +1,4 @@
-import TopCatModelCategory.SSet.AnodyneExtensions
+import TopCatModelCategory.SSet.AnodyneExtensionsAdjunctions
 import TopCatModelCategory.SSet.Monoidal
 import TopCatModelCategory.SSet.Fiber
 
@@ -42,25 +42,6 @@ lemma hasLiftingProperty_iff {A B X Y : C} (i : A ⟶ B) (p : X ⟶ Y) :
     exact ⟨fun {f g} sq ↦ ⟨h (Arrow.homMk f g sq.w)⟩⟩-/
 
 end Arrow
-
-namespace MonoidalClosed
-
-variable {C : Type*} [Category C] [MonoidalCategory C]
-  {A B X Y : C} [Closed A] [Closed B]
-
-@[reassoc]
-lemma whiskerRight_comp_uncurry (f : A ⟶ B) (g : X ⟶ (ihom B).obj Y) :
-    f ▷ X ≫ uncurry g = uncurry (g ≫ (pre f).app Y) := by
-  rw [uncurry_natural_left, uncurry_pre, whisker_exchange_assoc]
-  rfl
-
-@[reassoc]
-lemma curry_whiskerRight_comp (f : A ⟶ B) (g : B ⊗ X ⟶ Y) :
-    curry (f ▷ X ≫ g) = curry g ≫ (pre f).app Y := by
-  apply uncurry_injective
-  rw [uncurry_curry, ← whiskerRight_comp_uncurry, uncurry_curry]
-
-end MonoidalClosed
 
 end CategoryTheory
 
