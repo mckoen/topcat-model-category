@@ -159,20 +159,128 @@ end
 
 end PushoutTensor
 
+section
+
+variable {X₁ X₂ X₃ : SSet.{u}} (A₁ : X₁.Subcomplex) (A₂ : X₂.Subcomplex) (A₃ : X₃.Subcomplex)
+
+noncomputable abbrev Subcomplex.unionProd₃ : (X₁ ⊗ X₂ ⊗ X₃).Subcomplex :=
+  A₁.unionProd (A₂.unionProd A₃)
+
+noncomputable abbrev Subcomplex.unionProd₃.ι₁ :
+    X₁ ⊗ (A₂.unionProd A₃) ⟶ unionProd₃ A₁ A₂ A₃ :=
+  Subcomplex.unionProd.ι₁ _ _
+
+noncomputable abbrev Subcomplex.unionProd₃.ι₂₃ :
+    (A₁ : SSet) ⊗ X₂ ⊗ X₃ ⟶ unionProd₃ A₁ A₂ A₃ :=
+  Subcomplex.unionProd.ι₂ _ _
+
+namespace Subcomplex.unionProd
+
+noncomputable def assocIso :
+    ((A₁.unionProd A₂).unionProd A₃ : SSet) ≅ unionProd₃ A₁ A₂ A₃ where
+  hom := Subcomplex.lift (((A₁.unionProd A₂).unionProd A₃).ι ≫ (α_ _ _ _).hom) (by
+    apply le_antisymm (by simp)
+    rw [← Subcomplex.image_le_iff, image_top]
+    rintro n x ⟨⟨⟨⟨x₁, x₂⟩, x₃⟩, hx⟩, rfl⟩
+    simp only [comp_app, Subpresheaf.toPresheaf_obj, types_comp_apply, Subpresheaf.ι_app,
+      associator_hom_app_apply]
+    simp only [mem_unionProd_iff] at hx ⊢
+    tauto)
+  inv := Subcomplex.lift ((unionProd₃ A₁ A₂ A₃).ι ≫ (α_ _ _ _).inv) (by
+    apply le_antisymm (by simp)
+    rw [← Subcomplex.image_le_iff, image_top]
+    rintro n x ⟨⟨⟨x₁, x₂, x₃⟩, hx⟩, rfl⟩
+    simp only [mem_unionProd_iff] at hx ⊢
+    tauto)
+  hom_inv_id := rfl
+  inv_hom_id := rfl
+
+noncomputable def assocArrowIso :
+    Arrow.mk ((A₁.unionProd A₂).unionProd A₃).ι ≅ Arrow.mk (unionProd₃ A₁ A₂ A₃).ι :=
+  Arrow.isoMk (assocIso _ _ _) (α_ _ _ _)
+
+end Subcomplex.unionProd
+
+noncomputable def PushoutTensor.unionProd₃ : PushoutTensor A₁.ι (A₂.unionProd A₃).ι where
+  pt := Subcomplex.unionProd₃ A₁ A₂ A₃
+  inl := Subcomplex.unionProd₃.ι₁ _ _ _
+  inr := Subcomplex.unionProd₃.ι₂₃ _ _ _
+  isPushout := (PushoutTensor.unionProd A₁ (A₂.unionProd A₃)).isPushout
+
+@[simp]
+lemma PushoutTensor.ι_unionProd₃ :
+    (unionProd₃ A₁ A₂ A₃).ι = (Subcomplex.unionProd₃ A₁ A₂ A₃).ι :=
+  PushoutTensor.ι_unionProd A₁ (A₂.unionProd A₃)
+
+end
+
 variable {X Y : SSet.{u}} (f₃ : X ⟶ Y)
 
 abbrev PullbackIhom := Functor.PullbackObjObj MonoidalClosed.internalHom f₁ f₃
 
 end
 
+lemma hasLiftingProperty_iff_of_pushoutTensor_of_pullbackIhom
+    {A₁ A₂ B₁ B₂ : SSet.{u}} {f₁ : A₁ ⟶ B₁} {f₂ : A₂ ⟶ B₂} (h₁₂ : PushoutTensor f₁ f₂)
+    {X Y : SSet.{u}} {f₃ : X ⟶ Y} (h₁₃ : PullbackIhom f₁ f₃) :
+    HasLiftingProperty h₁₂.ι f₃ ↔ HasLiftingProperty f₂ h₁₃.π :=
+  MonoidalClosed.internalHomAdjunction₂.hasLiftingProperty_iff h₁₂ h₁₃
+
 namespace fibrations
+
+section
+
+variable {B S T : SSet.{u}} {A : B.Subcomplex} {p : S ⟶ T} (h : PullbackIhom A.ι p)
+
+lemma hasLiftingProperty_unionProd_horn₁_ι_pullbackIhomπ' [Fibration p]
+    {Y : SSet.{u}} (X : Y.Subcomplex) (k : Fin 2) :
+    HasLiftingProperty (X.unionProd Λ[1, k]).ι h.π := by
+  rw [← hasLiftingProperty_iff_of_pushoutTensor_of_pullbackIhom
+    (PushoutTensor.unionProd₃ A X Λ[1, k]), PushoutTensor.ι_unionProd₃]
+  dsimp
+  have hp : fibrations _ p := by rwa [← fibration_iff]
+  rw [← hornOneUnionProdInclusions_rlp] at hp
+  have := hp _ (mem_hornOneUnionProdInclusions k (A.unionProd X))
+  apply HasLiftingProperty.of_arrow_iso_left (Subcomplex.unionProd.assocArrowIso _ _ _)
+
+end
+
+section
 
 variable {A B S T : SSet.{u}} {i : A ⟶ B} {p : S ⟶ T} (h : PullbackIhom i p)
 
+open MonoidalClosed in
 lemma hasLiftingProperty_unionProd_horn₁_ι_pullbackIhomπ [Mono i] [Fibration p]
     {Y : SSet.{u}} (X : Y.Subcomplex) (k : Fin 2) :
     HasLiftingProperty (X.unionProd Λ[1, k]).ι h.π := by
-  sorry
+  let h' : PullbackIhom (Subcomplex.range i).ι p :=
+    { pt := h.pt
+      fst := h.fst ≫ (pre (inv (Subpresheaf.toRange i))).app _
+      snd := h.snd
+      isPullback := by
+        fapply h.isPullback.of_iso (Iso.refl _)
+          ((internalHom.mapIso (asIso (Subpresheaf.toRange i)).symm.op).app S) (Iso.refl _)
+          ((internalHom.mapIso (asIso (Subpresheaf.toRange i)).symm.op).app T)
+          (by simp) (by simp) (by simp) ?_
+        · dsimp
+          rw [Category.id_comp, ← NatTrans.comp_app, ← MonoidalClosed.pre_map]
+          congr 2
+          simp }
+  have H := hasLiftingProperty_unionProd_horn₁_ι_pullbackIhomπ' h' X k
+  have : h'.π = h.π := by
+    apply h'.isPullback.hom_ext
+    · rw [h'.π_fst]
+      dsimp [h']
+      rw [h.π_fst_assoc]
+      dsimp
+      rw [← NatTrans.comp_app, ← MonoidalClosed.pre_map]
+      congr 2
+      simp
+    · rw [h'.π_snd]
+      dsimp [h']
+      rw [h.π_snd]
+      dsimp
+  rwa [this] at H
 
 instance [Mono i] [Fibration p] : Fibration h.π := by
   rw [fibration_iff, ← hornOneUnionProdInclusions_rlp]
@@ -181,14 +289,9 @@ instance [Mono i] [Fibration p] : Fibration h.π := by
   obtain ⟨_, _, ⟨_⟩⟩ := hj
   apply hasLiftingProperty_unionProd_horn₁_ι_pullbackIhomπ
 
+end
+
 end fibrations
-
-
-lemma hasLiftingProperty_iff_of_pushoutTensor_of_pullbackIhom
-    {A₁ A₂ B₁ B₂ : SSet.{u}} {f₁ : A₁ ⟶ B₁} {f₂ : A₂ ⟶ B₂} (h₁₂ : PushoutTensor f₁ f₂)
-    {X Y : SSet.{u}} {f₃ : X ⟶ Y} (h₁₃ : PullbackIhom f₁ f₃) :
-    HasLiftingProperty h₁₂.ι f₃ ↔ HasLiftingProperty f₂ h₁₃.π :=
-  MonoidalClosed.internalHomAdjunction₂.hasLiftingProperty_iff h₁₂ h₁₃
 
 namespace anodyneExtensions
 
