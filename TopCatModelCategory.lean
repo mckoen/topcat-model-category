@@ -51,6 +51,7 @@ import TopCatModelCategory.SSet.KanComplexW
 import TopCatModelCategory.SSet.MinimalFibrations
 import TopCatModelCategory.SSet.MonoCoprod
 import TopCatModelCategory.SSet.Monoidal
+import TopCatModelCategory.SSet.Monomorphisms
 import TopCatModelCategory.SSet.NonDegenerateProdSimplex
 import TopCatModelCategory.SSet.Paths
 import TopCatModelCategory.SSet.Presentable
