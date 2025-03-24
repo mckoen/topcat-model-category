@@ -9,10 +9,10 @@ namespace SSet
 
 def hornOneUnionProdInclusions : MorphismProperty SSet.{u} :=
   ⨆ (i : Fin 2) (X : SSet.{u}),
-    .ofHoms (fun (A : X.Subcomplex) ↦ ((horn.{u} 1 i).unionProd A).ι)
+    .ofHoms (fun (A : X.Subcomplex) ↦ (A.unionProd (horn.{u} 1 i)).ι)
 
 lemma mem_hornOneUnionProdInclusions (i : Fin 2) {X : SSet.{u}} (A : X.Subcomplex) :
-    hornOneUnionProdInclusions ((horn.{u} 1 i).unionProd A).ι := by
+    hornOneUnionProdInclusions (A.unionProd (horn.{u} 1 i)).ι := by
   simp only [hornOneUnionProdInclusions, MorphismProperty.iSup_iff]
   exact ⟨i, X, ⟨A⟩⟩
 
