@@ -2,6 +2,7 @@ import Mathlib.CategoryTheory.SmallObject.Basic
 import Mathlib.AlgebraicTopology.SingularSet
 import TopCatModelCategory.MorphismProperty
 import TopCatModelCategory.Factorization
+import TopCatModelCategory.SSet.Monomorphisms
 --import TopCatModelCategory.ModelCategoryTopCat
 import TopCatModelCategory.SSet.CategoryWithFibrations
 import TopCatModelCategory.SSet.Presentable
@@ -88,13 +89,6 @@ instance : (cofibrations SSet).IsStableUnderRetracts := by
 instance : (fibrations SSet).IsStableUnderRetracts := by
   rw [fibrations_eq]
   infer_instance
-
-lemma transfiniteCompositions_pushouts_coproducts :
-    transfiniteCompositions.{u} I.coproducts.{u}.pushouts = monomorphisms SSet.{u} :=
-  sorry
-
-lemma I_rlp_eq_monomorphisms_rlp : I.{u}.rlp = (monomorphisms SSet.{u}).rlp := by
-  sorry
 
 lemma rlp_I_le_rlp_J : I.{u}.rlp ≤ J.{u}.rlp := by
   rw [← le_llp_iff_le_rlp, llp_rlp_of_isCardinalForSmallObjectArgument _ .aleph0,

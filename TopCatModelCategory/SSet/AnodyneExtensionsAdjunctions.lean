@@ -1,4 +1,5 @@
 import TopCatModelCategory.SSet.AnodyneExtensions
+import TopCatModelCategory.SSet.Monomorphisms
 import Mathlib.CategoryTheory.LiftingProperties.ParametrizedAdjunction
 
 universe u
@@ -30,7 +31,51 @@ lemma face_singleton_eq_const {n : ℕ} (i : Fin (n + 1)) :
 
 end stdSimplex
 
-namespace horn₁₁
+namespace horn₁
+
+variable (i : Fin 2)
+
+lemma eq_face : horn.{u} 1 i = stdSimplex.face {i} := by
+  rw [horn_eq_iSup]
+  fin_cases i
+  · letI : Unique ({0}ᶜ : Set (Fin 2)) :=
+      { default := ⟨1, by simp⟩
+        uniq := by rintro ⟨a, _⟩; fin_cases a <;> aesop }
+    dsimp
+    rw [iSup_unique]
+    rfl
+  · letI : Unique ({1}ᶜ : Set (Fin 2)) :=
+      { default := ⟨0, by simp⟩
+        uniq := by rintro ⟨a, _⟩; fin_cases a <;> aesop }
+    dsimp
+    rw [iSup_unique]
+    rfl
+
+lemma ι_eq : (horn.{u} 1 i).ι = const.{u} (stdSimplex.obj₀Equiv.{u}.symm i) := by
+  rw [← Subcomplex.isoOfEq_hom_ι (eq_face i), stdSimplex.face_singleton_eq_const, comp_const]
+
+noncomputable def iso : Δ[0] ≅ (horn 1 i : SSet.{u}) :=
+  stdSimplex.faceSingletonIso _ ≪≫ Subcomplex.isoOfEq (eq_face i).symm
+
+@[reassoc (attr := simp)]
+lemma iso₁_hom_ι : (iso.{u} 1).hom ≫ Λ[1, 1].ι = stdSimplex.δ 0 := by
+  rw [ι_eq, comp_const]
+  apply yonedaEquiv.injective
+  ext j
+  fin_cases j
+  rfl
+
+@[reassoc (attr := simp)]
+lemma iso₀_hom_ι : (iso.{u} 0).hom ≫ Λ[1, 0].ι = stdSimplex.δ 1 := by
+  rw [ι_eq, comp_const]
+  apply yonedaEquiv.injective
+  ext j
+  fin_cases j
+  rfl
+
+end horn₁
+
+/-namespace horn₁₁
 
 lemma eq_face : horn.{u} 1 1 = stdSimplex.face {1} := by
   rw [horn_eq_iSup]
@@ -54,20 +99,7 @@ lemma iso_hom_ι : iso.{u}.hom ≫ Λ[1, 1].ι = stdSimplex.δ 0 := by
   fin_cases j
   rfl
 
-end horn₁₁
-
-def hornOneUnionProdInclusions : MorphismProperty SSet.{u} :=
-  ⨆ (i : Fin 2) (X : SSet.{u}),
-    .ofHoms (fun (A : X.Subcomplex) ↦ (A.unionProd (horn.{u} 1 i)).ι)
-
-lemma mem_hornOneUnionProdInclusions (i : Fin 2) {X : SSet.{u}} (A : X.Subcomplex) :
-    hornOneUnionProdInclusions (A.unionProd (horn.{u} 1 i)).ι := by
-  simp only [hornOneUnionProdInclusions, MorphismProperty.iSup_iff]
-  exact ⟨i, X, ⟨A⟩⟩
-
-lemma hornOneUnionProdInclusions_rlp :
-    hornOneUnionProdInclusions.{u}.rlp = fibrations SSet := by
-  sorry
+end horn₁₁-/
 
 section
 
@@ -103,6 +135,9 @@ lemma inr_ι_flip : h.inr ≫ h.flip.ι = (β_ _ _).hom ≫ _ ◁ f₁ := by
 lemma ι_flip : h.flip.ι = h.ι ≫ (β_ _ _).hom := by
   apply h.isPushout.hom_ext <;> simp
 
+noncomputable def flipArrowIso : Arrow.mk h.flip.ι ≅ Arrow.mk h.ι :=
+  Arrow.isoMk (Iso.refl _) (β_ _ _) (by simp [ι_flip])
+
 end
 
 section
@@ -131,25 +166,25 @@ section
 variable {X Y : SSet.{u}} (i : X ⟶ Y)
 
 @[simps]
-noncomputable def horn₁₀ :
+noncomputable def horn₁₁ :
     PushoutTensor i (horn.{u} 1 1).ι where
   pt := pushout i ι₁
   inl := fst _ _ ≫ pushout.inl _ _
   inr := pushout.inr _ _
   isPushout := (IsPushout.of_hasPushout i ι₁).of_iso
-      ((stdSimplex.rightUnitor _).symm ≪≫ (Iso.refl _ ⊗ horn₁₁.iso))
-      ((stdSimplex.rightUnitor _).symm ≪≫ (Iso.refl _ ⊗ horn₁₁.iso))
+      ((stdSimplex.rightUnitor _).symm ≪≫ (Iso.refl _ ⊗ (horn₁.iso 1)))
+      ((stdSimplex.rightUnitor _).symm ≪≫ (Iso.refl _ ⊗ (horn₁.iso 1)))
       (Iso.refl _) (Iso.refl _) (by aesop_cat) (by
         dsimp
         rw [Category.comp_id, id_tensorHom, Category.assoc,
-          ← MonoidalCategory.whiskerLeft_comp, horn₁₁.iso_hom_ι]
+          ← MonoidalCategory.whiskerLeft_comp, horn₁.iso₁_hom_ι]
         rfl) (by simp) (by simp)
 
-lemma ι_horn₁₀ : (horn₁₀ i).ι = pushout.desc ι₁ (i ▷ Δ[1]) (by simp) := by
-  apply (horn₁₀ i).isPushout.hom_ext
+lemma ι_horn₁₁ : (horn₁₁ i).ι = pushout.desc ι₁ (i ▷ Δ[1]) (by simp) := by
+  apply (horn₁₁ i).isPushout.hom_ext
   · rw [Functor.PushoutObjObj.inl_ι]
     dsimp
-    rw [Category.assoc, pushout.inl_desc, horn₁₁.ι_eq]
+    rw [Category.assoc, pushout.inl_desc, horn₁.ι_eq]
     rfl
   · rw [Functor.PushoutObjObj.inr_ι]
     dsimp
@@ -225,6 +260,44 @@ lemma hasLiftingProperty_iff_of_pushoutTensor_of_pullbackIhom
     {X Y : SSet.{u}} {f₃ : X ⟶ Y} (h₁₃ : PullbackIhom f₁ f₃) :
     HasLiftingProperty h₁₂.ι f₃ ↔ HasLiftingProperty f₂ h₁₃.π :=
   MonoidalClosed.internalHomAdjunction₂.hasLiftingProperty_iff h₁₂ h₁₃
+
+open MorphismProperty in
+lemma anodyneExtensions.pushoutTensorι₂' {A B : SSet.{u}} (i : A ⟶ B) [Mono i] (k : Fin 2)
+    (h : PushoutTensor i (horn 1 k).ι) :
+    anodyneExtensions h.ι := by
+  intro X Y p hp
+  rw [← fibration_iff] at hp
+  have H : PullbackIhom Λ[1, k].ι p := Functor.PullbackObjObj.ofHasPullback _ _ _
+  suffices (monomorphisms _).rlp H.π by
+    rw [← HasLiftingProperty.iff_of_arrow_iso_left h.flipArrowIso,
+      hasLiftingProperty_iff_of_pushoutTensor_of_pullbackIhom _ H]
+    exact this _ (monomorphisms.infer_property _)
+  rw [← modelCategory.I_rlp_eq_monomorphisms_rlp]
+  rintro _ _ _ ⟨n⟩
+  rw [← hasLiftingProperty_iff_of_pushoutTensor_of_pullbackIhom (PushoutTensor.unionProd _ _)]
+  dsimp
+  simp
+  apply anodyneExtensions.hasLeftLiftingProperty
+  -- this should be improved...
+  fin_cases k
+  · convert subcomplex_unionProd_face_boundary_ι_mem n 0 <;> apply horn₁.eq_face
+  · convert subcomplex_unionProd_face_boundary_ι_mem n 1 <;> apply horn₁.eq_face
+
+lemma hornOneUnionProdInclusions_le_anodyneExtensions :
+    hornOneUnionProdInclusions.{u} ≤ anodyneExtensions := by
+  rintro _ _ i hi
+  simp [hornOneUnionProdInclusions] at hi
+  obtain ⟨k, X, ⟨A⟩⟩ := hi
+  simpa using anodyneExtensions.pushoutTensorι₂' A.ι k (PushoutTensor.unionProd _ _)
+
+open MorphismProperty in
+lemma hornOneUnionProdInclusions_rlp :
+    hornOneUnionProdInclusions.{u}.rlp = fibrations SSet := by
+  apply le_antisymm
+  · simpa using antitone_rlp modelCategory.J_le_hornOneUnionProdInclusions
+  · rw [← le_llp_iff_le_rlp]
+    apply hornOneUnionProdInclusions_le_anodyneExtensions
+
 
 namespace fibrations
 
@@ -329,8 +402,8 @@ lemma subcomplex_unionProd_mem_of_right {X Y : SSet.{u}}
 
 lemma pushout_desc_ι₁_whiskerRight_mono {X Y : SSet.{u}} (i : X ⟶ Y) [Mono i] :
     anodyneExtensions (pushout.desc (f := i) (g := ι₁) ι₁ (i ▷ Δ[1]) (by simp)) := by
-  rw [← PushoutTensor.ι_horn₁₀]
-  exact pushoutTensorι₂ (PushoutTensor.horn₁₀ i) (horn_ι_mem 0 1)
+  rw [← PushoutTensor.ι_horn₁₁]
+  exact pushoutTensorι₂ (PushoutTensor.horn₁₁ i) (horn_ι_mem 0 1)
 
 end anodyneExtensions
 

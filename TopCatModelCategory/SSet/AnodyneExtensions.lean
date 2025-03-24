@@ -306,4 +306,7 @@ lemma subcomplex_unionProd_face_boundary_ι_mem (n : ℕ) (i : Fin 2) :
 
 end anodyneExtensions
 
+lemma modelCategory.J_le_hornOneUnionProdInclusions :
+    modelCategory.J.{u} ≤ hornOneUnionProdInclusions.retracts := sorry
+
 end SSet

@@ -56,4 +56,13 @@ lemma horn_ι_mem (n : ℕ) (i : Fin (n + 2)) :
 
 end anodyneExtensions
 
+def hornOneUnionProdInclusions : MorphismProperty SSet.{u} :=
+  ⨆ (i : Fin 2) (X : SSet.{u}),
+    .ofHoms (fun (A : X.Subcomplex) ↦ (A.unionProd (horn.{u} 1 i)).ι)
+
+lemma mem_hornOneUnionProdInclusions (i : Fin 2) {X : SSet.{u}} (A : X.Subcomplex) :
+    hornOneUnionProdInclusions (A.unionProd (horn.{u} 1 i)).ι := by
+  simp only [hornOneUnionProdInclusions, MorphismProperty.iSup_iff]
+  exact ⟨i, X, ⟨A⟩⟩
+
 end SSet
