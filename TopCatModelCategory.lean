@@ -67,4 +67,5 @@ import TopCatModelCategory.SimplicialPresheaves.LocalLiftingProperty
 import TopCatModelCategory.TopCatIsColimit
 import TopCatModelCategory.TopPackage
 import TopCatModelCategory.TopologyLemmas.IsQuotientMap
+import TopCatModelCategory.ULift
 import TopCatModelCategory.WellOrderContinuous
