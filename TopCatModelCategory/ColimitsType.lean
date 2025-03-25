@@ -410,6 +410,53 @@ lemma isPullback_of_eq_setPreimage {X Y : Type u} (f : X ⟶ Y) (B : Set Y) {A :
   · rintro ⟨_, hx₃⟩ x₃ rfl
     exact ⟨⟨x₃, by rwa [hA]⟩, rfl, rfl⟩
 
+section
+
+variable {ι : Type v} {X : ι → Type u} {c : Cofan X} (hc : IsColimit c)
+
+include hc
+lemma jointly_surjective_of_isColimit_cofan (x : c.pt) :
+    ∃ (i : ι) (y : X i), c.inj i y = x := by
+  obtain ⟨⟨i⟩, y, hy⟩ := jointly_surjective_of_isColimit hc x
+  exact ⟨i, y, hy⟩
+
+lemma cofanInj_apply_eq_iff_of_isColimit {i j : ι} (x : X i) (y : X j) :
+    c.inj i x = c.inj j y ↔ ∃ (hij : i = j), y = cast (by rw [hij]) x := by
+  constructor; swap
+  · rintro ⟨rfl, rfl⟩
+    rfl
+  · let ρ := Relation.EqvGen (Quot.Rel (Discrete.functor X))
+    have hρ (x y) (h : ρ x y) : x = y := by
+      induction h with
+      | rel a b r =>
+          obtain ⟨⟨a⟩, a'⟩ := a
+          obtain ⟨⟨b⟩, b'⟩ := b
+          obtain ⟨r, s⟩ := r
+          obtain rfl : a = b := Discrete.eq_of_hom r
+          aesop
+      | refl => rfl
+      | symm _ _ _ h => exact h.symm
+      | trans _ _ _ _ _ h h' => exact h.trans h'
+    intro h
+    suffices ρ ⟨_, x⟩ ⟨_, y⟩ by
+      have := hρ _ _ this
+      aesop
+    exact Quot.eq.1 (((isColimit_iff_bijective_desc _).1 ⟨hc⟩).1 h)
+
+lemma cofanInj_injective_of_isColimit (i : ι) :
+    Function.Injective (c.inj i) := by
+  intro x y h
+  rw [cofanInj_apply_eq_iff_of_isColimit hc] at h
+  obtain ⟨_, rfl⟩ := h
+  rfl
+
+lemma eq_cofanInj_apply_eq_of_isColimit {i j : ι} (x : X i) (y : X j)
+    (h : c.inj i x = c.inj j y) : i = j := by
+  rw [cofanInj_apply_eq_iff_of_isColimit hc] at h
+  exact h.choose
+
+end
+
 end Types
 
 end CategoryTheory.Limits
