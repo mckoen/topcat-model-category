@@ -6,7 +6,7 @@ import TopCatModelCategory.SSet.ProdSimplexOne
 universe u
 
 open HomotopicalAlgebra CategoryTheory Simplicial Limits MonoidalCategory
-  ChosenFiniteProducts Opposite
+  ChosenFiniteProducts Opposite SSet.modelCategoryQuillen
 
 namespace SSet
 

@@ -3,7 +3,7 @@ import TopCatModelCategory.SSet.FundamentalGroupoidAction
 
 universe u
 
-open CategoryTheory HomotopicalAlgebra Simplicial
+open CategoryTheory HomotopicalAlgebra Simplicial SSet.modelCategoryQuillen
 
 namespace SSet
 

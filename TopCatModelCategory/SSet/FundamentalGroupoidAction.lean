@@ -4,6 +4,7 @@ import TopCatModelCategory.SSet.HomotopyGroup
 universe u
 
 open HomotopicalAlgebra CategoryTheory Simplicial MonoidalCategory ChosenFiniteProducts
+  SSet.modelCategoryQuillen
 
 namespace SSet
 

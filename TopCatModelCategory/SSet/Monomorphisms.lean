@@ -27,7 +27,7 @@ instance : IsStableUnderTransfiniteComposition.{u} (monomorphisms (SSet.{u})) :=
 instance : IsStableUnderCobaseChange (monomorphisms (SSet.{u})) := sorry
 instance : IsStableUnderCoproducts.{u} (monomorphisms (SSet.{u})) := sorry
 
-namespace modelCategory
+namespace modelCategoryQuillen
 
 def transfiniteCompositionMonomorphisms {X Y : SSet.{u}} (i : X ⟶ Y) [Mono i] :
     (coproducts.{u} I).pushouts.TransfiniteCompositionOfShape ℕ i := by
@@ -48,6 +48,6 @@ lemma I_rlp_eq_monomorphisms_rlp : I.{u}.rlp = (monomorphisms SSet.{u}).rlp := b
       rlp_transfiniteCompositions, rlp_pushouts, rlp_coproducts, le_refl]
   · exact MorphismProperty.antitone_rlp I_le_monomorphisms
 
-end modelCategory
+end modelCategoryQuillen
 
 end SSet

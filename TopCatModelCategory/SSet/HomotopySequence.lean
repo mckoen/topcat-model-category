@@ -3,7 +3,7 @@ import TopCatModelCategory.SSet.HomotopyGroup
 
 universe u
 
-open HomotopicalAlgebra CategoryTheory Simplicial
+open HomotopicalAlgebra CategoryTheory Simplicial SSet.modelCategoryQuillen
 
 namespace SSet
 

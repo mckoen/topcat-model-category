@@ -6,6 +6,7 @@ import TopCatModelCategory.IsFibrant
 universe u
 
 open HomotopicalAlgebra CategoryTheory Limits Simplicial Opposite Category
+  SSet.modelCategoryQuillen
 
 namespace SSet
 

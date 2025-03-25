@@ -5,7 +5,7 @@ import Mathlib.CategoryTheory.LiftingProperties.ParametrizedAdjunction
 universe u
 
 open CategoryTheory MonoidalCategory Limits Simplicial HomotopicalAlgebra
-  ChosenFiniteProducts
+  ChosenFiniteProducts SSet.modelCategoryQuillen
 
 namespace SSet
 
@@ -266,13 +266,13 @@ lemma anodyneExtensions.pushoutTensorι₂' {A B : SSet.{u}} (i : A ⟶ B) [Mono
     (h : PushoutTensor i (horn 1 k).ι) :
     anodyneExtensions h.ι := by
   intro X Y p hp
-  rw [← fibration_iff] at hp
+  rw [← HomotopicalAlgebra.fibration_iff] at hp
   have H : PullbackIhom Λ[1, k].ι p := Functor.PullbackObjObj.ofHasPullback _ _ _
   suffices (monomorphisms _).rlp H.π by
     rw [← HasLiftingProperty.iff_of_arrow_iso_left h.flipArrowIso,
       hasLiftingProperty_iff_of_pushoutTensor_of_pullbackIhom _ H]
     exact this _ (monomorphisms.infer_property _)
-  rw [← modelCategory.I_rlp_eq_monomorphisms_rlp]
+  rw [← modelCategoryQuillen.I_rlp_eq_monomorphisms_rlp]
   rintro _ _ _ ⟨n⟩
   rw [← hasLiftingProperty_iff_of_pushoutTensor_of_pullbackIhom (PushoutTensor.unionProd _ _)]
   dsimp
@@ -294,7 +294,7 @@ open MorphismProperty in
 lemma hornOneUnionProdInclusions_rlp :
     hornOneUnionProdInclusions.{u}.rlp = fibrations SSet := by
   apply le_antisymm
-  · simpa using antitone_rlp modelCategory.J_le_hornOneUnionProdInclusions
+  · simpa using antitone_rlp modelCategoryQuillen.J_le_hornOneUnionProdInclusions
   · rw [← le_llp_iff_le_rlp]
     apply hornOneUnionProdInclusions_le_anodyneExtensions
 
@@ -311,7 +311,7 @@ lemma hasLiftingProperty_unionProd_horn₁_ι_pullbackIhomπ' [Fibration p]
   rw [← hasLiftingProperty_iff_of_pushoutTensor_of_pullbackIhom
     (PushoutTensor.unionProd₃ A X Λ[1, k]), PushoutTensor.ι_unionProd₃]
   dsimp
-  have hp : fibrations _ p := by rwa [← fibration_iff]
+  have hp : fibrations _ p := by rwa [← HomotopicalAlgebra.fibration_iff]
   rw [← hornOneUnionProdInclusions_rlp] at hp
   have := hp _ (mem_hornOneUnionProdInclusions k (A.unionProd X))
   apply HasLiftingProperty.of_arrow_iso_left (Subcomplex.unionProd.assocArrowIso _ _ _)
@@ -356,7 +356,7 @@ lemma hasLiftingProperty_unionProd_horn₁_ι_pullbackIhomπ [Mono i] [Fibration
   rwa [this] at H
 
 instance [Mono i] [Fibration p] : Fibration h.π := by
-  rw [fibration_iff, ← hornOneUnionProdInclusions_rlp]
+  rw [HomotopicalAlgebra.fibration_iff, ← hornOneUnionProdInclusions_rlp]
   intro _ _ _ hj
   simp only [hornOneUnionProdInclusions, MorphismProperty.iSup_iff] at hj
   obtain ⟨_, _, ⟨_⟩⟩ := hj
@@ -377,7 +377,7 @@ variable (h₁₂ : PushoutTensor f₁ f₂)
 lemma pushoutTensorι₂ [Mono f₁] (hf₂ : anodyneExtensions f₂) : anodyneExtensions h₁₂.ι := by
   dsimp [anodyneExtensions]
   intro X Y p hp
-  rw [← fibration_iff] at hp
+  rw [← HomotopicalAlgebra.fibration_iff] at hp
   let h₁₃ : PullbackIhom f₁ p := Functor.PullbackObjObj.ofHasPullback _ _ _
   rw [hasLiftingProperty_iff_of_pushoutTensor_of_pullbackIhom _ h₁₃]
   apply hf₂.hasLeftLiftingProperty

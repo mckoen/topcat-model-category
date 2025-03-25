@@ -8,7 +8,7 @@ import Mathlib.CategoryTheory.MorphismProperty.Limits
 import Mathlib.CategoryTheory.MorphismProperty.Retract
 import Mathlib.CategoryTheory.MorphismProperty.TransfiniteComposition
 
-open HomotopicalAlgebra CategoryTheory Limits SSet.modelCategory MonoidalCategory
+open HomotopicalAlgebra CategoryTheory Limits SSet.modelCategoryQuillen MonoidalCategory
   Simplicial Opposite
 
 universe u

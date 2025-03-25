@@ -5,6 +5,7 @@ import TopCatModelCategory.SSet.Fiber
 universe u
 
 open CategoryTheory MonoidalCategory HomotopicalAlgebra Limits MonoidalClosed Opposite Simplicial
+  SSet.modelCategoryQuillen
 
 namespace CategoryTheory
 
@@ -234,9 +235,9 @@ section
 
 instance (i : A ⟶ B) (p : X ⟶ Y) [Mono i] [Fibration p] :
     Fibration (ihomToPullback i p) := by
-  rw [modelCategory.fibration_iff]
+  rw [modelCategoryQuillen.fibration_iff]
   intro _ _ _ hf
-  simp only [modelCategory.J, MorphismProperty.iSup_iff] at hf
+  simp only [modelCategoryQuillen.J, MorphismProperty.iSup_iff] at hf
   obtain ⟨n, ⟨j⟩⟩ := hf
   rw [hasLiftingProperty_iHomToPullback_iff]
   apply anodyneExtensions.hasLeftLiftingProperty
@@ -269,9 +270,9 @@ noncomputable def ihomToPullbackTerminalFromArrowIso (f : A ⟶ B) (Z : SSet.{u}
 
 instance {Z : SSet.{u}} (f : A ⟶ B) [Mono f] [IsFibrant Z] :
     Fibration ((pre f).app Z) := by
-  rw [fibration_iff]
+  rw [HomotopicalAlgebra.fibration_iff]
   refine ((fibrations _).arrow_mk_iso_iff (ihomToPullbackTerminalFromArrowIso f Z)).1 ?_
-  rw [← fibration_iff]
+  rw [← HomotopicalAlgebra.fibration_iff]
   infer_instance
 
 @[simps! hom_left inv_left hom_right]
@@ -307,9 +308,9 @@ instance (A : SSet.{u}) : Mono (initial.to A) := by
 
 instance (p : X ⟶ Y) [Fibration p] :
     Fibration ((ihom A).map p) := by
-  rw [fibration_iff]
+  rw [HomotopicalAlgebra.fibration_iff]
   refine ((fibrations _).arrow_mk_iso_iff (ihomToPullbackInitialToArrowIso A p)).1 ?_
-  rw [← fibration_iff]
+  rw [← HomotopicalAlgebra.fibration_iff]
   infer_instance
 
 instance {A X : SSet.{u}} [IsFibrant X] : IsFibrant (A ⟶[SSet] X) := by

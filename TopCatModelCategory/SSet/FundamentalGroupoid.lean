@@ -9,7 +9,7 @@ import TopCatModelCategory.SSet.Monoidal
 universe u
 
 open HomotopicalAlgebra CategoryTheory Category Simplicial Limits MonoidalCategory
-  ChosenFiniteProducts
+  ChosenFiniteProducts SSet.modelCategoryQuillen
 
 namespace SSet
 

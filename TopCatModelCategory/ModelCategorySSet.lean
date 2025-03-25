@@ -15,7 +15,7 @@ namespace SSet
 
 attribute [local instance] Cardinal.fact_isRegular_aleph0
 
-namespace modelCategory
+namespace modelCategoryQuillen
 
 open MorphismProperty SmallObject
 
@@ -142,9 +142,9 @@ instance {A B X Y : SSet.{0}} (i : A ⟶ B) (p : X ⟶ Y)
   rw [I_rlp_eq_monomorphisms_rlp] at this
   exact this _ (mono_of_cofibration _)
 
-end modelCategory
+end modelCategoryQuillen
 
-open modelCategory
+open modelCategoryQuillen
 
 instance : ModelCategory SSet.{0} where
   cm4a i p _ _ _ := ModelCategory.joyal_trick_dual

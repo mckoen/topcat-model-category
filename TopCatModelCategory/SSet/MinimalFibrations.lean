@@ -8,7 +8,7 @@ import TopCatModelCategory.Set
 universe u
 
 open CategoryTheory HomotopicalAlgebra Simplicial MonoidalCategory
-  ChosenFiniteProducts Category Limits
+  ChosenFiniteProducts Category Limits SSet.modelCategoryQuillen
 
 namespace SSet.Subcomplex
 

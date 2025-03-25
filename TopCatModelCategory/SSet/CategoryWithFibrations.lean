@@ -9,7 +9,7 @@ universe u
 
 namespace SSet
 
-namespace modelCategory
+namespace modelCategoryQuillen
 
 /-def I : MorphismProperty SSet.{u} :=
   .ofHoms (fun (n : ℕ) ↦ (subcomplexBoundary.{u} n).ι)
@@ -81,6 +81,6 @@ instance (n : ℕ) (i : Fin (n + 2)) [hf : Fibration f] :
 
 end
 
-end modelCategory
+end modelCategoryQuillen
 
 end SSet

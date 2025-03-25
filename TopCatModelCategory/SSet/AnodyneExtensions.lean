@@ -1,6 +1,6 @@
 import TopCatModelCategory.SSet.AnodyneExtensionsDefs
 
-open HomotopicalAlgebra CategoryTheory Limits SSet.modelCategory MonoidalCategory
+open HomotopicalAlgebra CategoryTheory Limits SSet.modelCategoryQuillen MonoidalCategory
   Simplicial Opposite
 
 universe u
@@ -306,7 +306,7 @@ lemma subcomplex_unionProd_face_boundary_ι_mem (n : ℕ) (i : Fin 2) :
 
 end anodyneExtensions
 
-lemma modelCategory.J_le_hornOneUnionProdInclusions :
-    modelCategory.J.{u} ≤ hornOneUnionProdInclusions.retracts := sorry
+lemma modelCategoryQuillen.J_le_hornOneUnionProdInclusions :
+    modelCategoryQuillen.J.{u} ≤ hornOneUnionProdInclusions.retracts := sorry
 
 end SSet

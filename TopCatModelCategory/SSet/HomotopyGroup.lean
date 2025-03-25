@@ -1,6 +1,7 @@
 import TopCatModelCategory.SSet.PtSimplex
 
 open HomotopicalAlgebra CategoryTheory Simplicial Limits Opposite
+  SSet.modelCategoryQuillen
 
 universe u
 
