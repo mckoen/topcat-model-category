@@ -192,7 +192,7 @@ lemma orderHom_ext_of_injective {α : Type*} [PartialOrder α] [DecidableEq α]
 lemma range_succAboveOrderEmb {n : ℕ} (i : Fin (n + 1)) :
     Set.range (Fin.succAboveOrderEmb i).toOrderHom = {i}ᶜ := by aesop
 
-lemma eq_id_of_strictMono (f : Fin (n + 1) →o Fin (n + 1)) (hf : StrictMono f) :
+lemma eq_id_of_strictMono {n : ℕ} (f : Fin (n + 1) →o Fin (n + 1)) (hf : StrictMono f) :
     f = .id := by
   apply orderHom_ext_of_injective
   · exact hf.injective
@@ -312,9 +312,9 @@ end
 
 section
 
-variable [PartialOrder α]
+variable [PartialOrder α] {n : ℕ}
 
-lemma strictMono_insert_zero (f : Fin (n + 1) → α) (hf : StrictMono f)
+lemma strictMono_insert_zero(f : Fin (n + 1) → α) (hf : StrictMono f)
     (x : α) (hx : x < f 0) :
     StrictMono (insert f 0 x) := by
   rw [strictMono_iff]
@@ -389,6 +389,23 @@ lemma strictMono_insert (f : Fin (n + 1) → α) (hf : StrictMono f)
         (by simp [Fin.ext_iff])] using hx₁
 
 end
+
+end
+
+section
+
+variable {ι : Type*} [Preorder ι] {x₀ x₁ : ι} (h : x₀ ≤ x₁)
+
+@[simps]
+def orderHomMk₂ : Fin 2 →o ι where
+  toFun i := match i with
+    | 0 => x₀
+    | 1 => x₁
+  monotone' := by
+    rw [monotone_iff]
+    intro i
+    fin_cases i
+    exact h
 
 end
 
