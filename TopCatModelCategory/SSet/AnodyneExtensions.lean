@@ -326,6 +326,11 @@ def ρ : Fin (n + 2) × Fin 2 → Fin (n + 2)
 
 lemma ρ_zero_le (x : Fin (n + 2)) : ρ k ⟨x, 0⟩ ≤ k.castSucc := by simp [ρ]
 
+lemma ρ_mem_union (x : Fin (n + 2) × Fin 2) :
+    ρ k x ∈ ({x.1} ∪ {k.castSucc} : Set _) := by
+  obtain ⟨x₁, x₂⟩ := x
+  fin_cases x₂ <;> simp [ρ]; omega
+
 lemma monotone_ρ : Monotone (ρ k) := by
   rw [monotone_prod_iff]
   constructor
@@ -346,6 +351,17 @@ lemma monotone_ρ : Monotone (ρ k) := by
 def r : Δ[n + 1] ⊗ Δ[1] ⟶ Δ[n + 1] :=
   prodStdSimplex.homEquiv.symm ⟨ρ k, monotone_ρ k⟩
 
+lemma range_union_singleton_le
+    {d : ℕ} (x : (Δ[n + 1] ⊗ Δ[1] : SSet.{u}) _⦋d⦌) :
+    Set.range (stdSimplex.asOrderHom
+      ((r k).app (op ⦋d⦌) x)) ∪ {k.castSucc} ⊆
+        Set.range (stdSimplex.asOrderHom x.1) ∪ {k.castSucc} := by
+  obtain ⟨x₁, x₂⟩ := x
+  rintro _ (⟨i, rfl⟩ | _)
+  · apply (_ : (_ : Set _) ≤ _) (ρ_mem_union _ ⟨_, _⟩)
+    rintro _ (rfl | rfl) <;> aesop
+  · aesop
+
 @[reassoc (attr := simp)]
 lemma ι₁_r : ι₁ ≫ r k = 𝟙 _ :=
   yonedaEquiv.injective rfl
@@ -357,10 +373,9 @@ lemma preimage_ι_comp_r_eq_top :
   rw [sup_le_iff]
   constructor
   · rw [← Subcomplex.image_le_iff]
-    rintro ⟨d⟩ _ ⟨⟨y₁, y₂⟩, ⟨hy₁, hy₂⟩, rfl⟩
+    rintro ⟨d⟩ _ ⟨⟨y₁, y₂⟩, ⟨_, hy₂⟩, rfl⟩
     induction' d using SimplexCategory.rec with d
     replace hy₂ := horn₁.eq_objMk_const _ _ hy₂
-    dsimp at hy₂
     apply face_le_horn (Fin.last _) _ (fun h ↦ by
       simp only [Fin.ext_iff, Fin.val_last, Fin.coe_castSucc] at h
       omega)
@@ -370,7 +385,14 @@ lemma preimage_ι_comp_r_eq_top :
     intro h
     simp only [h, Fin.last_le_iff, Fin.ext_iff, Fin.coe_castSucc, Fin.val_last] at this
     omega
-  · sorry
+  · rw [← Subcomplex.image_le_iff]
+    rintro ⟨d⟩ _ ⟨⟨y₁, y₂⟩, ⟨hy₁, _⟩, rfl⟩
+    induction' d using SimplexCategory.rec with d
+    rw [horn, Set.mem_setOf_eq] at hy₁ ⊢
+    intro h
+    apply hy₁ (subset_antisymm (by simp) ?_)
+    rw [← h]
+    apply range_union_singleton_le
 
 end retractArrowHornCastSuccι
 
@@ -387,9 +409,102 @@ noncomputable def retractArrowHornCastSuccι :
     · simp [← cancel_mono (Subcomplex.ι _)]
     · simp
 
-def retractArrowHornSuccι :
+namespace retractArrowHornSuccι
+
+lemma preimage_ι_comp_ι₀_eq_top :
+    (Λ[n + 1, k.succ].unionProd Λ[1, 1]).preimage (Λ[n + 1, k.succ].ι ≫ ι₀) = ⊤ := by
+  apply le_antisymm (by simp)
+  rintro d ⟨x, hx⟩ _
+  simp [Subcomplex.mem_unionProd_iff]
+  tauto
+
+def ρ : Fin (n + 2) × Fin 2 → Fin (n + 2)
+  | ⟨x, 0⟩ => x
+  | ⟨x, 1⟩ => max x k.succ
+
+lemma le_ρ_one (x : Fin (n + 2)) : k.succ ≤ ρ k ⟨x, 1⟩ := by simp [ρ]
+
+lemma ρ_mem_union (x : Fin (n + 2) × Fin 2) :
+    ρ k x ∈ ({x.1} ∪ {k.succ} : Set _) := by
+  obtain ⟨x₁, x₂⟩ := x
+  fin_cases x₂ <;> simp [ρ]; omega
+
+lemma monotone_ρ : Monotone (ρ k) := by
+  rw [monotone_prod_iff]
+  constructor
+  · intro x
+    rw [Fin.monotone_iff_le_succ]
+    intro i
+    fin_cases i
+    simp [ρ]
+  · intro i
+    fin_cases i
+    · intro x y h
+      exact h
+    · intro x y h
+      simp only [ρ, le_sup_iff, sup_le_iff, le_refl, and_true]
+      omega
+
+def r : Δ[n + 1] ⊗ Δ[1] ⟶ Δ[n + 1] :=
+  prodStdSimplex.homEquiv.symm ⟨ρ k, monotone_ρ k⟩
+
+lemma range_union_singleton_le
+    {d : ℕ} (x : (Δ[n + 1] ⊗ Δ[1] : SSet.{u}) _⦋d⦌) :
+    Set.range (stdSimplex.asOrderHom
+      ((r k).app (op ⦋d⦌) x)) ∪ {k.succ} ⊆
+        Set.range (stdSimplex.asOrderHom x.1) ∪ {k.succ} := by
+  obtain ⟨x₁, x₂⟩ := x
+  rintro _ (⟨i, rfl⟩ | _)
+  · apply (_ : (_ : Set _) ≤ _) (ρ_mem_union _ ⟨_, _⟩)
+    rintro _ (rfl | rfl) <;> aesop
+  · aesop
+
+@[reassoc (attr := simp)]
+lemma ι₀_r : ι₀ ≫ r k = 𝟙 _ :=
+  yonedaEquiv.injective rfl
+
+lemma preimage_ι_comp_r_eq_top :
+    Λ[n + 1, k.succ].preimage ((Λ[n + 1, k.succ].unionProd Λ[1, 1]).ι ≫ r k) = ⊤ := by
+  rw [Subcomplex.preimage_ι_comp_eq_top_iff]
+  dsimp [Subcomplex.unionProd]
+  rw [sup_le_iff]
+  constructor
+  · rw [← Subcomplex.image_le_iff]
+    rintro ⟨d⟩ _ ⟨⟨y₁, y₂⟩, ⟨_, hy₂⟩, rfl⟩
+    induction' d using SimplexCategory.rec with d
+    replace hy₂ := horn₁.eq_objMk_const _ _ hy₂
+    apply face_le_horn 0 _ (fun h ↦ by
+      rw [Fin.ext_iff] at h
+      simp at h)
+    simp only [stdSimplex.mem_face_iff, Finset.mem_compl, Finset.mem_singleton]
+    intro i
+    have : k.succ ≤ (r k).app _ ⟨y₁, y₂⟩ i := by subst hy₂; apply le_ρ_one
+    intro h
+    rw [h, Fin.le_zero_iff, Fin.ext_iff] at this
+    simp at this
+  · rw [← Subcomplex.image_le_iff]
+    rintro ⟨d⟩ _ ⟨⟨y₁, y₂⟩, ⟨hy₁, _⟩, rfl⟩
+    induction' d using SimplexCategory.rec with d
+    rw [horn, Set.mem_setOf_eq] at hy₁ ⊢
+    intro h
+    apply hy₁ (subset_antisymm (by simp) ?_)
+    rw [← h]
+    apply range_union_singleton_le
+
+end retractArrowHornSuccι
+
+open retractArrowHornSuccι in
+noncomputable def retractArrowHornSuccι :
     RetractArrow Λ[n + 1, k.succ].ι
-      ((Λ[n + 1, k.castSucc].unionProd (horn.{u} 1 0)).ι) := sorry
+      ((Λ[n + 1, k.succ].unionProd (horn.{u} 1 1)).ι) where
+  i := Arrow.homMk (Subcomplex.lift (Subcomplex.ι _ ≫ ι₀)
+    (preimage_ι_comp_ι₀_eq_top k)) ι₀ rfl
+  r := Arrow.homMk (Subcomplex.lift (Subcomplex.ι _ ≫ r k)
+    (preimage_ι_comp_r_eq_top k)) (r k) rfl
+  retract := by
+    ext : 1
+    · simp [← cancel_mono (Subcomplex.ι _)]
+    · simp
 
 end
 
