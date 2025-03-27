@@ -1,4 +1,5 @@
 import TopCatModelCategory.SSet.AnodyneExtensionsDefs
+import TopCatModelCategory.SSet.ProdSimplex
 
 open HomotopicalAlgebra CategoryTheory Limits SSet.modelCategoryQuillen MonoidalCategory
   Simplicial Opposite
@@ -304,9 +305,94 @@ lemma subcomplex_unionProd_face_boundary_ι_mem (n : ℕ) (i : Fin 2) :
   · exact mem₀ n
   · exact mem₁ n
 
+section
+
+variable {n : ℕ} (k : Fin (n + 1))
+
+open ChosenFiniteProducts
+
+namespace retractArrowHornCastSuccι
+
+lemma preimage_ι_comp_ι₁_eq_top :
+    (Λ[n + 1, k.castSucc].unionProd Λ[1, 1]).preimage (Λ[n + 1, k.castSucc].ι ≫ ι₁) = ⊤ := by
+  apply le_antisymm (by simp)
+  rintro d ⟨x, hx⟩ _
+  simp [Subcomplex.mem_unionProd_iff]
+  tauto
+
+def ρ : Fin (n + 2) × Fin 2 → Fin (n + 2)
+  | ⟨x, 0⟩ => min x k
+  | ⟨x, 1⟩ => x
+
+lemma monotone_ρ : Monotone (ρ k) := by
+  rw [monotone_prod_iff]
+  constructor
+  · intro x
+    rw [Fin.monotone_iff_le_succ]
+    intro i
+    fin_cases i
+    simp [ρ]
+  · intro i
+    fin_cases i
+    · intro x y h
+      simp only [ρ, Fin.coe_eq_castSucc, le_inf_iff, inf_le_iff, inf_le_right, and_true,
+        le_refl, or_true]
+      tauto
+    · intro x y h
+      exact h
+
+def r : Δ[n + 1] ⊗ Δ[1] ⟶ Δ[n + 1] :=
+  prodStdSimplex.homEquiv.symm ⟨ρ k, monotone_ρ k⟩
+
+lemma preimage_ι_comp_r_eq_top :
+    Λ[n + 1, k.castSucc].preimage ((Λ[n + 1, k.castSucc].unionProd Λ[1, 1]).ι ≫ r k) = ⊤ := by
+  rw [Subcomplex.preimage_ι_comp_eq_top_iff]
+  dsimp [Subcomplex.unionProd]
+  rw [sup_le_iff]
+  constructor
+  · rw [← Subcomplex.image_le_iff]
+    rintro ⟨d⟩ _ ⟨⟨y₁, y₂⟩, ⟨hy₁, hy₂⟩, rfl⟩
+    induction' d using SimplexCategory.rec with d
+    dsimp at hy₁ hy₂
+    sorry
+  · sorry
+
+@[reassoc (attr := simp)]
+lemma ι₁_r : ι₁ ≫ r k = 𝟙 _ :=
+  yonedaEquiv.injective rfl
+
+end retractArrowHornCastSuccι
+
+open retractArrowHornCastSuccι in
+noncomputable def retractArrowHornCastSuccι :
+    RetractArrow Λ[n + 1, k.castSucc].ι
+      ((Λ[n + 1, k.castSucc].unionProd (horn.{u} 1 1)).ι) where
+  i := Arrow.homMk (Subcomplex.lift (Subcomplex.ι _ ≫ ι₁)
+    (preimage_ι_comp_ι₁_eq_top k)) ι₁ rfl
+  r := Arrow.homMk (Subcomplex.lift (Subcomplex.ι _ ≫ r k)
+    (preimage_ι_comp_r_eq_top k)) (r k) rfl
+  retract := by
+    ext : 1
+    · simp [← cancel_mono (Subcomplex.ι _)]
+    · simp
+
+def retractArrowHornSuccι :
+    RetractArrow Λ[n + 1, k.succ].ι
+      ((Λ[n + 1, k.castSucc].unionProd (horn.{u} 1 0)).ι) := sorry
+
+end
+
 end anodyneExtensions
 
 lemma modelCategoryQuillen.J_le_hornOneUnionProdInclusions :
-    modelCategoryQuillen.J.{u} ≤ hornOneUnionProdInclusions.retracts := sorry
+    modelCategoryQuillen.J.{u} ≤ hornOneUnionProdInclusions.retracts := by
+  rintro _ _ _ h
+  simp only [J, MorphismProperty.iSup_iff] at h
+  obtain ⟨n, ⟨k⟩⟩ := h
+  obtain ⟨k, rfl⟩ | rfl := k.eq_castSucc_or_eq_last
+  · exact ⟨_, _, _, anodyneExtensions.retractArrowHornCastSuccι k,
+      mem_hornOneUnionProdInclusions _ _⟩
+  · exact ⟨_, _, _, anodyneExtensions.retractArrowHornSuccι (Fin.last _),
+      mem_hornOneUnionProdInclusions _ _⟩
 
 end SSet

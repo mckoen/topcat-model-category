@@ -803,6 +803,8 @@ noncomputable def multicoforkIsColimit' [LinearOrder ι] :
 
 end multicoequalizer
 
+section
+
 variable {Y}
 
 lemma hom_ext (B : Y.Subcomplex) {f g : X ⟶ B} (h : f ≫ B.ι = g ≫ B.ι): f = g := by
@@ -811,6 +813,16 @@ lemma hom_ext (B : Y.Subcomplex) {f g : X ⟶ B} (h : f ≫ B.ι = g ≫ B.ι): 
 lemma hom_ext_of_eq_bot {A : X.Subcomplex} (h : A = ⊥) {f g : (A : SSet) ⟶ Y} : f = g := by
   ext _ ⟨x, hx⟩
   simp [h] at hx
+
+end
+
+lemma preimage_preimage {X Y Z : SSet.{u}} (A : Z.Subcomplex) (f : X ⟶ Y) (g : Y ⟶ Z) :
+    A.preimage (f ≫ g) = (A.preimage g).preimage f := rfl
+
+lemma preimage_ι_comp_eq_top_iff {X Y : SSet.{u}} (B : Y.Subcomplex) (A : X.Subcomplex) (f : X ⟶ Y) :
+    B.preimage (A.ι ≫ f) = ⊤ ↔ A ≤ B.preimage f := by
+  simp only [← top_le_iff, preimage_preimage, ← Subcomplex.image_le_iff, image_top,
+    Subpresheaf.range_ι]
 
 end Subcomplex
 
