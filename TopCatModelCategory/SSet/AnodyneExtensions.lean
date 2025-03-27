@@ -289,11 +289,86 @@ lemma mem₁ :
     (anodyneExtensions.comp_mem _ _ ?_ ?_))
   all_goals apply of_isIso
 
+noncomputable def filtration₀ (i : Fin (n + 2)) :
+    (Δ[1] ⊗ Δ[n] : SSet.{u}).Subcomplex :=
+  Subcomplex.unionProd (stdSimplex.face {0}) (boundary n) ⊔
+    (⨆ j, ⨆ (_ : i ≤ j.castSucc), Subcomplex.ofSimplex (simplex j).1)
+
+lemma filtration₀_castSucc (i : Fin (n + 1)) :
+    filtration₀.{u} i.castSucc = filtration₀ i.succ ⊔
+      Subcomplex.ofSimplex (simplex i).1 := by
+  dsimp only [filtration₀]
+  simp only [Nat.reduceAdd, Fin.isValue, Fin.castSucc_le_castSucc_iff, Fin.succ_le_castSucc_iff]
+  apply le_antisymm
+  · simp only [sup_le_iff, iSup_le_iff]
+    constructor
+    · exact le_trans le_sup_left le_sup_left
+    · intro j h
+      obtain h | rfl := h.lt_or_eq
+      · exact le_trans (le_trans (le_trans (by exact le_trans (by rfl) (le_iSup _ h))
+          (le_iSup _ j)) le_sup_right) le_sup_left
+      · exact le_sup_right
+  · simp only [sup_le_iff, iSup_le_iff]
+    constructor
+    · constructor
+      · exact le_sup_left
+      · intro j h
+        exact le_trans (le_trans (by exact le_trans (by rfl) (le_iSup _ h.le))
+          (le_iSup _ j)) le_sup_right
+    · exact le_trans (le_trans (by exact le_trans (by rfl) (le_iSup _ (by simp)))
+        (le_iSup _ i)) le_sup_right
+
+lemma antitone_filtration₀ : Antitone (filtration₀.{u} (n := n)) := by
+  rw [Fin.antitone_iff_succ_le]
+  intro i
+  rw [filtration₀_castSucc]
+  apply le_sup_left
+
+variable (n) in
+lemma filtration₀_last :
+    filtration₀.{u} (Fin.last _ : Fin (n + 2)) =
+      Subcomplex.unionProd (stdSimplex.face {0}) (boundary n) := by
+  simp [filtration₀]
+  intro i hi
+  simp only [Fin.ext_iff, Fin.coe_castSucc, Fin.val_last] at hi
+  omega
+
+variable (n) in
+lemma filtration₀_zero :
+    filtration₀.{u} (0 : Fin (n + 2)) = ⊤ := by
+  rw [prodStdSimplex.subcomplex_eq_top_iff _ (add_comm 1 n)]
+  intro x hx
+  obtain ⟨i, hi⟩ := prodStdSimplex.nonDegenerateEquiv₁.surjective ⟨x, hx⟩
+  obtain rfl : simplex i = x := by simp [simplex, hi]
+  rw [filtration₀, ← Subcomplex.ofSimplex_le_iff]
+  exact le_trans (le_trans (by
+    exact le_trans (by rfl) (le_iSup _ (by simp))) (le_iSup _ i)) le_sup_right
+
+lemma filtration₀_from_succ_mem (i : Fin (n + 1)) :
+    anodyneExtensions (Subcomplex.homOfLE (antitone_filtration₀.{u} i.castSucc_le_succ)) := by
+  sorry
+
+lemma filtation₀_map_mem {i j : Fin (n + 2)} (h : i ≤ j) :
+    anodyneExtensions (Subcomplex.homOfLE (antitone_filtration₀.{u} h)) := by
+  let F : Fin (n + 2) ⥤ SSet.{u}ᵒᵖ :=
+    { obj i := op (filtration₀ i : SSet)
+      map f := (Subcomplex.homOfLE (antitone_filtration₀ (leOfHom f))).op
+      map_id _ := rfl
+      map_comp _ _ := by rw [← op_comp, Subcomplex.homOfLE_comp] }
+  exact anodyneExtensions.op.map_mem_of_fin F filtration₀_from_succ_mem (homOfLE h)
+
 variable (n) in
 lemma mem₀ :
     anodyneExtensions (Subcomplex.unionProd.{u} (stdSimplex.face {(0 : Fin 2)})
       (boundary n)).ι := by
-  sorry -- same as `mem₁`, but inserting the simplices in reverse order
+  change anodyneExtensions ((Subcomplex.isoOfEq (filtration₀_last.{u} n)).inv ≫
+    (Subcomplex.homOfLE (antitone_filtration₀.{u} (by simp))) ≫
+    (Subcomplex.isoOfEq (filtration₀_zero.{u} n)).hom ≫
+    (Subcomplex.topIso _).hom)
+  refine anodyneExtensions.comp_mem _ _ ?_
+    (anodyneExtensions.comp_mem _ _ (filtation₀_map_mem (by simp))
+    (anodyneExtensions.comp_mem _ _ ?_ ?_))
+  all_goals apply of_isIso
 
 end subcomplex_unionProd_face_ι_mem
 
