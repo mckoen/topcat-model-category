@@ -599,6 +599,16 @@ lemma face_hasDimensionLT (S : Finset (Fin (n + 1))) (k : ℕ)
     rw [← hasDimensionLT_iff_of_iso pif]
     exact hasDimensionLT_of_le _ (d + 1) _ (by omega)
 
+lemma face_singleton_eq_ofSimplex {n : ℕ} (i : Fin (n + 1)) :
+    face.{u} {i} = Subcomplex.ofSimplex (stdSimplex.obj₀Equiv.symm i) :=
+  face_nonDegenerateEquiv ⟨(stdSimplex.obj₀Equiv.symm i), by simp⟩
+
+lemma face_singleton_ι_eq_const {n : ℕ} (i : Fin (n + 1)) :
+    (face.{u} {i}).ι = SSet.const (stdSimplex.obj₀Equiv.symm i) := by
+  ext ⟨d⟩ ⟨x, hx⟩ j
+  induction' d using SimplexCategory.rec with d
+  aesop
+
 end stdSimplex
 
 namespace Subcomplex

@@ -314,15 +314,17 @@ open ChosenFiniteProducts
 namespace retractArrowHornCastSuccι
 
 lemma preimage_ι_comp_ι₁_eq_top :
-    (Λ[n + 1, k.castSucc].unionProd Λ[1, 1]).preimage (Λ[n + 1, k.castSucc].ι ≫ ι₁) = ⊤ := by
+    (Λ[n + 1, k.castSucc].unionProd Λ[1, 0]).preimage (Λ[n + 1, k.castSucc].ι ≫ ι₁) = ⊤ := by
   apply le_antisymm (by simp)
   rintro d ⟨x, hx⟩ _
   simp [Subcomplex.mem_unionProd_iff]
   tauto
 
 def ρ : Fin (n + 2) × Fin 2 → Fin (n + 2)
-  | ⟨x, 0⟩ => min x k
+  | ⟨x, 0⟩ => min x k.castSucc
   | ⟨x, 1⟩ => x
+
+lemma ρ_zero_le (x : Fin (n + 2)) : ρ k ⟨x, 0⟩ ≤ k.castSucc := by simp [ρ]
 
 lemma monotone_ρ : Monotone (ρ k) := by
   rw [monotone_prod_iff]
@@ -344,8 +346,12 @@ lemma monotone_ρ : Monotone (ρ k) := by
 def r : Δ[n + 1] ⊗ Δ[1] ⟶ Δ[n + 1] :=
   prodStdSimplex.homEquiv.symm ⟨ρ k, monotone_ρ k⟩
 
+@[reassoc (attr := simp)]
+lemma ι₁_r : ι₁ ≫ r k = 𝟙 _ :=
+  yonedaEquiv.injective rfl
+
 lemma preimage_ι_comp_r_eq_top :
-    Λ[n + 1, k.castSucc].preimage ((Λ[n + 1, k.castSucc].unionProd Λ[1, 1]).ι ≫ r k) = ⊤ := by
+    Λ[n + 1, k.castSucc].preimage ((Λ[n + 1, k.castSucc].unionProd Λ[1, 0]).ι ≫ r k) = ⊤ := by
   rw [Subcomplex.preimage_ι_comp_eq_top_iff]
   dsimp [Subcomplex.unionProd]
   rw [sup_le_iff]
@@ -353,20 +359,25 @@ lemma preimage_ι_comp_r_eq_top :
   · rw [← Subcomplex.image_le_iff]
     rintro ⟨d⟩ _ ⟨⟨y₁, y₂⟩, ⟨hy₁, hy₂⟩, rfl⟩
     induction' d using SimplexCategory.rec with d
-    dsimp at hy₁ hy₂
-    sorry
+    replace hy₂ := horn₁.eq_objMk_const _ _ hy₂
+    dsimp at hy₂
+    apply face_le_horn (Fin.last _) _ (fun h ↦ by
+      simp only [Fin.ext_iff, Fin.val_last, Fin.coe_castSucc] at h
+      omega)
+    simp only [stdSimplex.mem_face_iff, Finset.mem_compl, Finset.mem_singleton]
+    intro i
+    have : (r k).app _ ⟨y₁, y₂⟩ i ≤ k.castSucc := by subst hy₂; apply ρ_zero_le
+    intro h
+    simp only [h, Fin.last_le_iff, Fin.ext_iff, Fin.coe_castSucc, Fin.val_last] at this
+    omega
   · sorry
-
-@[reassoc (attr := simp)]
-lemma ι₁_r : ι₁ ≫ r k = 𝟙 _ :=
-  yonedaEquiv.injective rfl
 
 end retractArrowHornCastSuccι
 
 open retractArrowHornCastSuccι in
 noncomputable def retractArrowHornCastSuccι :
     RetractArrow Λ[n + 1, k.castSucc].ι
-      ((Λ[n + 1, k.castSucc].unionProd (horn.{u} 1 1)).ι) where
+      ((Λ[n + 1, k.castSucc].unionProd (horn.{u} 1 0)).ι) where
   i := Arrow.homMk (Subcomplex.lift (Subcomplex.ι _ ≫ ι₁)
     (preimage_ι_comp_ι₁_eq_top k)) ι₁ rfl
   r := Arrow.homMk (Subcomplex.lift (Subcomplex.ι _ ≫ r k)

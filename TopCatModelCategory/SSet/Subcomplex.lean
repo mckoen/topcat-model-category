@@ -824,6 +824,18 @@ lemma preimage_ι_comp_eq_top_iff {X Y : SSet.{u}} (B : Y.Subcomplex) (A : X.Sub
   simp only [← top_le_iff, preimage_preimage, ← Subcomplex.image_le_iff, image_top,
     Subpresheaf.range_ι]
 
+section
+
+variable {X : SSet.{u}} {A B : X.Subcomplex} (h : A = B)
+
+@[reassoc (attr := simp)]
+lemma isoOfEq_hom_ι : (isoOfEq h).hom ≫ B.ι = A.ι := rfl
+
+@[reassoc (attr := simp)]
+lemma isoOfEq_inv_ι : (isoOfEq h).inv ≫ A.ι = B.ι := rfl
+
+end
+
 end Subcomplex
 
 end SSet

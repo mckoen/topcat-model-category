@@ -443,4 +443,58 @@ lemma exists_desc : ∃ (φ : (horn 3 2 : SSet) ⟶ X),
 
 end horn₃₂
 
+namespace horn₁
+
+variable (i : Fin 2)
+
+lemma eq_face : horn.{u} 1 i = stdSimplex.face {i} := by
+  rw [horn_eq_iSup]
+  fin_cases i
+  · letI : Unique ({0}ᶜ : Set (Fin 2)) :=
+      { default := ⟨1, by simp⟩
+        uniq := by rintro ⟨a, _⟩; fin_cases a <;> aesop }
+    dsimp
+    rw [iSup_unique]
+    rfl
+  · letI : Unique ({1}ᶜ : Set (Fin 2)) :=
+      { default := ⟨0, by simp⟩
+        uniq := by rintro ⟨a, _⟩; fin_cases a <;> aesop }
+    dsimp
+    rw [iSup_unique]
+    rfl
+
+lemma ι_eq : (horn.{u} 1 i).ι = const.{u} (stdSimplex.obj₀Equiv.{u}.symm i) := by
+  rw [← Subcomplex.isoOfEq_hom_ι (eq_face i), stdSimplex.face_singleton_ι_eq_const, comp_const]
+
+noncomputable def iso : Δ[0] ≅ (horn 1 i : SSet.{u}) :=
+  stdSimplex.faceSingletonIso _ ≪≫ Subcomplex.isoOfEq (eq_face i).symm
+
+@[reassoc (attr := simp)]
+lemma iso₁_hom_ι : (iso.{u} 1).hom ≫ Λ[1, 1].ι = stdSimplex.δ 0 := by
+  rw [ι_eq, comp_const]
+  apply yonedaEquiv.injective
+  ext j
+  fin_cases j
+  rfl
+
+@[reassoc (attr := simp)]
+lemma iso₀_hom_ι : (iso.{u} 0).hom ≫ Λ[1, 0].ι = stdSimplex.δ 1 := by
+  rw [ι_eq, comp_const]
+  apply yonedaEquiv.injective
+  ext j
+  fin_cases j
+  rfl
+
+lemma eq_ofSimplex : Λ[1, i] = Subcomplex.ofSimplex.{u} (stdSimplex.obj₀Equiv.symm i) := by
+  rw [eq_face, stdSimplex.face_singleton_eq_ofSimplex]
+
+lemma eq_objMk_const {d : ℕ} (x : Δ[1] _⦋d⦌) (hx : x ∈ Λ[1, i].obj _) :
+    x = stdSimplex.objMk (n := .mk 1) (OrderHom.const _ i) := by
+  rw [eq_ofSimplex] at hx
+  obtain ⟨⟨f⟩, rfl⟩ := hx
+  obtain rfl : f = SimplexCategory.const _ _ 0 := Subsingleton.elim _ _
+  rfl
+
+end horn₁
+
 end SSet
