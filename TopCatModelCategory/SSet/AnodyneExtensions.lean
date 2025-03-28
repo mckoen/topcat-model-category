@@ -70,29 +70,34 @@ lemma simplexδ_mem_ofSimplex (j : Fin (n + 1)) (i : Fin (n + 2)) :
     simplexδ.{u} j i ∈ (Subcomplex.ofSimplex (simplex j).1).obj _ :=
   ⟨_, rfl⟩
 
-lemma simplexδ_snd_mem_boundary_of_gt (j : Fin (n + 1)) (i : Fin (n + 3))
-    (hij : i < j.succ.castSucc) :
-    (simplexδ j.succ i).2 ∈ (boundary _).obj _ := by
-  simp only [boundary_eq_iSup, Subpresheaf.iSup_obj, Set.iSup_eq_iUnion, Set.mem_iUnion,
-    stdSimplex.mem_face_iff, Finset.mem_compl, Finset.mem_singleton]
-  have hi : i ≠ Fin.last _ :=
-    fun hi ↦ not_lt_of_ge (j.succ.castSucc.le_last) (by simpa only [hi] using hij)
-  rw [← Fin.succ_castSucc, ← Fin.le_castSucc_iff] at hij
-  exact ⟨i.castPred hi, fun k hk ↦ Fin.succAbove_ne _ _ ((SimplexCategory.congr_toOrderHom_apply
-    (SimplexCategory.δ_comp_σ_of_le (n := n) (i := i.castPred hi) (j := j) hij) k).symm.trans hk)⟩
-
-lemma simplexδ_snd_mem_boundary_of_lt (j i : Fin (n + 2))
-    (hij : j < i) :
-    (simplexδ j i.succ).2 ∈ (boundary _).obj _ := by
-  simp only [boundary_eq_iSup, Subpresheaf.iSup_obj, Set.iSup_eq_iUnion, Set.mem_iUnion,
-    stdSimplex.mem_face_iff, Finset.mem_compl, Finset.mem_singleton]
-  have hj : j ≠ Fin.last _ := by
+lemma simplexδ_snd_mem_boundary_of_gt (j : Fin (n + 2)) (i : Fin (n + 3))
+    (hij : i < j.castSucc) :
+    (simplexδ j i).2 ∈ (boundary _).obj _ := by
+  dsimp [simplexδ, SimplicialObject.δ]
+  erw [stdSimplex.map_objEquiv_symm]
+  obtain ⟨j, rfl⟩ := j.eq_succ_of_ne_zero (by rintro rfl; simp at hij)
+  obtain ⟨i, rfl⟩ := i.eq_castSucc_of_ne_last (by
     rintro rfl
-    exact (Fin.le_last i).not_lt hij
-  exact ⟨i, fun k hk ↦
-    Fin.succAbove_ne _ _ ((SimplexCategory.congr_toOrderHom_apply
-      (SimplexCategory.δ_comp_σ_of_gt (n := n) (i := i) (j := j.castPred hj)
-        (by simpa using hij)) k).symm.trans hk)⟩
+    exact hij.not_le (j.succ.castSucc.le_last))
+  simp only [Fin.castSucc_lt_castSucc_iff] at hij
+  rw [SimplexCategory.δ_comp_σ_of_le (by rwa [Fin.le_castSucc_iff])]
+  simp only [boundary_eq_iSup, Subpresheaf.iSup_obj, Set.mem_iUnion, stdSimplex.mem_face_iff,
+    Finset.mem_compl, Finset.mem_singleton]
+  exact ⟨i, fun _ ↦ Fin.succAbove_ne _ _⟩
+
+lemma simplexδ_snd_mem_boundary_of_lt (j : Fin (n + 2)) (i : Fin (n + 3))
+    (hij : j.succ < i) :
+    (simplexδ j i).2 ∈ (boundary _).obj _ := by
+  dsimp [simplexδ, SimplicialObject.δ]
+  erw [stdSimplex.map_objEquiv_symm]
+  obtain ⟨j', rfl⟩ := j.eq_castSucc_of_ne_last (by
+    rintro rfl
+    exact (Fin.le_last i).not_lt hij)
+  obtain ⟨i', rfl⟩ := i.eq_succ_of_ne_zero (Fin.ne_zero_of_lt hij)
+  rw [SimplexCategory.δ_comp_σ_of_gt (by simpa using hij)]
+  simp only [boundary_eq_iSup, Subpresheaf.iSup_obj, Set.mem_iUnion, stdSimplex.mem_face_iff,
+    Finset.mem_compl, Finset.mem_singleton]
+  exact ⟨i', fun _ ↦ Fin.succAbove_ne _ _⟩
 
 lemma simplexδ_succ_succ_castSucc (j : Fin (n + 1)) :
     simplexδ j.succ j.succ.castSucc = simplexδ j.castSucc j.succ.castSucc := by
@@ -201,6 +206,7 @@ lemma le_filtration₁_preimage_ιSimplex (j : Fin (n + 1)) :
       · fin_cases i <;> aesop
       obtain ⟨i, rfl⟩ := Fin.eq_succ_of_ne_zero hi₀
       apply simplexδ_snd_mem_boundary_of_lt
+      rw [Fin.succ_lt_succ_iff]
       by_contra!
       simp at this
       simp [this] at hij
@@ -344,9 +350,70 @@ lemma filtration₀_zero :
   exact le_trans (le_trans (by
     exact le_trans (by rfl) (le_iSup _ (by simp))) (le_iSup _ i)) le_sup_right
 
+lemma le_filtration₀_preimage_ιSimplex (j : Fin (n + 1)) :
+    horn.{u} (n + 1) j.castSucc ≤
+    (filtration₀ j.succ).preimage (ιSimplex j) := by
+  rw [horn_eq_iSup]
+  simp only [iSup_le_iff, Subtype.forall, Set.mem_compl_iff, Set.mem_singleton_iff]
+  intro i hij
+  simp only [stdSimplex.face_singleton_compl, filtration₀,
+    Subcomplex.ofSimplex_le_iff, Subcomplex.preimage_obj, Set.mem_preimage,
+    Subpresheaf.max_obj, Set.mem_union, Set.iSup_eq_iUnion,
+    Set.mem_iUnion, Subcomplex.iSup_obj]
+  rw [ιSimplex_app_objEquiv_symm_δ]
+  simp only [Subcomplex.mem_unionProd_iff, stdSimplex.mem_face_iff,
+    Finset.mem_singleton]
+  obtain ⟨j, rfl⟩ | rfl := j.eq_castSucc_or_eq_last
+  · obtain _ | n := n
+    · fin_cases j
+    obtain hij | rfl | hij := lt_trichotomy i j.castSucc.castSucc
+    · refine Or.inl (Or.inr (simplexδ_snd_mem_boundary_of_gt _ _ hij))
+    · simp at hij
+    · rw [Fin.castSucc_lt_iff_succ_le] at hij
+      obtain hij | rfl := hij.lt_or_eq
+      · exact Or.inl (Or.inr (simplexδ_snd_mem_boundary_of_lt _ _ hij))
+      · refine Or.inr ⟨j.succ, by simp, ?_⟩
+        convert simplexδ_mem_ofSimplex j.succ j.succ.castSucc using 1
+        exact (simplexδ_succ_succ_castSucc j).symm
+  · obtain ⟨i, rfl⟩ | rfl := i.eq_castSucc_or_eq_last
+    · simp only [Fin.castSucc_inj] at hij
+      obtain ⟨i, rfl⟩ := Fin.eq_castSucc_of_ne_last hij
+      obtain _ | n := n
+      · fin_cases i
+      exact Or.inl (Or.inr (simplexδ_snd_mem_boundary_of_gt _ _ (Fin.castSucc_lt_last i)))
+    · refine Or.inl (Or.inl (fun i ↦ ?_))
+      dsimp [simplexδ, SimplicialObject.δ]
+      rw [stdSimplex.map_op_apply, stdSimplex.objMk₁_apply_eq_zero_iff,
+        Fin.castSucc_lt_castSucc_iff]
+      dsimp
+      rw [Fin.lt_last_iff_ne_last]
+      apply Fin.succAbove_ne
+
+lemma filtration₀_preimage_ιSimplex_le (j : Fin (n + 1)) :
+    (filtration₀ j.succ).preimage (ιSimplex j) ≤
+      horn.{u} (n + 1) j.castSucc := by
+  sorry
+
+lemma filtration₀_preimage_ιSimplex (j : Fin (n + 1)) :
+    (filtration₀ j.succ).preimage (ιSimplex j) =
+      horn.{u} (n + 1) j.castSucc :=
+  le_antisymm (filtration₀_preimage_ιSimplex_le j)
+    (le_filtration₀_preimage_ιSimplex j)
+
 lemma filtration₀_from_succ_mem (i : Fin (n + 1)) :
     anodyneExtensions (Subcomplex.homOfLE (antitone_filtration₀.{u} i.castSucc_le_succ)) := by
-  sorry
+  have := IsPushout.of_isColimit
+    (Subcomplex.isColimitPushoutCoconeOfPullback (ιSimplex i) (filtration₀.{u} i.succ)
+      (filtration₀.{u} i.castSucc) (horn.{u} (n + 1) i.castSucc) ⊤
+      (by simpa using (filtration₀_preimage_ιSimplex i).symm) (by
+      rw [filtration₀_castSucc, Subcomplex.image_top, Subcomplex.ofSimplex_eq_range]))
+      --(by simpa using (filtration₁_preimage_ιSimplex i).symm)
+      --(by
+      --  simp only [Subcomplex.image_top,
+      --    filtration₁_succ, Subcomplex.ofSimplex_eq_range]))
+  exact MorphismProperty.of_isPushout (P := anodyneExtensions) this
+    (anodyneExtensions.{u}.comp_mem _ _
+      (horn_ι_mem n i.castSucc) (of_isIso ((Subcomplex.topIso _).inv)))
 
 lemma filtation₀_map_mem {i j : Fin (n + 2)} (h : i ≤ j) :
     anodyneExtensions (Subcomplex.homOfLE (antitone_filtration₀.{u} h)) := by

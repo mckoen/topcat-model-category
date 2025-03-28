@@ -124,6 +124,10 @@ lemma map_objEquiv_symm_apply {n : ℕ} {m : SimplexCategory} (f : m ⟶ .mk n)
     {p : ℕ} (g :  .mk p ⟶ m) (i : Fin (p + 1)) :
     Δ[n].map g.op (objEquiv.{u}.symm f) i = f.toOrderHom (g.toOrderHom i) := rfl
 
+lemma map_objEquiv_symm {n : ℕ} {m : SimplexCategory} (f : m ⟶ .mk n)
+    {p : ℕ} (g :  .mk p ⟶ m) :
+    Δ[n].map g.op (objEquiv.{u}.symm f) = objEquiv.symm (g ≫ f) := rfl
+
 @[simp]
 lemma objEquiv_symm_σ_apply {n : ℕ} (i : Fin (n + 1)) (j : Fin (n + 1 + 1)) :
     ((objEquiv.{u}).symm (SimplexCategory.σ i) : Δ[n] _⦋n + 1⦌) j =

@@ -836,6 +836,11 @@ lemma isoOfEq_inv_ι : (isoOfEq h).inv ≫ A.ι = B.ι := rfl
 
 end
 
+@[simp]
+lemma iSup_obj {ι : Sort*} (S : ι → X.Subcomplex) (U : SimplexCategoryᵒᵖ) :
+    (⨆ i, S i).obj U = ⋃ i, (S i).obj U := by
+  simp [iSup, Subpresheaf.sSup_obj]
+
 end Subcomplex
 
 end SSet
