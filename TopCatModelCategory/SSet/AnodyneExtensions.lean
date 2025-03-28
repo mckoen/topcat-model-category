@@ -120,6 +120,10 @@ lemma simplexδ_succ_snd (j : Fin (n + 1)) :
     (simplexδ j j.succ).2 = stdSimplex.objMk .id :=
   stdSimplex.objEquiv.injective SimplexCategory.δ_comp_σ_succ
 
+lemma simplexδ_castSucc_snd (j : Fin (n + 1)) :
+    (simplexδ j j.castSucc).2 = stdSimplex.objMk .id :=
+  stdSimplex.objEquiv.injective SimplexCategory.δ_comp_σ_self
+
 lemma ιSimplex_app_objEquiv_symm_δ (j : Fin (n + 1)) (i : Fin (n + 2)) :
     (ιSimplex.{u} j).app (op ⦋n⦌)
       (stdSimplex.objEquiv.symm (SimplexCategory.δ i)) =
@@ -392,7 +396,37 @@ lemma le_filtration₀_preimage_ιSimplex (j : Fin (n + 1)) :
 lemma filtration₀_preimage_ιSimplex_le (j : Fin (n + 1)) :
     (filtration₀ j.succ).preimage (ιSimplex j) ≤
       horn.{u} (n + 1) j.castSucc := by
-  sorry
+  simp only [stdSimplex.subcomplex_le_horn_iff,
+    stdSimplex.face_singleton_compl, ← Subcomplex.image_le_iff,
+    Subcomplex.image_ofSimplex, Subcomplex.ofSimplex_le_iff]
+  rw [ιSimplex_app_objEquiv_symm_δ]
+  simp [filtration₀, Subcomplex.unionProd, Set.prod, Set.not_mem_setOf]
+  refine ⟨⟨?_, ⟨j, ?_⟩⟩, fun i hi ↦ ?_⟩
+  · simpa only [simplexδ_castSucc_snd] using non_mem_boundary n
+  · simp [simplexδ, SimplicialObject.δ, stdSimplex.map_op_apply,
+      stdSimplex.objMk₁, SimplexCategory.δ]
+  · rw [prodStdSimplex.mem_ofSimplex_iff, Set.not_subset]
+    refine ⟨⟨1, j⟩, ⟨j, ?_⟩, ?_⟩
+    · ext : 1
+      · simp [simplexδ, SimplicialObject.δ, stdSimplex.objMk₁,
+          SimplexCategory.δ]
+      · simp [simplexδ_castSucc_snd]
+        rfl
+    · rintro ⟨⟨a, ha₀⟩, ha⟩
+      simp [simplex, Prod.ext_iff, stdSimplex.objMk₁] at ha
+      obtain ⟨ha₁, ha₂⟩ := ha
+      change Fin.predAbove _ _ = _ at ha₂
+      rw [Fin.predAbove_of_succ_le _ _ ha₁] at ha₂
+      obtain ⟨a, rfl⟩ := a.exists_eq_succ_of_ne_zero (by
+        rintro rfl
+        rw [Fin.zero_eta, Fin.le_zero_iff, Fin.ext_iff] at ha₁
+        simp at ha₁)
+      simp at ha₂
+      subst ha₂
+      simp only [Fin.lt_iff_val_lt_val] at hi
+      simp only [Fin.le_iff_val_le_val, Fin.val_succ, Nat.succ_eq_add_one,
+        add_le_add_iff_right] at ha₁
+      omega
 
 lemma filtration₀_preimage_ιSimplex (j : Fin (n + 1)) :
     (filtration₀ j.succ).preimage (ιSimplex j) =
