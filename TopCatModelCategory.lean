@@ -59,6 +59,7 @@ import TopCatModelCategory.SSet.ProdSimplex
 import TopCatModelCategory.SSet.ProdSimplexOne
 import TopCatModelCategory.SSet.PtSimplex
 import TopCatModelCategory.SSet.SimplexCategory
+import TopCatModelCategory.SSet.Skeleton
 import TopCatModelCategory.SSet.Square
 import TopCatModelCategory.SSet.StandardSimplex
 import TopCatModelCategory.SSet.StrictSegal
