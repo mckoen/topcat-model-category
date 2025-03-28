@@ -446,6 +446,11 @@ lemma ofSimplex_eq_range {X : SSet.{u}} {n : ℕ} (x : X _⦋n⦌) :
     Subcomplex.ofSimplex x = range (yonedaEquiv.symm x) := by
   simp only [Subcomplex.range_eq_ofSimplex, Equiv.apply_symm_apply]
 
+@[simp]
+lemma preimage_ι {X : SSet.{u}} (A : X.Subcomplex) :
+    A.preimage A.ι = ⊤ := by
+  aesop
+
 /-def ofSimplex {n : ℕ} (x : X _[n]) : X.Subcomplex :=
   range ((X.yonedaEquiv (.mk n)).symm x)-/
 

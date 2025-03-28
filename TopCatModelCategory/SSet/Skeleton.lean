@@ -1,9 +1,21 @@
-import TopCatModelCategory.SSet.Subcomplex
+import Mathlib.AlgebraicTopology.RelativeCellComplex.Basic
+import Mathlib.CategoryTheory.Limits.Lattice
 import TopCatModelCategory.SSet.Degenerate
+import TopCatModelCategory.SSet.Evaluation
+import TopCatModelCategory.SSet.Monomorphisms
 
-open CategoryTheory Simplicial
+open CategoryTheory Simplicial HomotopicalAlgebra Limits Opposite
 
 namespace SSet
+
+lemma mono_of_nonDegenerate {X : SSet.{u}} {d d' : ℕ} (x : X _⦋d⦌)
+    (f : ⦋d'⦌ ⟶ ⦋d⦌)
+    (h : X.map f.op x ∈ X.nonDegenerate d') : Mono f := by
+  have := isIso_of_nonDegenerate _ ⟨_, h⟩ (factorThruImage f)
+    (X.map (image.ι f).op x) (by
+      rw [← FunctorToTypes.map_comp_apply, ← op_comp, image.fac])
+  rw [← image.fac f]
+  infer_instance
 
 variable (X : SSet.{u})
 
@@ -26,9 +38,29 @@ lemma mem_skeleton {i : ℕ} (x : X _⦋i⦌) {n : ℕ} (hi : i < n) :
     (le_iSup _ ⟨j, lt_of_le_of_lt
       (SimplexCategory.len_le_of_epi (f := f) inferInstance) hi⟩)
 
+lemma skeleton_obj_eq_top {d n : ℕ} (h : d < n) :
+    (X.skeleton n).obj (op ⦋d⦌) = ⊤ := by
+  rw [← top_le_iff]
+  intro x _
+  exact mem_skeleton _ _ h
+
 lemma ofSimplex_le_skeleton {i : ℕ} (x : X _⦋i⦌) {n : ℕ} (hi : i < n) :
     Subcomplex.ofSimplex x ≤ X.skeleton n := by
   simpa using X.mem_skeleton x hi
+
+lemma mem_skeleton_obj_iff_of_nonDegenerate
+    {d : ℕ} (x : X.nonDegenerate d) (n : ℕ) :
+    x.1 ∈ (X.skeleton n).obj _ ↔ d < n := by
+  constructor
+  · intro h
+    simp [skeleton] at h
+    obtain ⟨x, hx⟩ := x
+    obtain ⟨⟨i, hi⟩, y, hy, ⟨f⟩, rfl⟩ := h
+    dsimp at y hy f
+    have : d ≤ i := SimplexCategory.len_le_of_mono
+      (mono_of_nonDegenerate y f hx)
+    omega
+  · apply mem_skeleton
 
 @[simp]
 lemma skeleton_zero : X.skeleton 0 = ⊥ := by
@@ -50,6 +82,8 @@ def skeletonOfMono [Mono i] : ℕ →o Y.Subcomplex where
     simp only [sup_le_iff, le_sup_left, true_and]
     exact le_trans (Y.skeleton.monotone h) le_sup_right
 
+section
+
 variable [Mono i]
 
 lemma skeleton_le_skeletonOfMono (n : ℕ) :
@@ -64,5 +98,170 @@ lemma iSup_skeletonOfMono : ⨆ (n : ℕ), skeletonOfMono i n = ⊤ := by
   rw [← Y.iSup_skeleton, iSup_le_iff]
   intro n
   exact le_trans (skeleton_le_skeletonOfMono i n) (le_iSup _ n)
+
+lemma mem_skeletonOfMono_obj_iff_of_nonDegenerate
+    {d : ℕ} (x : Y.nonDegenerate d) (n : ℕ) :
+    x.1 ∈ (skeletonOfMono i n).obj _ ↔
+      x.1 ∈ Set.range (i.app _) ∨ d < n := by
+  simp [skeletonOfMono, mem_skeleton_obj_iff_of_nonDegenerate]
+
+lemma skeletonOfMono_obj_eq_top {d n : ℕ} (h : d < n) :
+    (skeletonOfMono i n).obj (op ⦋d⦌) = ⊤ := by
+  rw [← top_le_iff, ← Y.skeleton_obj_eq_top h]
+  exact le_sup_right
+
+end
+
+namespace relativeCellComplexOfMono
+
+variable (d : ℕ)
+
+def ι [Mono i] : Type u :=
+  { y : Y.nonDegenerate d // y.1 ∉ (Subcomplex.range i).obj _ }
+
+variable [Mono i]
+
+noncomputable def A : SSet.{u} := ∐ (fun (_ : ι i d) ↦ boundary d)
+
+noncomputable def B : SSet.{u} := ∐ (fun (_ : ι i d) ↦ Δ[d])
+
+variable {i d}
+
+noncomputable def ιA (x : ι i d) : (boundary d : SSet) ⟶ A i d :=
+  Limits.Sigma.ι (fun _ ↦ _) x
+
+noncomputable def ιB (x : ι i d) : Δ[d] ⟶ B i d :=
+  Limits.Sigma.ι (fun _ ↦ _) x
+
+variable (i d) in
+noncomputable def m : A i d ⟶ B i d := Limits.Sigma.map (fun _ ↦ (boundary d).ι)
+
+instance : Mono (m i d) := by
+  dsimp [m]
+  infer_instance
+
+@[reassoc (attr := simp)]
+lemma ιA_m (x : ι i d) : ιA x ≫ m i d = (boundary d).ι ≫ ιB x := by
+  simp [m, ιA, ιB]
+
+lemma mem_skeletonOfMono (x : ι i d) {d' : ℕ} (h : d < d') :
+    x.1.1 ∈ (skeletonOfMono i d').obj _ := by
+  simp only [skeletonOfMono, OrderHom.coe_mk, Subpresheaf.max_obj, Set.mem_union]
+  exact Or.inr (Y.mem_skeleton _ h)
+
+def β (x : ι i d) : Δ[d] ⟶ skeletonOfMono i (d + 1) :=
+  yonedaEquiv.symm ⟨x.1.1, mem_skeletonOfMono x (by simp)⟩
+
+variable (i d) in
+noncomputable def b : B i d ⟶ skeletonOfMono i (d + 1) := Sigma.desc β
+
+@[reassoc (attr := simp)]
+lemma ιB_b (x : ι i d) : ιB x ≫ b i d = β x := by simp [ιB, b]
+
+lemma preimage_skeletonOfMono_eq (x : ι i d) :
+    (skeletonOfMono i d).preimage (yonedaEquiv.symm x.1.1) = ∂Δ[d] := by
+  rw [stdSimplex.eq_boundary_iff]
+  constructor
+  · rw [Subcomplex.le_iff_contains_nonDegenerate]
+    rintro n ⟨y, hy₁⟩ hy₂
+    have : n < d := dim_lt_of_nondegenerate (X := ∂Δ[d])
+      (⟨⟨y, hy₂⟩, by rwa [Subcomplex.mem_nonDegenerate_iff]⟩) d
+    simp [skeletonOfMono_obj_eq_top i this]
+  · intro h
+    have := h.symm.le _ (show stdSimplex.objEquiv.symm (𝟙 ⦋d⦌)  ∈ _ by simp)
+    simp only [Subpresheaf.range_obj, Subcomplex.preimage_obj, Set.mem_preimage] at this
+    change Y.map (𝟙 _) x.1.1 ∈ (skeletonOfMono i d).obj _ at this
+    simp only [Subpresheaf.range_obj, FunctorToTypes.map_id_apply,
+      mem_skeletonOfMono_obj_iff_of_nonDegenerate, Set.mem_range, lt_self_iff_false,
+      or_false] at this
+    exact x.2 this
+
+def τ (x : ι i d) : (∂Δ[d] : SSet) ⟶ skeletonOfMono i d :=
+  Subcomplex.lift (∂Δ[d].ι ≫ yonedaEquiv.symm x.1.1) (by
+    rw [Subcomplex.preimage_preimage, preimage_skeletonOfMono_eq,
+      Subcomplex.preimage_ι])
+
+variable (i d) in
+noncomputable def t : A i d ⟶ skeletonOfMono i d := Sigma.desc τ
+
+@[reassoc (attr := simp)]
+lemma ιA_t (x : ι i d) : ιA x ≫ t i d = τ x := by simp [ιA, t]
+
+variable (i d) in
+def r : (skeletonOfMono i d : SSet) ⟶ skeletonOfMono i (d + 1) :=
+  Subcomplex.homOfLE ((skeletonOfMono i).monotone (by simp))
+
+@[reassoc]
+lemma τ_r (x : ι i d) : τ x ≫ r i d = ∂Δ[d].ι ≫ β x := rfl
+
+variable (i d)
+
+@[reassoc]
+lemma w : t i d ≫ r i d = m i d ≫ b i d :=
+  Sigma.hom_ext _ _ (fun x ↦ by
+    change ιA x ≫ t i d ≫ r i d = ιA x ≫ m i d ≫ b i d
+    simp [τ_r])
+
+lemma isPushout : IsPushout (t i d) (m i d) (r i d) (b i d) := sorry
+
+end relativeCellComplexOfMono
+
+open relativeCellComplexOfMono in
+noncomputable def relativeCellComplexOfMono [Mono i] :
+    RelativeCellComplex.{u} (basicCell := fun (n : ℕ) (_ : Unit) ↦ (boundary n).ι) i where
+  F := (skeletonOfMono i).monotone.functor ⋙ Subcomplex.toPresheafFunctor
+  isoBot := Subcomplex.isoOfEq (by simp) ≪≫ (asIso (toRangeSubcomplex i)).symm
+  incl :=
+    { app _ := Subcomplex.ι _
+      naturality _ _ _ := rfl }
+  isColimit := IsColimit.ofIsoColimit
+      (isColimitOfPreserves Subcomplex.toPresheafFunctor
+        ((CompleteLattice.colimitCocone
+        ((skeletonOfMono i).monotone.functor)).isColimit))
+          (Cocones.ext
+            ((Subcomplex.isoOfEq (iSup_skeletonOfMono i)) ≪≫ Subcomplex.topIso Y)
+        (fun _ ↦ by rfl))
+  attachCells d hd :=
+    { ι := ι i d
+      π _ := ⟨⟩
+      isColimit₁ := colimit.isColimit _
+      isColimit₂ := colimit.isColimit _
+      m := m i d
+      hm := ιA_m
+      g₁ := t i d
+      g₂ := b i d
+      isPushout := isPushout i d }
+
+namespace modelCategoryQuillen
+
+open MorphismProperty
+
+noncomputable def transfiniteCompositionOfMono {X Y : SSet.{u}} (i : X ⟶ Y) [Mono i] :
+    (coproducts.{u} I).pushouts.TransfiniteCompositionOfShape ℕ i where
+  toTransfiniteCompositionOfShape :=
+    (relativeCellComplexOfMono i).toTransfiniteCompositionOfShape
+  map_mem d hd := by
+    apply pushouts_monotone _ _
+      ((relativeCellComplexOfMono i).attachCells d hd).pushouts_coproducts
+    apply coproducts_monotone
+    rintro _ _ _ ⟨⟩
+    exact boundary_ι_mem_I d
+
+lemma transfiniteCompositions_pushouts_coproducts :
+    transfiniteCompositions.{u} (coproducts.{u} I).pushouts = monomorphisms SSet.{u} := by
+  apply le_antisymm
+  · rw [transfiniteCompositions_le_iff, pushouts_le_iff, coproducts_le_iff]
+    exact I_le_monomorphisms
+  · intro _ _ i (_ : Mono i)
+    apply transfiniteCompositionsOfShape_le_transfiniteCompositions _ (ULift ℕ)
+    exact ⟨(transfiniteCompositionOfMono i).ofOrderIso (orderIsoULift.{u} ℕ).symm⟩
+
+lemma I_rlp_eq_monomorphisms_rlp : I.{u}.rlp = (monomorphisms SSet.{u}).rlp := by
+  apply le_antisymm
+  · simp only [← transfiniteCompositions_pushouts_coproducts,
+      rlp_transfiniteCompositions, rlp_pushouts, rlp_coproducts, le_refl]
+  · exact MorphismProperty.antitone_rlp I_le_monomorphisms
+
+end modelCategoryQuillen
 
 end SSet

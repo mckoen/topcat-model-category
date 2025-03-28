@@ -35,6 +35,7 @@ import TopCatModelCategory.SSet.Degenerate
 import TopCatModelCategory.SSet.DimensionCoproducts
 import TopCatModelCategory.SSet.DimensionProd
 import TopCatModelCategory.SSet.EffectiveEpi
+import TopCatModelCategory.SSet.Evaluation
 import TopCatModelCategory.SSet.Fiber
 import TopCatModelCategory.SSet.Fibrations
 import TopCatModelCategory.SSet.Finite

@@ -2,7 +2,7 @@ import Mathlib.CategoryTheory.SmallObject.Basic
 import Mathlib.AlgebraicTopology.SingularSet
 import TopCatModelCategory.MorphismProperty
 import TopCatModelCategory.Factorization
-import TopCatModelCategory.SSet.Monomorphisms
+import TopCatModelCategory.SSet.Skeleton
 --import TopCatModelCategory.ModelCategoryTopCat
 import TopCatModelCategory.SSet.CategoryWithFibrations
 import TopCatModelCategory.SSet.Presentable

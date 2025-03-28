@@ -75,38 +75,9 @@ instance : IsStableUnderCobaseChange (monomorphisms (SSet.{u})) :=
 instance : IsStableUnderCoproducts.{u} (monomorphisms (SSet.{u})) :=
   inferInstanceAs (IsStableUnderCoproducts.{u} (monomorphisms (_ ⥤ _)))
 
-namespace modelCategoryQuillen
-
-def relativeCellComplexOfMono {X Y : SSet.{u}} (i : X ⟶ Y) [Mono i] :
-    RelativeCellComplex.{u} (basicCell := fun (n : ℕ) (_ : Unit) ↦ (boundary n).ι) i := by
-  sorry
-
-def transfiniteCompositionOfMono {X Y : SSet.{u}} (i : X ⟶ Y) [Mono i] :
-    (coproducts.{u} I).pushouts.TransfiniteCompositionOfShape ℕ i where
-  toTransfiniteCompositionOfShape :=
-    (relativeCellComplexOfMono i).toTransfiniteCompositionOfShape
-  map_mem d hd := by
-    apply pushouts_monotone _ _
-      ((relativeCellComplexOfMono i).attachCells d hd).pushouts_coproducts
-    apply coproducts_monotone
-    rintro _ _ _ ⟨⟩
-    exact boundary_ι_mem_I d
-
-lemma transfiniteCompositions_pushouts_coproducts :
-    transfiniteCompositions.{u} (coproducts.{u} I).pushouts = monomorphisms SSet.{u} := by
-  apply le_antisymm
-  · rw [transfiniteCompositions_le_iff, pushouts_le_iff, coproducts_le_iff]
-    exact I_le_monomorphisms
-  · intro _ _ i (_ : Mono i)
-    apply transfiniteCompositionsOfShape_le_transfiniteCompositions _ (ULift ℕ)
-    exact ⟨(transfiniteCompositionOfMono i).ofOrderIso (orderIsoULift.{u} ℕ).symm⟩
-
-lemma I_rlp_eq_monomorphisms_rlp : I.{u}.rlp = (monomorphisms SSet.{u}).rlp := by
-  apply le_antisymm
-  · simp only [← transfiniteCompositions_pushouts_coproducts,
-      rlp_transfiniteCompositions, rlp_pushouts, rlp_coproducts, le_refl]
-  · exact MorphismProperty.antitone_rlp I_le_monomorphisms
-
-end modelCategoryQuillen
+instance {ι : Type u} {X Y : ι → SSet.{u}} (f : ∀ i, X i ⟶ Y i)
+    [∀ i, Mono (f i)] : Mono (Limits.Sigma.map f) :=
+  ((monomorphisms SSet.{u}).isStableUnderCoproductsOfShape_of_isStableUnderCoproducts
+    ι).colimMap _ (fun _ ↦ monomorphisms.infer_property (f _))
 
 end SSet

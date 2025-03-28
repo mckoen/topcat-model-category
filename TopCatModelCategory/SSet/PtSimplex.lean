@@ -72,7 +72,7 @@ lemma comp_map_eq_const
     intro hx'
     have := degenerate_map hx' φ
     simp [hx, mem_degenerate_iff_not_mem_nonDegenerate,
-      stdSimplex.non_degenerate_top_dim] at this
+      stdSimplex.nonDegenerate_top_dim] at this
   simp [Y.degenerate_eq_top_of_hasDimensionLT n n (by rfl)] at this
 
 @[reassoc (attr := simp)]

@@ -233,7 +233,7 @@ lemma mem_degenerate_iff {n : ℕ} (x : A.obj (op (.mk n))) :
     simpa only [Set.mem_preimage, ← op_comp, ← FunctorToTypes.map_comp_apply,
       IsSplitEpi.id, op_id, FunctorToTypes.map_id_apply] using A.map (section_ f).op hx
 
-lemma mem_non_degenerate_iff {n : ℕ} (x : A.obj (op (.mk n))) :
+lemma mem_nonDegenerate_iff {n : ℕ} (x : A.obj (op (.mk n))) :
     x ∈ nonDegenerate A n ↔ x.1 ∈ X.nonDegenerate n := by
   rw [mem_nonDegenerate_iff_not_mem_degenerate,
     mem_nonDegenerate_iff_not_mem_degenerate, mem_degenerate_iff]
@@ -248,7 +248,7 @@ lemma le_iff_contains_nonDegenerate (B : X.Subcomplex) :
     simp only [Subpresheaf.toPresheaf_obj, Subtype.ext_iff,
       Subpresheaf.toPresheaf_map_coe] at ha'
     subst ha'
-    rw [mem_non_degenerate_iff] at ha
+    rw [mem_nonDegenerate_iff] at ha
     exact B.map f.op (h _ ⟨_, ha⟩ a.2)
 
 lemma eq_top_iff_contains_nonDegenerate :
@@ -305,12 +305,12 @@ lemma degenerate_iff_of_isIso (f : X ⟶ Y) [IsIso f] {n : ℕ} (x : X _⦋n⦌)
     simpa [h₁] using degenerate_map hy (inv f)
   · exact fun hx ↦ degenerate_map hx f
 
-lemma non_degenerate_iff_of_isIso (f : X ⟶ Y) [IsIso f] {n : ℕ} (x : X _⦋n⦌) :
+lemma nonDegenerate_iff_of_isIso (f : X ⟶ Y) [IsIso f] {n : ℕ} (x : X _⦋n⦌) :
     f.app _ x ∈ Y.nonDegenerate n ↔ x ∈ X.nonDegenerate n := by
   simp only [mem_nonDegenerate_iff_not_mem_degenerate,
     degenerate_iff_of_isIso]
 
-attribute [local simp] non_degenerate_iff_of_isIso in
+attribute [local simp] nonDegenerate_iff_of_isIso in
 @[simps]
 def nonDegenerateEquivOfIso (e : X ≅ Y) (n : ℕ) :
     X.nonDegenerate n ≃ Y.nonDegenerate n where

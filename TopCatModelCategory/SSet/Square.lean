@@ -136,7 +136,7 @@ lemma δ₀_whiskerRight :
 
 noncomputable abbrev diagonalSimplex : (Δ[1] ⊗ Δ[1] : SSet.{u}).nonDegenerate 1 :=
   ⟨yonedaEquiv diagonal, by
-    rw [prodStdSimplex.non_degenerate_iff']
+    rw [prodStdSimplex.nonDegenerate_iff']
     intro x y h
     simpa using congr_arg Prod.fst h⟩
 

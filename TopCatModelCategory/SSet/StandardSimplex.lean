@@ -446,7 +446,7 @@ noncomputable def facePairIso (i j : Fin (n + 1)) (hij : i < j) :
   stdSimplex.isoOfRepresentableBy
       (stdSimplex.faceRepresentableBy.{u} _ _ (Fin.orderIsoPair i j hij))
 
-lemma mem_non_degenerate_iff_mono {d : ℕ} (x : (Δ[n] : SSet.{u}) _⦋d⦌) :
+lemma mem_nonDegenerate_iff_mono {d : ℕ} (x : (Δ[n] : SSet.{u}) _⦋d⦌) :
     x ∈ Δ[n].nonDegenerate d ↔ Mono (objEquiv x) := by
   obtain ⟨f, rfl⟩ := objEquiv.symm.surjective x
   simp only [Equiv.apply_symm_apply]
@@ -485,7 +485,7 @@ variable (n) in
 lemma bijective_image_objEquiv_toOrderHom_top (m : ℕ) :
     Function.Bijective (fun (⟨x, hx⟩ : (Δ[n] : SSet.{u}).nonDegenerate m) ↦
       (⟨Finset.image (objEquiv x).toOrderHom ⊤, by
-        rw [mem_non_degenerate_iff_mono, SimplexCategory.mono_iff_injective] at hx
+        rw [mem_nonDegenerate_iff_mono, SimplexCategory.mono_iff_injective] at hx
         dsimp
         rw [Finset.card_image_of_injective _ (by exact hx), Finset.card_univ,
           Fintype.card_fin]⟩ : { S : Finset (Fin (n + 1)) | S.card = m + 1 })) := by
@@ -493,7 +493,7 @@ lemma bijective_image_objEquiv_toOrderHom_top (m : ℕ) :
   · rintro ⟨x₁, h₁⟩ ⟨x₂, h₂⟩ h₃
     obtain ⟨f₁, rfl⟩ := objEquiv.symm.surjective x₁
     obtain ⟨f₂, rfl⟩ := objEquiv.symm.surjective x₂
-    simp [mem_non_degenerate_iff_mono, SimplexCategory.mono_iff_injective] at h₁ h₂
+    simp [mem_nonDegenerate_iff_mono, SimplexCategory.mono_iff_injective] at h₁ h₂
     simp at h₃ ⊢
     apply SimplexCategory.Hom.ext
     apply Fin.orderHom_ext_of_injective h₁ h₂ h₃
@@ -501,7 +501,7 @@ lemma bijective_image_objEquiv_toOrderHom_top (m : ℕ) :
     dsimp at hS
     let e := monoEquivOfFin S (k := m + 1) (by simpa using hS)
     refine ⟨⟨objMk ((OrderHom.Subtype.val _).comp (e.toOrderEmbedding.toOrderHom)), ?_⟩, ?_⟩
-    · rw [mem_non_degenerate_iff_mono, SimplexCategory.mono_iff_injective]
+    · rw [mem_nonDegenerate_iff_mono, SimplexCategory.mono_iff_injective]
       intro a b h
       apply e.injective
       ext : 1
@@ -522,14 +522,14 @@ noncomputable def orderIsoOfNonDegenerate {m : ℕ} (x : (Δ[n] : SSet.{u}).nonD
     Fin (m + 1) ≃o (nonDegenerateEquiv x).1 where
   toEquiv := Equiv.ofBijective (fun i ↦ ⟨x.1 i, Finset.mem_image_of_mem _ (by simp)⟩) (by
     constructor
-    · have := (mem_non_degenerate_iff_mono x.1).1 x.2
+    · have := (mem_nonDegenerate_iff_mono x.1).1 x.2
       rw [SimplexCategory.mono_iff_injective] at this
       exact fun _ _ h ↦ this (by simpa using h)
     · rintro ⟨j, hj⟩
       rw [nonDegenerateEquiv_iff] at hj
       aesop)
   map_rel_iff' := by
-    have := (mem_non_degenerate_iff_mono x.1).1 x.2
+    have := (mem_nonDegenerate_iff_mono x.1).1 x.2
     rw [SimplexCategory.mono_iff_injective] at this
     intro a b
     dsimp
@@ -563,11 +563,11 @@ lemma nonDegenerateEquiv_symm_mem_iff_face_le {m : ℕ}
   obtain ⟨x, rfl⟩ := nonDegenerateEquiv.{u}.surjective S
   rw [face_nonDegenerateEquiv x, Equiv.symm_apply_apply, Subcomplex.ofSimplex_le_iff]
 
-lemma non_degenerate_top_dim :
+lemma nonDegenerate_top_dim :
     (Δ[n] : SSet.{u}).nonDegenerate n = {yonedaEquiv (𝟙 _)} := by
   ext x
   obtain ⟨f, rfl⟩ := objEquiv.symm.surjective x
-  simp only [Set.mem_singleton_iff, mem_non_degenerate_iff_mono, Equiv.apply_symm_apply]
+  simp only [Set.mem_singleton_iff, mem_nonDegenerate_iff_mono, Equiv.apply_symm_apply]
   trans f = 𝟙 _
   · constructor
     · intro
@@ -578,14 +578,14 @@ lemma non_degenerate_top_dim :
 
 variable (n) in
 lemma id_nonDegenerate : yonedaEquiv.{u} (𝟙 _) ∈ Δ[n].nonDegenerate n := by
-  simp [non_degenerate_top_dim]
+  simp [nonDegenerate_top_dim]
 
 instance : (Δ[n] : SSet.{u}).HasDimensionLT (n + 1) where
   degenerate_eq_top i hi := by
     ext x
     obtain ⟨f, rfl⟩ := objEquiv.symm.surjective x
     simp only [Set.top_eq_univ, Set.mem_univ, iff_true]
-    rw [mem_degenerate_iff_not_mem_nonDegenerate, mem_non_degenerate_iff_mono,
+    rw [mem_degenerate_iff_not_mem_nonDegenerate, mem_nonDegenerate_iff_mono,
       Equiv.apply_symm_apply]
     intro hf
     have := SimplexCategory.le_of_mono (f := f) inferInstance

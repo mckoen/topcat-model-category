@@ -60,7 +60,7 @@ lemma subcomplex_hasDimensionLT_of_neq_top (h : A ≠ ⊤) :
     simp
     obtain hi | rfl := hi.lt_or_eq
     · simp [Δ[n].degenerate_eq_top_of_hasDimensionLT (n + 1) i (by omega)]
-    · rw [mem_degenerate_iff_not_mem_nonDegenerate, non_degenerate_top_dim]
+    · rw [mem_degenerate_iff_not_mem_nonDegenerate, nonDegenerate_top_dim]
       change a ∉ {objMk .id}
       rintro rfl
       apply h
@@ -81,7 +81,7 @@ lemma subcomplex_le_boundary_iff :
     by_cases h₃ : m < n
     · simp [boundary_obj_eq_top m n (by simpa using h₃)]
     · simp only [not_lt] at h₃
-      replace h₁ := (A.mem_non_degenerate_iff ⟨x, h₂⟩).2 h₁
+      replace h₁ := (A.mem_nonDegenerate_iff ⟨x, h₂⟩).2 h₁
       rw [nondegenerate_eq_bot_of_hasDimensionLT _ _ _ h₃] at h₁
       simp at h₁
 
@@ -193,7 +193,7 @@ lemma exists_isPushout_of_ne_top {X : SSet.{u}} (A : X.Subcomplex) (hA : A ≠ �
     · rw [Subcomplex.le_iff_contains_nonDegenerate]
       intro d ⟨y, hy⟩ hy'
       exact hn _ (dim_lt_of_nondegenerate (X := boundary.{u} n) ⟨⟨y, hy'⟩,
-        (Subcomplex.mem_non_degenerate_iff _ ⟨y, hy'⟩).2 hy⟩ _) _
+        (Subcomplex.mem_nonDegenerate_iff _ ⟨y, hy'⟩).2 hy⟩ _) _
     · intro h
       apply hx
       simpa using h.symm.le _ (by simp : yonedaEquiv (𝟙 _) ∈ _)

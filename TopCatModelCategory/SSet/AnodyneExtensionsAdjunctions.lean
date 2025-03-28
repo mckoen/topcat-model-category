@@ -1,5 +1,5 @@
 import TopCatModelCategory.SSet.AnodyneExtensions
-import TopCatModelCategory.SSet.Monomorphisms
+import TopCatModelCategory.SSet.Skeleton
 import Mathlib.CategoryTheory.LiftingProperties.ParametrizedAdjunction
 
 universe u

@@ -265,7 +265,7 @@ lemma subsimplex_le_subsimplex_iff {n m : ℕ}
     intro h'
     exact h'.trans h
 
-lemma objEquiv_non_degenerate_iff {n : ℕ} (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _⦋n⦌) :
+lemma objEquiv_nonDegenerate_iff {n : ℕ} (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _⦋n⦌) :
     z ∈ (Δ[p] ⊗ Δ[q]).nonDegenerate n ↔ Function.Injective (objEquiv z) := by
   rw [Fin.orderHom_injective_iff, ← not_iff_not,
     ← mem_degenerate_iff_not_mem_nonDegenerate]
@@ -290,7 +290,7 @@ lemma objEquiv_non_degenerate_iff {n : ℕ} (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _�
       · simpa [h₂] using h₁.symm
       · rw [Fin.succAbove_predAbove h₂]
 
-lemma non_degenerate_iff' (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _⦋n⦌) :
+lemma nonDegenerate_iff' (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _⦋n⦌) :
     z ∈ (Δ[p] ⊗ Δ[q]).nonDegenerate n ↔
       Function.Injective ((SSet.yonedaEquiv.symm z).app (op ⦋0⦌)) := by
   have this : (yonedaEquiv.symm z).app (op ⦋0⦌) =
@@ -298,12 +298,12 @@ lemma non_degenerate_iff' (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _⦋n⦌) :
         stdSimplex.obj₀Equiv.{u}.toFun) := by
     ext i
     exact obj₀Equiv.injective (by rfl)
-  simp [objEquiv_non_degenerate_iff, this]
+  simp [objEquiv_nonDegenerate_iff, this]
 
 lemma strictMono_of_nonDegenerate {n : ℕ} (x : (Δ[p] ⊗ Δ[q] : SSet.{u}).nonDegenerate n) :
     StrictMono (objEquiv x.1) := by
   obtain ⟨x, hx⟩ := x
-  simpa only [objEquiv_non_degenerate_iff,
+  simpa only [objEquiv_nonDegenerate_iff,
     (objEquiv x).monotone.strictMono_iff_injective] using hx
 
 @[simps coe]
@@ -353,12 +353,12 @@ instance : (Δ[p] ⊗ Δ[q] : SSet.{u}).HasDimensionLT (p + q + 1) where
     simp only [Fintype.card_fin, add_le_add_iff_right] at this
     omega
 
-lemma non_degenerate_iff {n : ℕ} (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _⦋n⦌) (hn : p + q = n) :
+lemma nonDegenerate_iff {n : ℕ} (z : (Δ[p] ⊗ Δ[q] : SSet.{u}) _⦋n⦌) (hn : p + q = n) :
     z ∈ (Δ[p] ⊗ Δ[q]).nonDegenerate n ↔ orderHomOfSimplex z hn = .id := by
   constructor
   · intro h
     exact Fin.eq_id_of_strictMono _ (strictMono_orderHomOfSimplex ⟨z, h⟩ hn)
-  · rw [objEquiv_non_degenerate_iff]
+  · rw [objEquiv_nonDegenerate_iff]
     intro h a b hab
     simp only [DFunLike.ext_iff, orderHomOfSimplex_coe, OrderHom.id_coe, id_eq] at h
     rw [← h a, ← h b]
@@ -376,7 +376,7 @@ lemma nonDegenerate_ext {n : ℕ} {z₁ z₂ : (Δ[p] ⊗ Δ[q] : SSet.{u}).nonD
   · exact DFunLike.congr_fun h i
   · have h₁ := z₁.2
     have h₂ := z₂.2
-    rw [non_degenerate_iff _ hn] at h₁ h₂
+    rw [nonDegenerate_iff _ hn] at h₁ h₂
     simpa only [orderHomOfSimplex_coe, h, Fin.ext_iff, add_right_inj]
       using DFunLike.congr_fun (h₁.trans h₂.symm) i
 
@@ -446,7 +446,7 @@ lemma nondegenerate_mem_ofSimplex_aux {d : ℕ}
           simpa only [← hi₀, S, Finset.mem_filter, Finset.mem_univ,
             true_and, _root_.Fin.prod_zero_zero_lt_iff]
               using S.min'_mem hS)
-      exact ⟨⟨_, (objEquiv_non_degenerate_iff
+      exact ⟨⟨_, (objEquiv_nonDegenerate_iff
         (objEquiv.{u}.symm ⟨_, h.monotone⟩)).2 h.injective⟩,
         stdSimplex.objEquiv.symm
           (SimplexCategory.δ 0), objEquiv.injective rfl⟩
@@ -461,7 +461,7 @@ lemma nondegenerate_mem_ofSimplex_aux {d : ℕ}
           omega)
       have h := Fin.strictMono_insert (objEquiv x.1)
         (strictMono_of_nonDegenerate x) i₀ k hk₁ hk₂
-      refine ⟨⟨_, (objEquiv_non_degenerate_iff
+      refine ⟨⟨_, (objEquiv_nonDegenerate_iff
         (objEquiv.{u}.symm ⟨_, h.monotone⟩)).2 h.injective⟩,
         stdSimplex.objEquiv.symm
           (SimplexCategory.δ i₀.succ.castSucc), objEquiv.injective ?_⟩
@@ -477,7 +477,7 @@ lemma nondegenerate_mem_ofSimplex_aux {d : ℕ}
         rw [_root_.Fin.prod_lt_last_last_iff]
         refine lt_of_le_of_lt ?_ hd
         simpa [← hS, S] using Finset.not_mem_empty (Fin.last d))
-    refine ⟨⟨_, (objEquiv_non_degenerate_iff
+    refine ⟨⟨_, (objEquiv_nonDegenerate_iff
       (objEquiv.{u}.symm ⟨_, h.monotone⟩)).2 h.injective⟩,
       stdSimplex.objEquiv.symm
         (SimplexCategory.δ (Fin.last _)), objEquiv.injective ?_⟩
@@ -522,7 +522,7 @@ lemma subcomplex_eq_top_iff (A : (Δ[p] ⊗ Δ[q] : SSet.{u}).Subcomplex)
 instance {k : ℕ} (x : (Δ[p] ⊗ Δ[q] : SSet.{u}).nonDegenerate k) :
     Mono (yonedaEquiv.symm x.1) := by
   obtain ⟨x, hx⟩ := x
-  rw [objEquiv_non_degenerate_iff] at hx
+  rw [objEquiv_nonDegenerate_iff] at hx
   rw [NatTrans.mono_iff_mono_app]
   intro m
   rw [mono_iff_injective]
@@ -548,7 +548,7 @@ namespace nonDegenerateEquiv₁
 def toFun (i : Fin (q + 1)) : (Δ[1] ⊗ Δ[q]).nonDegenerate (q + 1) :=
   ⟨⟨stdSimplex.objMk₁ i.succ.castSucc,
     stdSimplex.objEquiv.symm (SimplexCategory.σ i)⟩, by
-      rw [objEquiv_non_degenerate_iff, Fin.orderHom_injective_iff]
+      rw [objEquiv_nonDegenerate_iff, Fin.orderHom_injective_iff]
       intro j h
       have h₁ := congr_arg Prod.fst h
       have h₂ := congr_arg Prod.snd h
@@ -589,7 +589,7 @@ noncomputable def nonDegenerateEquiv₁ :
       simpa using stdSimplex.objMk₁_injective (congr_arg (Prod.fst ∘ Subtype.val) h)
     · intro x
       obtain ⟨i, hi⟩ := stdSimplex.objMk₁_surjective x.1.1
-      have hx := (non_degenerate_iff _ (add_comm 1 q)).1 x.2
+      have hx := (nonDegenerate_iff _ (add_comm 1 q)).1 x.2
       obtain ⟨i, rfl⟩ := Fin.eq_succ_of_ne_zero (i := i) (by
         rintro rfl
         replace hi : x.1.1 0 = 1 := DFunLike.congr_fun hi.symm 0

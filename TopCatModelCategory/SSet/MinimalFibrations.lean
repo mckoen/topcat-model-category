@@ -1,33 +1,13 @@
-
 import TopCatModelCategory.SSet.DeformationRetract
 import TopCatModelCategory.SSet.Degenerate
 import TopCatModelCategory.SSet.Fibrations
 import TopCatModelCategory.SSet.FundamentalGroupoid
-import TopCatModelCategory.Set
 
 universe u
 
 open CategoryTheory HomotopicalAlgebra Simplicial MonoidalCategory
   ChosenFiniteProducts Category Limits SSet.modelCategoryQuillen
 
-namespace SSet.Subcomplex
-
-@[simps]
-def evaluation (X : SSet.{u}) (j : SimplexCategoryᵒᵖ) :
-    X.Subcomplex ⥤ Set (X.obj j) where
-  obj A := A.obj j
-  map f := CategoryTheory.homOfLE (leOfHom f j)
-
-instance {J : Type*} [Category J] {X : SSet.{u}} [IsFilteredOrEmpty J] :
-    PreservesColimitsOfShape J (Subcomplex.toPresheafFunctor (X := X)) where
-  preservesColimit {F} :=
-    preservesColimit_of_preserves_colimit_cocone (CompleteLattice.colimitCocone F).isColimit
-      (evaluationJointlyReflectsColimits _ (fun j ↦
-        IsColimit.ofIsoColimit (isColimitOfPreserves Set.functorToTypes
-          (CompleteLattice.colimitCocone (F ⋙ evaluation _ j)).isColimit)
-            (Cocones.ext (Set.functorToTypes.mapIso (eqToIso (by aesop))))))
-
-end SSet.Subcomplex
 
 lemma CategoryTheory.IsPullback.types_ext {A B C D : Type u} {t : A ⟶ B} {l : A ⟶ C}
     {r : B ⟶ D} {b : C ⟶ D} (h : IsPullback t l r b) {x y : A}
@@ -411,7 +391,7 @@ lemma mem_subcomplex_of_boundary {n : ℕ} (x : E _⦋n⦌) (hx : x ∈ selectio
       · apply subcomplex_obj_le
         apply hx'
         simp only [boundary_obj_eq_top _ _ h, Set.top_eq_univ, Set.mem_univ]
-      · rw [stdSimplex.non_degenerate_top_dim, Set.mem_singleton_iff] at hs
+      · rw [stdSimplex.nonDegenerate_top_dim, Set.mem_singleton_iff] at hs
         simpa [hs] using hx
 
 structure Extension where
