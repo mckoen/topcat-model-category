@@ -348,7 +348,7 @@ lemma mono_of_isPushout_of_isPullback (h₁ : IsPushout t l r b)
   · obtain rfl := H x₃ y₃ hx₃ hy₃ eq
     rfl
 
-lemma isPushout_of_isPullback_of_mono
+lemma isPushout_of_isPullback_of_mono {k : X₄ ⟶ X₅}
     {r' : X₂ ⟶ X₅} {b' : X₃ ⟶ X₅} (h₁ : IsPullback t l r' b')
     (facr : r ≫ k = r') (facb : b ≫ k = b') [Mono r'] [Mono k]
     (h₂ : Set.range r ⊔ Set.range b = Set.univ)
@@ -374,6 +374,15 @@ lemma isPushout_of_isPullback_of_mono
   exact IsPushout.of_iso (IsPushout.of_hasPushout t l)
     (Iso.refl _) (Iso.refl _) (Iso.refl _) (asIso φ) (by simp) (by simp)
     (by simp [φ]) (by simp [φ])
+
+lemma isPushout_of_isPullback_of_mono'
+    (h₁ : IsPullback t l r b)
+    [Mono r]
+    (h₂ : Set.range r ⊔ Set.range b = Set.univ)
+    (H : ∀ (x₃ y₃ : X₃) (_ : x₃ ∉ Set.range l)
+      (_ : y₃ ∉ Set.range l), b x₃ = b y₃ → x₃ = y₃) :
+    IsPushout t l r b :=
+  isPushout_of_isPullback_of_mono (k := 𝟙 _) h₁ (by simp) (by simp) h₂ H
 
 end
 

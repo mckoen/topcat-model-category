@@ -1,5 +1,4 @@
 import TopCatModelCategory.AttachCells
-import TopCatModelCategory.Basic
 import TopCatModelCategory.CWComplex
 import TopCatModelCategory.CatCommSq
 import TopCatModelCategory.CellComplex

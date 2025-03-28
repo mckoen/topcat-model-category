@@ -73,6 +73,23 @@ lemma iSup_skeleton : ⨆ (n : ℕ), X.skeleton n = ⊤ := by
   simp only [Subpresheaf.iSup_obj, Set.mem_iUnion]
   exact ⟨n + 1, mem_skeleton _ _ (by omega)⟩
 
+lemma skeleton_succ (n : ℕ) :
+    X.skeleton (n + 1) =
+      X.skeleton n ⊔ ⨆ (x : X.nonDegenerate n), Subcomplex.ofSimplex x.1 := by
+  apply le_antisymm
+  · conv_lhs => dsimp [skeleton]
+    simp only [iSup_le_iff]
+    rintro ⟨d, hd⟩ x
+    rw [Nat.lt_succ_iff] at hd
+    obtain hd | rfl := hd.lt_or_eq
+    · exact (X.ofSimplex_le_skeleton _ hd).trans le_sup_left
+    · exact le_trans (le_trans (by rfl) (le_iSup _ x)) le_sup_right
+  · simp only [sup_le_iff, iSup_le_iff]
+    constructor
+    · exact X.skeleton.monotone (by simp)
+    · intro x
+      apply X.ofSimplex_le_skeleton _ (by simp)
+
 variable {X} {Y : SSet.{u}} (i : X ⟶ Y)
 
 def skeletonOfMono [Mono i] : ℕ →o Y.Subcomplex where
@@ -109,6 +126,23 @@ lemma skeletonOfMono_obj_eq_top {d n : ℕ} (h : d < n) :
     (skeletonOfMono i n).obj (op ⦋d⦌) = ⊤ := by
   rw [← top_le_iff, ← Y.skeleton_obj_eq_top h]
   exact le_sup_right
+
+lemma skeletonOfMono_succ (n : ℕ) :
+    skeletonOfMono i (n + 1) =
+      skeletonOfMono i n ⊔ ⨆ (x : Y.nonDegenerate n)
+        (_ : x.1 ∉ (Subcomplex.range i).obj _), Subcomplex.ofSimplex x.1 := by
+  dsimp only [skeletonOfMono, OrderHom.coe_mk]
+  apply le_antisymm
+  · simp only [sup_le_iff, iSup_le_iff, skeleton_succ]
+    refine ⟨le_sup_left.trans le_sup_left,
+      le_sup_right.trans le_sup_left, fun x ↦ ?_⟩
+    by_cases hx : x.1 ∈ (Subcomplex.range i).obj _
+    · exact le_trans (le_trans (by simpa) le_sup_left) le_sup_left
+    · exact (le_trans (by exact le_trans (by rfl) (le_iSup _ hx))
+        (le_iSup _ x)).trans le_sup_right
+  · simp only [sup_le_iff, iSup_le_iff]
+    exact ⟨⟨le_sup_left, (Y.skeleton.monotone (by simp)).trans le_sup_right⟩,
+      fun _ _ ↦ (Y.ofSimplex_le_skeleton _ (by simp)).trans le_sup_right⟩
 
 end
 
@@ -191,6 +225,9 @@ variable (i d) in
 def r : (skeletonOfMono i d : SSet) ⟶ skeletonOfMono i (d + 1) :=
   Subcomplex.homOfLE ((skeletonOfMono i).monotone (by simp))
 
+variable (i d) in
+instance mono_r : Mono (r i d) := by dsimp [r]; infer_instance
+
 @[reassoc]
 lemma τ_r (x : ι i d) : τ x ≫ r i d = ∂Δ[d].ι ≫ β x := rfl
 
@@ -202,7 +239,42 @@ lemma w : t i d ≫ r i d = m i d ≫ b i d :=
     change ιA x ≫ t i d ≫ r i d = ιA x ≫ m i d ≫ b i d
     simp [τ_r])
 
-lemma isPushout : IsPushout (t i d) (m i d) (r i d) (b i d) := sorry
+lemma sup_range_r_range_b :
+    Subcomplex.range (r i d) ⊔ Subcomplex.range (b i d) = ⊤ := by
+  rw [← top_le_iff]
+  rintro n ⟨x, hx⟩ _
+  simp only [skeletonOfMono_succ, Subpresheaf.range_obj, Set.mem_range, not_exists,
+    Subpresheaf.max_obj, Subpresheaf.iSup_obj, Subcomplex.iSup_obj, Set.iUnion_coe_set,
+    Set.mem_union, Set.mem_iUnion, exists_prop, exists_and_left] at hx
+  simp only [Subpresheaf.toPresheaf_obj, Subpresheaf.max_obj, Subpresheaf.range_obj, Set.mem_union,
+    Set.mem_range, Subtype.exists]
+  obtain hx | ⟨y, hy₁, hy₂, ⟨f⟩, rfl⟩  := hx
+  · exact Or.inl ⟨x, hx, rfl⟩
+  · refine Or.inr ⟨(ιB ⟨⟨y, hy₁⟩, by simpa⟩).app _
+      (stdSimplex.objEquiv.symm f), ?_⟩
+    rw [← FunctorToTypes.comp, ιB_b]
+    rfl
+
+lemma range_r_app_union_range_b_app (n : SimplexCategoryᵒᵖ) :
+    Set.range ((r i d).app n) ∪
+      Set.range ((b i d).app n) = Set.univ :=
+  congr_fun (congr_arg Subpresheaf.obj (sup_range_r_range_b i d)) n
+
+lemma isPullback : IsPullback (t i d) (m i d) (r i d) (b i d) := by
+  sorry
+
+lemma isPushout : IsPushout (t i d) (m i d) (r i d) (b i d) where
+  w := w i d
+  isColimit' := ⟨evaluationJointlyReflectsColimits _ (fun ⟨n⟩  ↦ by
+    induction' n using SimplexCategory.rec with n
+    refine (isColimitMapCoconePushoutCoconeEquiv _ _).2
+      (IsPushout.isColimit ?_)
+    have := mono_r i d
+    refine Limits.Types.isPushout_of_isPullback_of_mono' ?_ ?_ ?_
+    · exact (isPullback i d).map ((evaluation _ _).obj (op ⦋n⦌))
+    · exact range_r_app_union_range_b_app _ _ _
+    · dsimp
+      sorry)⟩
 
 end relativeCellComplexOfMono
 
