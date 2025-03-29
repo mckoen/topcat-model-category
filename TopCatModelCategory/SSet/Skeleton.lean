@@ -3,6 +3,7 @@ import Mathlib.CategoryTheory.Limits.Lattice
 import TopCatModelCategory.SSet.Degenerate
 import TopCatModelCategory.SSet.Evaluation
 import TopCatModelCategory.SSet.Monomorphisms
+import TopCatModelCategory.ColimitsType
 
 open CategoryTheory Simplicial HomotopicalAlgebra Limits Opposite
 
@@ -167,6 +168,18 @@ noncomputable def ιA (x : ι i d) : (boundary d : SSet) ⟶ A i d :=
 noncomputable def ιB (x : ι i d) : Δ[d] ⟶ B i d :=
   Limits.Sigma.ι (fun _ ↦ _) x
 
+lemma ιA_jointly_surjective {n : ℕ} (a : (A i d) _⦋n⦌) :
+    ∃ (x : ι i d) (a' : (∂Δ[d] : SSet) _⦋n⦌), (ιA x).app _ a' = a :=
+  Types.jointly_surjective_of_isColimit_cofan
+    (isColimitCofanMkObjOfIsColimit ((evaluation _ _).obj (op ⦋n⦌)) _ _
+    (coproductIsCoproduct _)) a
+
+lemma ιB_jointly_surjective {n : ℕ} (b : (B i d) _⦋n⦌) :
+    ∃ (x : ι i d) (b' : Δ[d] _⦋n⦌), (ιB x).app _ b' = b :=
+  Types.jointly_surjective_of_isColimit_cofan
+    (isColimitCofanMkObjOfIsColimit ((evaluation _ _).obj (op ⦋n⦌)) _ _
+    (coproductIsCoproduct _)) b
+
 variable (i d) in
 noncomputable def m : A i d ⟶ B i d := Limits.Sigma.map (fun _ ↦ (boundary d).ι)
 
@@ -215,6 +228,10 @@ def τ (x : ι i d) : (∂Δ[d] : SSet) ⟶ skeletonOfMono i d :=
     rw [Subcomplex.preimage_preimage, preimage_skeletonOfMono_eq,
       Subcomplex.preimage_ι])
 
+@[simp]
+lemma τ_app_coe (x : ι i d) {n : ℕ} (a : (∂Δ[d] : SSet) _⦋n⦌) :
+    ((τ x).app _ a).1 = (β x).app _ a.1 := rfl
+
 variable (i d) in
 noncomputable def t : A i d ⟶ skeletonOfMono i d := Sigma.desc τ
 
@@ -230,6 +247,10 @@ instance mono_r : Mono (r i d) := by dsimp [r]; infer_instance
 
 @[reassoc]
 lemma τ_r (x : ι i d) : τ x ≫ r i d = ∂Δ[d].ι ≫ β x := rfl
+
+@[simp]
+lemma r_app_coe {n : ℕ} (y : (skeletonOfMono i d : SSet) _⦋n⦌) :
+    ((r i d).app _ y).1 = y.1 := rfl
 
 variable (i d)
 
@@ -260,12 +281,56 @@ lemma range_r_app_union_range_b_app (n : SimplexCategoryᵒᵖ) :
       Set.range ((b i d).app n) = Set.univ :=
   congr_fun (congr_arg Subpresheaf.obj (sup_range_r_range_b i d)) n
 
-lemma isPullback : IsPullback (t i d) (m i d) (r i d) (b i d) := by
-  sorry
+lemma isPullback : IsPullback (t i d) (m i d) (r i d) (b i d) where
+  w := w i d
+  isLimit' := ⟨evaluationJointlyReflectsLimits _ (fun ⟨n⟩ ↦ by
+    refine (isLimitMapConePullbackConeEquiv _ _).2
+      (IsPullback.isLimit ?_)
+    induction' n using SimplexCategory.rec with n
+    rw [Types.isPullback_iff]
+    dsimp
+    refine ⟨?_, ?_, ?_⟩
+    · exact (congr_app (w i d) (op ⦋n⦌))
+    · intro a₁ a₂ ⟨ht, hm⟩
+      have : Mono (m i d) := inferInstance
+      rw [NatTrans.mono_iff_mono_app] at this
+      simp only [mono_iff_injective] at this
+      exact this _ hm
+    · intro y b h
+      obtain ⟨x, b, rfl⟩ := ιB_jointly_surjective b
+      have hb : b ∈ ∂Δ[d].obj _ := by
+        obtain ⟨y, hy⟩ := y
+        rw [← preimage_skeletonOfMono_eq x]
+        rw [Subtype.ext_iff] at h
+        dsimp at h
+        subst h
+        rwa [← FunctorToTypes.comp, ιB_b] at hy
+      refine ⟨(ιA x).app _ ⟨b, hb⟩, ?_, ?_⟩
+      · rw [Subtype.ext_iff] at h
+        dsimp at h
+        rw [← FunctorToTypes.comp, ιA_t]
+        rw [← FunctorToTypes.comp, ιB_b] at h
+        ext
+        exact h
+      · rw [← FunctorToTypes.comp, ιA_m, comp_app, types_comp_apply,
+          Subpresheaf.ι_app])⟩
+
+
+variable {i d} in
+lemma exists_epi {n : ℕ} (y : (B i d) _⦋n⦌)
+    (hy : y ∉ Set.range ((m i d).app (op ⦋n⦌))) :
+    ∃ (x : ι i d) (f : ⦋n⦌ ⟶ ⦋d⦌) (_ : Epi f),
+    (ιB x).app (op ⦋n⦌) (stdSimplex.objEquiv.symm f) = y := by
+  obtain ⟨x, s, rfl⟩ := ιB_jointly_surjective y
+  have hs : s ∉ ∂Δ[d].obj _ := fun hs ↦ hy (⟨(ιA x).app _ ⟨s, hs⟩, by
+    rw [← FunctorToTypes.comp, ιA_m, comp_app, types_comp_apply, Subpresheaf.ι_app]⟩)
+  refine ⟨x, stdSimplex.objEquiv (m := op ⦋n⦌) s,
+    by simpa [SimplexCategory.epi_iff_surjective, boundary] using hs,
+    by simp⟩
 
 lemma isPushout : IsPushout (t i d) (m i d) (r i d) (b i d) where
   w := w i d
-  isColimit' := ⟨evaluationJointlyReflectsColimits _ (fun ⟨n⟩  ↦ by
+  isColimit' := ⟨evaluationJointlyReflectsColimits _ (fun ⟨n⟩ ↦ by
     induction' n using SimplexCategory.rec with n
     refine (isColimitMapCoconePushoutCoconeEquiv _ _).2
       (IsPushout.isColimit ?_)
@@ -274,7 +339,18 @@ lemma isPushout : IsPushout (t i d) (m i d) (r i d) (b i d) where
     · exact (isPullback i d).map ((evaluation _ _).obj (op ⦋n⦌))
     · exact range_r_app_union_range_b_app _ _ _
     · dsimp
-      sorry)⟩
+      intro y₁ y₂ hy₁ hy₂ h
+      obtain ⟨x₁, f₁, _, rfl⟩ := exists_epi y₁ hy₁
+      obtain ⟨x₂, f₂, _, rfl⟩ := exists_epi y₂ hy₂
+      have h' : Y.map f₁.op x₁.1.1 = Y.map f₂.op x₂.1.1 := by
+        rwa [← FunctorToTypes.comp, ← FunctorToTypes.comp, ιB_b, ιB_b,
+          Subtype.ext_iff] at h
+      obtain rfl : x₁ = x₂ := by
+        rw [Subtype.ext_iff]
+        exact Y.unique_nonDegenerate₂ _ f₁ x₁.1 rfl f₂ x₂.1 h'
+      obtain rfl : f₁ = f₂ :=
+        Y.unique_nonDegenerate₃ _ f₁ x₁.1 rfl f₂ x₁.1 h'
+      rfl)⟩
 
 end relativeCellComplexOfMono
 
