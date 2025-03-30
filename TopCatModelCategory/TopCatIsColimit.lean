@@ -6,7 +6,7 @@ universe v u w
 
 open CategoryTheory Limits Topology
 
-namespace TopCat
+/-namespace TopCat
 
 variable {J : Type v} [Category.{w} J] {F : J ⥤ TopCat.{u}}
 
@@ -73,4 +73,4 @@ lemma isClosed_iff_of_isColimit (X : Set c.pt) :
 
 end
 
-end TopCat
+end TopCat-/

@@ -34,7 +34,7 @@ noncomputable def homeo :
     aesop
   continuous_toFun := by continuity
   continuous_invFun := by
-    apply Continuous.prod_mk
+    apply Continuous.prodMk
     · continuity
     · apply Continuous.subtype_mk
       exact Continuous.smul (Continuous.inv₀ (by continuity) (by simp))

@@ -27,7 +27,7 @@ attribute [reassoc (attr := simp)] comm
 
 variable {A} in
 @[simps]
-def const {y : Y _[0]} {φ : (A : SSet) ⟶ (ofSimplex y : SSet)} :
+def const {y : Y _⦋0⦌} {φ : (A : SSet) ⟶ (ofSimplex y : SSet)} :
     RelativeMorphism A (ofSimplex y) φ where
   map := SSet.const y
   comm := by rw [ofSimplex_ι, comp_const, comp_const]
@@ -39,7 +39,7 @@ def ofHom (f : X ⟶ Y) :
   map := f
 
 @[simps]
-def ofSimplex₀ (f : X ⟶ Y) (x : X _[0]) (y : Y _[0])
+def ofSimplex₀ (f : X ⟶ Y) (x : X _⦋0⦌) (y : Y _⦋0⦌)
     (h : f.app _ x = y) :
     RelativeMorphism (.ofSimplex x) (.ofSimplex y)
       (SSet.const ⟨y, mem_ofSimplex_obj y⟩) where

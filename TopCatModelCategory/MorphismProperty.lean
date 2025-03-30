@@ -8,7 +8,7 @@ local instance Cardinal.aleph0_isRegular : Fact Cardinal.aleph0.{w}.IsRegular wh
 
 noncomputable local instance Cardinal.orderbot_aleph0_ord_to_type :
     OrderBot Cardinal.aleph0.ord.toType :=
-  Cardinal.IsRegular.orderBotOrdToType Cardinal.isRegular_aleph0
+  toTypeOrderBot Cardinal.isRegular_aleph0.ne_zero
 
 namespace CategoryTheory.MorphismProperty
 
@@ -21,11 +21,11 @@ lemma monotone_coproducts {W₁ W₂ : MorphismProperty C} (h : W₁ ≤ W₂) :
   intro A B f hf
   rw [coproducts_iff] at hf ⊢
   obtain ⟨J, hf⟩ := hf
-  exact ⟨J, monotone_colimitsOfShape h _ _ hf⟩
+  exact ⟨J, colimitsOfShape_monotone h _ _ hf⟩
 
-lemma transfiniteCompositionsOfShape_aleph0 (W : MorphismProperty C) :
-    W.transfiniteCompositionsOfShape Cardinal.aleph0.{w}.ord.toType =
-      W.transfiniteCompositionsOfShape ℕ := sorry
+--lemma transfiniteCompositionsOfShape_aleph0 (W : MorphismProperty C) :
+--    W.transfiniteCompositionsOfShape Cardinal.aleph0.{w}.ord.toType =
+--      W.transfiniteCompositionsOfShape ℕ := sorry
 
 @[simp]
 lemma min_iff (W₁ W₂ : MorphismProperty C) {X Y : C} (f : X ⟶ Y) :

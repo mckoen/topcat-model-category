@@ -4,7 +4,7 @@ import Mathlib.Topology.Category.TopCat.Limits.Basic
 
 universe u
 
-open CategoryTheory Limits HomotopicalAlgebra
+/-open CategoryTheory Limits HomotopicalAlgebra
 
 namespace TopCat
 
@@ -35,4 +35,4 @@ open RelativeCWComplex in
 abbrev RelativeCWComplex {X Y : TopCat.{u}} (f : X ⟶ Y) := RelativeCellComplex basicCell f
 abbrev CWComplex (X : TopCat.{u}) := RelativeCWComplex (initial.to X)
 
-end TopCat
+end TopCat-/

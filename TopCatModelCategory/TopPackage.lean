@@ -1,6 +1,6 @@
 import Mathlib.CategoryTheory.SmallObject.Basic
 import Mathlib.AlgebraicTopology.ModelCategory.Basic
-import Mathlib.AlgebraicTopology.ModelCategory.JoyalTrick
+--import Mathlib.AlgebraicTopology.ModelCategory.JoyalTrick
 import TopCatModelCategory.JoyalTrickDual
 import TopCatModelCategory.Factorization
 import TopCatModelCategory.ModelCategoryCopy
@@ -35,12 +35,12 @@ structure TopPackage where
   fibration_is_trivial_iff' {X Y : T} (p : X ⟶ Y) (hp : J'.rlp p) :
     I'.rlp p ↔ W p
   src_I_le_S' {A B : T} (i : A ⟶ B) (hi : I' i) : A ∈ S'
-  src_J_le_S' {A B : T} (j : A ⟶ B) (hj : J' i) : A ∈ S'
-  preservesColimit' (X : T) (hX : X ∈ S') (F : ℕ ⥤ T)
-    (hF : ∀ (n : ℕ), (coproducts.{w} (I' ⊔ J')).pushouts (F.map (homOfLE n.le_succ))) :
-    PreservesColimit F (coyoneda.obj (Opposite.op X))
+  src_J_le_S' {A B : T} (i : A ⟶ B) (hj : J' i) : A ∈ S'
   infiniteCompositions_le_W' :
-    (coproducts.{w} J').pushouts.transfiniteCompositionsOfShape ℕ ≤ W'
+    (coproducts.{w} J').pushouts.transfiniteCompositionsOfShape ℕ ≤ W
+  preservesColimit' (X : T) (hX : X ∈ S') {A B : T} (f : A ⟶ B)
+    (hf : RelativeCellComplex.{0} (fun (_ : ℕ) ↦ (I' ⊔ J').homFamily) f) :
+    PreservesColimit hf.F (coyoneda.obj (Opposite.op X))
 
 namespace TopPackage
 
@@ -55,15 +55,13 @@ instance : Category π.Cat := inferInstanceAs (Category T)
 def I : MorphismProperty π.Cat := π.I'
 def J : MorphismProperty π.Cat := π.J'
 
---lemma J_le_I : π.J ≤ π.I := π.J_le_I'
-
 instance : LocallySmall.{w} π.Cat := π.locallySmall
 
 instance : HasFiniteLimits π.Cat := π.hasFiniteLimits
 
 instance : HasColimitsOfSize.{w, w} π.Cat := π.hasColimitsOfSize
 
-instance (J : Type w) [Preorder J] : SmallObject.HasIterationOfShape π.Cat J where
+instance (J : Type w) [LinearOrder J] : HasIterationOfShape J π.Cat where
 
 instance : HasFiniteColimits π.Cat :=
   hasFiniteColimits_of_hasColimitsOfSize π.Cat
@@ -106,26 +104,23 @@ lemma src_J_le_S {A B : T} (j : A ⟶ B) (hj : π.J j) : A ∈ π.S :=
 attribute [local instance] Cardinal.aleph0_isRegular
   Cardinal.orderbot_aleph0_ord_to_type
 
-lemma preservesColimit (X : π.Cat) (hX : X ∈ π.S)
-    (F : Cardinal.aleph0.{w}.ord.toType ⥤ π.Cat)
-    (hF : ∀ j (hj : ¬IsMax j),
-      (coproducts.{w} (π.I ⊔ π.J)).pushouts (F.map (homOfLE (Order.le_succ j)))) :
-    PreservesColimit F (coyoneda.obj (Opposite.op X)) := by
+lemma preservesColimit (X : π.Cat) (hX : X ∈ π.S) {A B : T} (f : A ⟶ B)
+    (hf : RelativeCellComplex
+      (fun (_ : Cardinal.aleph0.{w}.ord.toType) ↦ (π.I ⊔ π.J).homFamily) f) :
+    PreservesColimit hf.F (coyoneda.obj (Opposite.op X)) := by
   sorry
 
 instance isCardinalForSmallObjectArgument_I :
     π.I.IsCardinalForSmallObjectArgument Cardinal.aleph0.{w} where
   hasIterationOfShape := by infer_instance
-  preservesColimit {A B} i hi F _ hF :=
-    π.preservesColimit A (π.src_I_le_S i hi) F
-      (fun j hj ↦ monotone_pushouts (monotone_coproducts le_sup_left) _ (hF j hj))
+  preservesColimit {X _ A B} _ h f hf := sorry
+  --π.preservesColimit X (π.src_I_le_S _ h) f hf
 
 instance isCardinalForSmallObjectArgument_J :
     π.J.IsCardinalForSmallObjectArgument Cardinal.aleph0.{w} where
   hasIterationOfShape := by infer_instance
-  preservesColimit {A B} i hi F _ hF :=
-    π.preservesColimit A (π.src_J_le_S i hi) F
-      (fun j hj ↦ monotone_pushouts (monotone_coproducts le_sup_right) _ (hF j hj))
+  preservesColimit {X _ A B} _ h f hf := sorry
+  --π.preservesColimit X (π.src_J_le_S _ h) f hf
 
 instance : HasSmallObjectArgument.{w} π.I where
   exists_cardinal := ⟨Cardinal.aleph0.{w}, inferInstance, inferInstance, inferInstance⟩
@@ -147,11 +142,12 @@ lemma transfiniteCompositionsOfShape_aleph0_le_weakEquivalences :
     (coproducts.{w} π.J).pushouts.transfiniteCompositionsOfShape
       Cardinal.aleph0.{w}.ord.toType ≤ weakEquivalences π.Cat := by
   refine le_trans ?_ π.infiniteCompositions_le_weakEquivalences
-  rw [transfiniteCompositionsOfShape_aleph0]
+  sorry
+  --rw [transfiniteCompositionsOfShape_aleph0]
 
 lemma J_rlp_llp_le_weakEquivalences : π.J.rlp.llp ≤ weakEquivalences π.Cat := by
-  rw [SmallObject.rlp_llp_of_isCardinalForSmallObjectArgument' π.J Cardinal.aleph0.{w}]
-  exact (monotone_retracts π.transfiniteCompositionsOfShape_aleph0_le_weakEquivalences).trans
+  rw [SmallObject.llp_rlp_of_isCardinalForSmallObjectArgument' π.J Cardinal.aleph0.{w}]
+  exact (retracts_monotone π.transfiniteCompositionsOfShape_aleph0_le_weakEquivalences).trans
     (MorphismProperty.retracts_le _)
 
 lemma J_rlp_llp_le_trivialCofibrations : π.J.rlp.llp ≤ trivialCofibrations π.Cat := by

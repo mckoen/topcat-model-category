@@ -1,11 +1,11 @@
-import Mathlib.AlgebraicTopology.SimplexCategory
+import Mathlib.AlgebraicTopology.SimplexCategory.Basic
 
 open CategoryTheory Simplicial
 
 namespace SimplexCategory
 
 lemma surjective_const {n : ℕ} (f : mk 0 ⟶ mk n) :
-    ∃ (i : Fin (n + 1)), f = const [0] [n] i :=
+    ∃ (i : Fin (n + 1)), f = const ⦋0⦌ ⦋n⦌ i :=
   ⟨f.toOrderHom 0, by
     ext j
     fin_cases j

@@ -5,7 +5,7 @@ universe w w' v u
 
 open CategoryTheory Category Limits
 
-namespace InitialSeg
+/-namespace InitialSeg
 
 variable {J J' : Type*} [PartialOrder J] [PartialOrder J'] (h : J' ≤i J)
 
@@ -162,4 +162,4 @@ end IsWellOrderContinuous
 
 end Functor
 
-end CategoryTheory
+end CategoryTheory-/

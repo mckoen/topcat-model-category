@@ -3,7 +3,7 @@ import TopCatModelCategory.SSet.FundamentalGroupoidAction
 
 universe u
 
-open CategoryTheory HomotopicalAlgebra Simplicial
+open CategoryTheory HomotopicalAlgebra Simplicial SSet.modelCategoryQuillen
 
 namespace SSet
 
@@ -12,13 +12,13 @@ namespace KanComplex
 def W : MorphismProperty SSet.{u} := fun X Y f ↦
   ∃ (_ : IsFibrant X) (_ : IsFibrant Y),
     (mapFundamentalGroupoid f).IsEquivalence ∧
-      ∀ (n : ℕ) (x : X _[0]) (y : Y _[0]) (h : f.app _ x = y),
+      ∀ (n : ℕ) (x : X _⦋0⦌) (y : Y _⦋0⦌) (h : f.app _ x = y),
         Function.Bijective (mapπ f n x y h)
 
 variable {X Y : SSet.{u}} (f : X ⟶ Y)
 
 lemma W.mk [IsFibrant X] [IsFibrant Y] (h₀₁ : (mapFundamentalGroupoid f).IsEquivalence)
-    (h : ∀ (n : ℕ) (x : X _[0]) (y : Y _[0]) (h : f.app _ x = y),
+    (h : ∀ (n : ℕ) (x : X _⦋0⦌) (y : Y _⦋0⦌) (h : f.app _ x = y),
       Function.Bijective (mapπ f n x y h)) : W f :=
   ⟨inferInstance, inferInstance, h₀₁, h⟩
 
@@ -32,7 +32,7 @@ lemma W.isEquivalence [IsFibrant X] [IsFibrant Y] (hf : W f) :
     (mapFundamentalGroupoid f).IsEquivalence :=
   hf.choose_spec.choose_spec.1
 
-lemma W.bijective (hf : W f) (n : ℕ) (x : X _[0]) (y : Y _[0]) (h : f.app _ x = y) :
+lemma W.bijective (hf : W f) (n : ℕ) (x : X _⦋0⦌) (y : Y _⦋0⦌) (h : f.app _ x = y) :
     Function.Bijective (mapπ f n x y h) :=
   hf.choose_spec.choose_spec.2 n x y h
 
@@ -98,7 +98,7 @@ lemma W.of_precomp (hf : W f) (hfg : W (f ≫ g)) : W g := by
     exact Functor.isEquivalence_of_comp_left
       (mapFundamentalGroupoid f) _
   · rintro n y _ rfl
-    have hg (x : X _[0]) : Function.Bijective (mapπ g n (f.app _ x) _ rfl) := by
+    have hg (x : X _⦋0⦌) : Function.Bijective (mapπ g n (f.app _ x) _ rfl) := by
       rw [← Function.Bijective.of_comp_iff _ (hf.bijective n x _ rfl),
         mapπ_comp_mapπ f n x _ rfl g _ rfl]
       exact hfg.bijective n x _ rfl

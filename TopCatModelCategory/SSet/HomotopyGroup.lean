@@ -1,6 +1,7 @@
 import TopCatModelCategory.SSet.PtSimplex
 
 open HomotopicalAlgebra CategoryTheory Simplicial Limits Opposite
+  SSet.modelCategoryQuillen
 
 universe u
 
@@ -8,30 +9,34 @@ namespace SSet
 
 namespace KanComplex
 
-def π (n : ℕ) (X : SSet.{u}) (x : X _[0]) : Type u :=
+def π (n : ℕ) (X : SSet.{u}) (x : X _⦋0⦌) : Type u :=
   Subcomplex.RelativeMorphism.HomotopyClass
-    (subcomplexBoundary n) (Subcomplex.ofSimplex x)
+    (boundary n) (Subcomplex.ofSimplex x)
       (const ⟨x, Subcomplex.mem_ofSimplex_obj x⟩)
 
-def π.mk {n : ℕ} {X : SSet.{u}} {x : X _[0]}
+def π.mk {n : ℕ} {X : SSet.{u}} {x : X _⦋0⦌}
   (f : X.PtSimplex n x) : π n X x := f.homotopyClass
 
-lemma π.mk_surjective {n : ℕ} {X : SSet.{u}} {x : X _[0]} :
+lemma π.mk_surjective {n : ℕ} {X : SSet.{u}} {x : X _⦋0⦌} :
     Function.Surjective (π.mk : _ → π n X x) :=
   Quot.mk_surjective
 
-instance (n : ℕ) (X : SSet.{u}) (x : X _[0]) : One (π n X x) where
+instance (n : ℕ) (X : SSet.{u}) (x : X _⦋0⦌) : One (π n X x) where
   one := Subcomplex.RelativeMorphism.const.homotopyClass
 
 section
 
 variable {X Y : SSet.{u}} (f : X ⟶ Y) (n : ℕ)
-  (x : X _[0]) (y : Y _[0]) (h : f.app _ x = y)
+  (x : X _⦋0⦌) (y : Y _⦋0⦌) (h : f.app _ x = y)
 
 def mapπ (p : π n X x) : π n Y y :=
   p.postcomp (.ofSimplex₀ f x y h) (by rw [comp_const])
 
-variable {Z : SSet.{u}} (g : Y ⟶ Z) (z : Z _[0]) (h' : g.app _ y = z)
+@[simp]
+lemma mapπ_mk (z : X.PtSimplex n x) :
+    mapπ f n x y h (π.mk z) = π.mk (z.pushforward f y h) := rfl
+
+variable {Z : SSet.{u}} (g : Y ⟶ Z) (z : Z _⦋0⦌) (h' : g.app _ y = z)
 
 lemma mapπ_mapπ (p : π n X x) :
     mapπ g n y z h' (mapπ f n x y h p) =
@@ -50,7 +55,7 @@ lemma mapπ_id (p : π n X x) :
   obtain ⟨h, rfl⟩ := p.eq_homotopyClass
   rfl
 
-def mapπEquivOfIso (e : X ≅ Y) (n : ℕ) (x : X _[0]) (y : Y _[0]) (h : e.hom.app _ x = y) :
+def mapπEquivOfIso (e : X ≅ Y) (n : ℕ) (x : X _⦋0⦌) (y : Y _⦋0⦌) (h : e.hom.app _ x = y) :
     π n X x ≃ π n Y y where
   toFun := mapπ e.hom n x y h
   invFun := mapπ e.inv n y x (by simp [← h])
@@ -61,7 +66,7 @@ end
 
 namespace π
 
-variable {X : SSet.{u}}  {x : X _[0]} {n : ℕ} [IsFibrant X]
+variable {X : SSet.{u}}  {x : X _⦋0⦌} {n : ℕ} [IsFibrant X]
 
 -- assume we do not already not that the general homotopy relation
 -- is an equivalence relation
@@ -165,6 +170,20 @@ noncomputable instance : Group (π (n + 1) X x) where
   inv_mul_cancel _ := inv_mul _ _
 
 end π
+
+section
+
+variable {X Y : SSet.{u}} [IsFibrant X] [IsFibrant Y] (f : X ⟶ Y) (n : ℕ)
+  (x : X _⦋0⦌) (y : Y _⦋0⦌) (h : f.app _ x = y)
+
+def mapπ_mul (i : Fin (n + 1)) (p q : π (n + 1) X x) :
+    mapπ f (n + 1) x y h (π.mul i p q) =
+    π.mul i (mapπ f (n + 1) x y h p) (mapπ f (n + 1) x y h q) := by
+  obtain ⟨p, rfl⟩ := p.mk_surjective
+  obtain ⟨q, rfl⟩ := q.mk_surjective
+  exact (π.mul_eq_of_mulStruct ((π.mulStruct p q i).pushforward f y h)).symm
+
+end
 
 end KanComplex
 

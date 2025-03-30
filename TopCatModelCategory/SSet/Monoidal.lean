@@ -16,18 +16,30 @@ section
 
 variable {X : SSet.{u}}
 
-noncomputable abbrev ι₀ {X : SSet.{u}} : X ⟶ X ⊗ Δ[1] :=
-  lift (𝟙 X) (const (standardSimplex.obj₀Equiv.{u}.symm 0))
+noncomputable def ι₀ {X : SSet.{u}} : X ⟶ X ⊗ Δ[1] :=
+  lift (𝟙 X) (const (stdSimplex.obj₀Equiv.{u}.symm 0))
 
 @[reassoc (attr := simp)]
 lemma ι₀_comp {X Y : SSet.{u}} (f : X ⟶ Y) :
     ι₀ ≫ f ▷ _ = f ≫ ι₀ := rfl
 
+@[reassoc (attr := simp)]
+lemma ι₀_fst (X : SSet.{u}) : ι₀ ≫ fst X _ = 𝟙 X := rfl
+
+@[reassoc (attr := simp)]
+lemma ι₀_snd (X : SSet.{u}) : ι₀ ≫ snd X _ = (const (stdSimplex.obj₀Equiv.{u}.symm 0)) := rfl
+
 @[simp]
 lemma ι₀_app_fst {X : SSet.{u}} {m} (x : X.obj m) : (ι₀.app _ x).1 = x := rfl
 
-noncomputable abbrev ι₁ {X : SSet.{u}} : X ⟶ X ⊗ Δ[1] :=
-  lift (𝟙 X) (const (standardSimplex.obj₀Equiv.{u}.symm 1))
+noncomputable def ι₁ {X : SSet.{u}} : X ⟶ X ⊗ Δ[1] :=
+  lift (𝟙 X) (const (stdSimplex.obj₀Equiv.{u}.symm 1))
+
+@[reassoc (attr := simp)]
+lemma ι₁_fst (X : SSet.{u}) : ι₁ ≫ fst X _ = 𝟙 X := rfl
+
+@[reassoc (attr := simp)]
+lemma ι₁_snd (X : SSet.{u}) : ι₁ ≫ snd X _ = (const (stdSimplex.obj₀Equiv.{u}.symm 1)) := rfl
 
 @[reassoc (attr := simp)]
 lemma ι₁_comp {X Y : SSet.{u}} (f : X ⟶ Y) :
@@ -38,7 +50,7 @@ lemma ι₁_app_fst {X : SSet.{u}} {m} (x : X.obj m) : (ι₁.app _ x).1 = x := 
 
 end
 
-namespace standardSimplex
+namespace stdSimplex
 
 variable (X) {Y : SSet.{u}}
 
@@ -64,13 +76,25 @@ lemma leftUnitor_hom_naturality (f : X ⟶ Y) :
 
 @[reassoc (attr := simp)]
 lemma leftUnitor_inv_map_δ_zero :
-    (standardSimplex.leftUnitor X).inv ≫ standardSimplex.map (SimplexCategory.δ 0) ▷ X =
+    (stdSimplex.leftUnitor X).inv ≫ stdSimplex.map (SimplexCategory.δ 0) ▷ X =
       ι₁ ≫ (β_ _ _).hom := rfl
 
 @[reassoc (attr := simp)]
 lemma leftUnitor_inv_map_δ_one :
-    (standardSimplex.leftUnitor X).inv ≫ standardSimplex.map (SimplexCategory.δ 1) ▷ X =
+    (stdSimplex.leftUnitor X).inv ≫ stdSimplex.map (SimplexCategory.δ 1) ▷ X =
       ι₀ ≫ (β_ _ _).hom := rfl
+
+@[reassoc]
+lemma ι₀_stdSimplex_zero :
+    ι₀ = stdSimplex.map (SimplexCategory.δ 1) ≫ (stdSimplex.leftUnitor Δ[1]).inv := by
+  ext : 1
+  all_goals exact yonedaEquiv.injective (by ext i; fin_cases i; rfl)
+
+@[reassoc]
+lemma ι₁_stdSimplex_zero :
+    ι₁ = stdSimplex.map (SimplexCategory.δ 0) ≫ (stdSimplex.leftUnitor Δ[1]).inv := by
+  ext : 1
+  all_goals exact yonedaEquiv.injective (by ext i; fin_cases i; rfl)
 
 noncomputable def rightUnitor : X ⊗ Δ[0] ≅ X where
   hom := fst _ _
@@ -91,38 +115,48 @@ lemma rightUnitor_hom_naturality (f : X ⟶ Y) :
 
 @[reassoc (attr := simp)]
 lemma rightUnitor_inv_map_δ_zero :
-    (standardSimplex.rightUnitor X).inv ≫ X ◁ standardSimplex.map (SimplexCategory.δ 0) =
+    (stdSimplex.rightUnitor X).inv ≫ X ◁ stdSimplex.map (SimplexCategory.δ 0) =
       ι₁ := rfl
 
 @[reassoc (attr := simp)]
 lemma rightUnitor_inv_map_δ_one :
-    (standardSimplex.rightUnitor X).inv ≫ X ◁ standardSimplex.map (SimplexCategory.δ 1) =
+    (stdSimplex.rightUnitor X).inv ≫ X ◁ stdSimplex.map (SimplexCategory.δ 1) =
       ι₀ := rfl
 
-end standardSimplex
+@[reassoc (attr := simp)]
+lemma rightUnitor_hom_ι₀ :
+    (stdSimplex.rightUnitor X).hom ≫ ι₀ = X ◁ stdSimplex.map (SimplexCategory.δ 1) := by
+  rw [← rightUnitor_inv_map_δ_one, Iso.hom_inv_id_assoc]
+
+@[reassoc (attr := simp)]
+lemma rightUnitor_hom_ι₁ :
+    (stdSimplex.rightUnitor X).hom ≫ ι₁ = X ◁ stdSimplex.map (SimplexCategory.δ 0) := by
+  rw [← rightUnitor_inv_map_δ_zero, Iso.hom_inv_id_assoc]
+
+end stdSimplex
 
 instance : MonoidalClosed (SSet.{u}) :=
   inferInstanceAs (MonoidalClosed (SimplexCategoryᵒᵖ ⥤ Type u))
 
 variable {X Y : SSet.{u}}
 
-noncomputable def ihom₀Equiv : ((ihom X).obj Y) _[0] ≃ (X ⟶ Y) :=
-  (yonedaEquiv _ _).symm.trans
+noncomputable def ihom₀Equiv : ((ihom X).obj Y) _⦋0⦌ ≃ (X ⟶ Y) :=
+  yonedaEquiv.symm.trans
     (((ihom.adjunction X).homEquiv Δ[0] Y).symm.trans
-      (Iso.homFromEquiv (standardSimplex.rightUnitor X)))
+      (Iso.homFromEquiv (stdSimplex.rightUnitor X)))
 
 lemma ihom₀Equiv_symm_comp {Z : SSet.{u}} (f : X ⟶ Y) (g : Y ⟶ Z) :
     ihom₀Equiv.symm (f ≫ g) =
-      ((MonoidalClosed.pre f).app Z).app (op [0]) (ihom₀Equiv.symm g) := by
-  apply (yonedaEquiv _ _).symm.injective
-  dsimp [ihom₀Equiv]
-  rw [Equiv.symm_apply_apply, ← yonedaEquiv_symm_comp, Equiv.symm_apply_apply]
-  rfl
+      ((MonoidalClosed.pre f).app Z).app (op ⦋0⦌) (ihom₀Equiv.symm g) := rfl
+
+lemma ihom₀Equiv_symm_comp' {Z : SSet.{u}} (f : X ⟶ Y) (g : Y ⟶ Z) :
+    ihom₀Equiv.symm (f ≫ g) =
+      ((ihom X).map g).app (op ⦋0⦌) (ihom₀Equiv.symm f) := rfl
 
 lemma yonedaEquiv_fst {n : ℕ} (f : Δ[n] ⟶ X ⊗ Y) :
-    (yonedaEquiv _ _ f).1 = yonedaEquiv _ _ (f ≫ fst _ _) := rfl
+    (yonedaEquiv f).1 = yonedaEquiv (f ≫ fst _ _) := rfl
 
 lemma yonedaEquiv_snd {n : ℕ} (f : Δ[n] ⟶ X ⊗ Y) :
-    (yonedaEquiv _ _ f).2 = yonedaEquiv _ _ (f ≫ snd _ _) := rfl
+    (yonedaEquiv f).2 = yonedaEquiv (f ≫ snd _ _) := rfl
 
 end SSet

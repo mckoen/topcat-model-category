@@ -33,10 +33,10 @@ namespace square
 open ChosenFiniteProducts
 
 noncomputable def ιTriangle₀ : (Δ[2] : SSet.{u}) ⟶ Δ[1] ⊗ Δ[1] :=
-  (yonedaEquiv _ _ ).symm (prodStandardSimplex.nonDegenerateEquiv₁ (q := 1) 0).1
+  yonedaEquiv.symm (prodStdSimplex.nonDegenerateEquiv₁ (q := 1) 0).1
 
 noncomputable def ιTriangle₁ : (Δ[2] : SSet.{u}) ⟶ Δ[1] ⊗ Δ[1] :=
-  (yonedaEquiv _ _ ).symm (prodStandardSimplex.nonDegenerateEquiv₁ (q := 1) 1).1
+  yonedaEquiv.symm (prodStdSimplex.nonDegenerateEquiv₁ (q := 1) 1).1
 
 noncomputable def diagonal : Δ[1] ⟶ Δ[1] ⊗ Δ[1] := lift (𝟙 _) (𝟙 _)
 
@@ -48,121 +48,121 @@ lemma diagonal_snd : diagonal.{u} ≫ snd _ _ = 𝟙 _ := by simp [diagonal]
 
 @[reassoc (attr := simp)]
 lemma δ₀_diagonal :
-    standardSimplex.map (SimplexCategory.δ 0) ≫ diagonal =
-      const (prodStandardSimplex.obj₀Equiv.symm ⟨1, 1⟩) := by
-  apply (yonedaEquiv _ _).injective
-  apply Prod.ext <;> exact standardSimplex.obj₀Equiv.injective (by rfl)
+    stdSimplex.map (SimplexCategory.δ 0) ≫ diagonal =
+      const (prodStdSimplex.obj₀Equiv.symm ⟨1, 1⟩) := by
+  apply yonedaEquiv.injective
+  apply Prod.ext <;> exact stdSimplex.obj₀Equiv.injective (by rfl)
 
 @[reassoc (attr := simp)]
 lemma δ₁_diagonal :
-    standardSimplex.map (SimplexCategory.δ 1) ≫ diagonal =
-      const (prodStandardSimplex.obj₀Equiv.symm ⟨0, 0⟩) := by
-  apply (yonedaEquiv _ _).injective
-  apply Prod.ext <;> exact standardSimplex.obj₀Equiv.injective (by rfl)
+    stdSimplex.map (SimplexCategory.δ 1) ≫ diagonal =
+      const (prodStdSimplex.obj₀Equiv.symm ⟨0, 0⟩) := by
+  apply yonedaEquiv.injective
+  apply Prod.ext <;> exact stdSimplex.obj₀Equiv.injective (by rfl)
 
 @[reassoc (attr := simp)]
 lemma δ₀_ιTriangle₀ :
-    standardSimplex.map (SimplexCategory.δ 0) ≫ square.ιTriangle₀ = ι₁ ≫ (β_ _ _).hom := by
+    stdSimplex.map (SimplexCategory.δ 0) ≫ square.ιTriangle₀ = ι₁ ≫ (β_ _ _).hom := by
   dsimp [ιTriangle₀]
-  rw [standardSimplex.map_comp_yonedaEquiv_symm]
-  apply (SSet.yonedaEquiv _ _).injective
-  apply prodStandardSimplex.objEquiv.injective
+  rw [stdSimplex.map_comp_yonedaEquiv_symm]
+  apply SSet.yonedaEquiv.injective
+  apply prodStdSimplex.objEquiv.injective
   rw [Equiv.apply_symm_apply]
   ext x : 3 <;> fin_cases x <;> rfl
 
 @[reassoc (attr := simp)]
 lemma δ₁_ιTriangle₀ :
-    standardSimplex.map (SimplexCategory.δ 1) ≫ square.ιTriangle₀ = diagonal := by
+    stdSimplex.map (SimplexCategory.δ 1) ≫ square.ιTriangle₀ = diagonal := by
   dsimp [ιTriangle₀]
-  rw [standardSimplex.map_comp_yonedaEquiv_symm]
-  apply (SSet.yonedaEquiv _ _).injective
-  apply prodStandardSimplex.objEquiv.injective
+  rw [stdSimplex.map_comp_yonedaEquiv_symm]
+  apply SSet.yonedaEquiv.injective
+  apply prodStdSimplex.objEquiv.injective
   rw [Equiv.apply_symm_apply]
   ext x : 3 <;> fin_cases x <;> rfl
 
 @[reassoc (attr := simp)]
-lemma δ₂_ιTriangle₀ : standardSimplex.map (SimplexCategory.δ 2) ≫ square.ιTriangle₀ = ι₀ := by
+lemma δ₂_ιTriangle₀ : stdSimplex.map (SimplexCategory.δ 2) ≫ square.ιTriangle₀ = ι₀ := by
   dsimp [ιTriangle₀]
-  rw [standardSimplex.map_comp_yonedaEquiv_symm]
-  apply (SSet.yonedaEquiv _ _).injective
-  apply prodStandardSimplex.objEquiv.injective
+  rw [stdSimplex.map_comp_yonedaEquiv_symm]
+  apply SSet.yonedaEquiv.injective
+  apply prodStdSimplex.objEquiv.injective
   rw [Equiv.apply_symm_apply]
   ext x : 3 <;> fin_cases x <;> rfl
 
 @[reassoc (attr := simp)]
-lemma δ₀_ιTriangle₁ : standardSimplex.map (SimplexCategory.δ 0) ≫ square.ιTriangle₁ = ι₁ := by
+lemma δ₀_ιTriangle₁ : stdSimplex.map (SimplexCategory.δ 0) ≫ square.ιTriangle₁ = ι₁ := by
   dsimp [ιTriangle₁]
-  rw [standardSimplex.map_comp_yonedaEquiv_symm]
-  apply (SSet.yonedaEquiv _ _).injective
-  apply prodStandardSimplex.objEquiv.injective
+  rw [stdSimplex.map_comp_yonedaEquiv_symm]
+  apply SSet.yonedaEquiv.injective
+  apply prodStdSimplex.objEquiv.injective
   rw [Equiv.apply_symm_apply]
   ext x : 3 <;> fin_cases x <;> rfl
 
 @[reassoc (attr := simp)]
 lemma δ₁_ιTriangle₁ :
-    standardSimplex.map (SimplexCategory.δ 1) ≫ square.ιTriangle₁ = diagonal := by
+    stdSimplex.map (SimplexCategory.δ 1) ≫ square.ιTriangle₁ = diagonal := by
   dsimp [ιTriangle₁]
-  rw [standardSimplex.map_comp_yonedaEquiv_symm]
-  apply (SSet.yonedaEquiv _ _).injective
-  apply prodStandardSimplex.objEquiv.injective
+  rw [stdSimplex.map_comp_yonedaEquiv_symm]
+  apply SSet.yonedaEquiv.injective
+  apply prodStdSimplex.objEquiv.injective
   rw [Equiv.apply_symm_apply]
   ext x : 3 <;> fin_cases x <;> rfl
 
 @[reassoc (attr := simp)]
 lemma δ₂_ιTriangle₁ :
-    standardSimplex.map (SimplexCategory.δ 2) ≫ square.ιTriangle₁ = ι₀ ≫ (β_ _ _).hom := by
+    stdSimplex.map (SimplexCategory.δ 2) ≫ square.ιTriangle₁ = ι₀ ≫ (β_ _ _).hom := by
   dsimp [ιTriangle₁]
-  rw [standardSimplex.map_comp_yonedaEquiv_symm]
-  apply (SSet.yonedaEquiv _ _).injective
-  apply prodStandardSimplex.objEquiv.injective
+  rw [stdSimplex.map_comp_yonedaEquiv_symm]
+  apply SSet.yonedaEquiv.injective
+  apply prodStdSimplex.objEquiv.injective
   rw [Equiv.apply_symm_apply]
   ext x : 3 <;> fin_cases x <;> rfl
 
 @[reassoc]
 lemma δ₁_whiskerRight :
-    standardSimplex.{u}.map (SimplexCategory.δ (1 : Fin 2)) ▷ Δ[1] =
-      snd _ _ ≫ standardSimplex.map (SimplexCategory.δ 2) ≫ ιTriangle₁ := by
-  rw [← cancel_epi (standardSimplex.leftUnitor _).inv]
-  apply (yonedaEquiv _ _ ).injective
+    stdSimplex.{u}.map (SimplexCategory.δ (1 : Fin 2)) ▷ Δ[1] =
+      snd _ _ ≫ stdSimplex.map (SimplexCategory.δ 2) ≫ ιTriangle₁ := by
+  rw [← cancel_epi (stdSimplex.leftUnitor _).inv]
+  apply yonedaEquiv.injective
   apply Prod.ext <;> ext i <;> fin_cases i <;> rfl
 
 @[reassoc]
 lemma δ₀_whiskerRight :
-    standardSimplex.{u}.map (SimplexCategory.δ (0 : Fin 2)) ▷ Δ[1] =
-      snd _ _ ≫ standardSimplex.map (SimplexCategory.δ 0) ≫ ιTriangle₀ := by
-  rw [← cancel_epi (standardSimplex.leftUnitor _).inv]
-  apply (yonedaEquiv _ _ ).injective
+    stdSimplex.{u}.map (SimplexCategory.δ (0 : Fin 2)) ▷ Δ[1] =
+      snd _ _ ≫ stdSimplex.map (SimplexCategory.δ 0) ≫ ιTriangle₀ := by
+  rw [← cancel_epi (stdSimplex.leftUnitor _).inv]
+  apply yonedaEquiv.injective
   apply Prod.ext <;> ext i <;> fin_cases i <;> rfl
 
-noncomputable abbrev diagonalSimplex : (Δ[1] ⊗ Δ[1] : SSet.{u}).NonDegenerate 1 :=
-  ⟨yonedaEquiv _ _ diagonal, by
-    rw [prodStandardSimplex.non_degenerate_iff']
+noncomputable abbrev diagonalSimplex : (Δ[1] ⊗ Δ[1] : SSet.{u}).nonDegenerate 1 :=
+  ⟨yonedaEquiv diagonal, by
+    rw [prodStdSimplex.nonDegenerate_iff']
     intro x y h
     simpa using congr_arg Prod.fst h⟩
 
 lemma range_objEquiv_nonDegenerateEquiv₁_zero :
-    Set.range (prodStandardSimplex.objEquiv
-      (prodStandardSimplex.nonDegenerateEquiv₁ (q := 1) 0).1) =
+    Set.range (prodStdSimplex.objEquiv
+      (prodStdSimplex.nonDegenerateEquiv₁ (q := 1) 0).1) =
         {(0,0), (1, 0), (1, 1)} :=
   Fin.range₃ _
 
 lemma range_objEquiv_nonDegenerateEquiv₁_one :
-    Set.range (prodStandardSimplex.objEquiv
-      (prodStandardSimplex.nonDegenerateEquiv₁ (q := 1) 1).1) =
+    Set.range (prodStdSimplex.objEquiv
+      (prodStdSimplex.nonDegenerateEquiv₁ (q := 1) 1).1) =
         {(0,0), (0, 1), (1, 1)} :=
   Fin.range₃ _
 
 lemma range_objEquiv_diagonalSimplex :
-    Set.range (prodStandardSimplex.objEquiv diagonalSimplex.1) = {(0, 0), (1, 1)} := by
+    Set.range (prodStdSimplex.objEquiv diagonalSimplex.1) = {(0, 0), (1, 1)} := by
   rw [Fin.range₂]
   rfl
 
 lemma range_objEquiv_diagonalSimplex_eq_inter :
-    Set.range (prodStandardSimplex.objEquiv diagonalSimplex.1) =
-    Set.range (prodStandardSimplex.objEquiv
-      (prodStandardSimplex.nonDegenerateEquiv₁ (q := 1) 0).1) ∩
-    Set.range (prodStandardSimplex.objEquiv
-      (prodStandardSimplex.nonDegenerateEquiv₁ (q := 1) 1).1) := by
+    Set.range (prodStdSimplex.objEquiv diagonalSimplex.1) =
+    Set.range (prodStdSimplex.objEquiv
+      (prodStdSimplex.nonDegenerateEquiv₁ (q := 1) 0).1) ∩
+    Set.range (prodStdSimplex.objEquiv
+      (prodStdSimplex.nonDegenerateEquiv₁ (q := 1) 1).1) := by
   rw [range_objEquiv_nonDegenerateEquiv₁_zero,
     range_objEquiv_nonDegenerateEquiv₁_one,
     range_objEquiv_diagonalSimplex]
@@ -171,14 +171,14 @@ lemma range_objEquiv_diagonalSimplex_eq_inter :
 
 open Subcomplex
 
-lemma sq : Sq (ofSimplex.{u} (yonedaEquiv _ _ diagonal))
-    (ofSimplex (prodStandardSimplex.nonDegenerateEquiv₁ 0).1)
-    (ofSimplex (prodStandardSimplex.nonDegenerateEquiv₁ 1).1)
+lemma sq : Sq (ofSimplex.{u} (yonedaEquiv diagonal))
+    (ofSimplex (prodStdSimplex.nonDegenerateEquiv₁ 0).1)
+    (ofSimplex (prodStdSimplex.nonDegenerateEquiv₁ 1).1)
     (⊤ : (Δ[1] ⊗ Δ[1]).Subcomplex) where
   max_eq := by
-    rw [prodStandardSimplex.subcomplex_eq_top_iff _ rfl]
+    rw [prodStdSimplex.subcomplex_eq_top_iff _ rfl]
     intro x hx
-    obtain ⟨i, hi⟩ := prodStandardSimplex.nonDegenerateEquiv₁.surjective ⟨x, hx⟩
+    obtain ⟨i, hi⟩ := prodStdSimplex.nonDegenerateEquiv₁.surjective ⟨x, hx⟩
     rw [Subtype.ext_iff] at hi
     dsimp at hi
     subst hi
@@ -189,30 +189,30 @@ lemma sq : Sq (ofSimplex.{u} (yonedaEquiv _ _ diagonal))
   min_eq := by
     ext ⟨k⟩ x
     induction' k using SimplexCategory.rec with k
-    obtain ⟨x, rfl⟩ := prodStandardSimplex.objEquiv.symm.surjective x
+    obtain ⟨x, rfl⟩ := prodStdSimplex.objEquiv.symm.surjective x
     dsimp
-    simp only [Set.mem_inter_iff, prodStandardSimplex.mem_ofSimplex_iff,
+    simp only [Set.mem_inter_iff, prodStdSimplex.mem_ofSimplex_iff,
       Equiv.apply_symm_apply]
     rw [range_objEquiv_diagonalSimplex_eq_inter, Set.subset_inter_iff]
 
 lemma isPushout :
-    IsPushout (standardSimplex.{u}.map (SimplexCategory.δ 1))
-      (standardSimplex.map (SimplexCategory.δ 1)) square.ιTriangle₀
+    IsPushout (stdSimplex.{u}.map (SimplexCategory.δ 1))
+      (stdSimplex.map (SimplexCategory.δ 1)) square.ιTriangle₀
       square.ιTriangle₁ := by
   fapply sq.{u}.isPushout.of_iso'
-    (prodStandardSimplex.isoOfNonDegenerate.{u} diagonalSimplex)
-    (prodStandardSimplex.isoOfNonDegenerate.{u}
-        (prodStandardSimplex.nonDegenerateEquiv₁ (q := 1) 0))
-    (prodStandardSimplex.isoOfNonDegenerate.{u}
-        (prodStandardSimplex.nonDegenerateEquiv₁ (q := 1) 1))
+    (prodStdSimplex.isoOfNonDegenerate.{u} diagonalSimplex)
+    (prodStdSimplex.isoOfNonDegenerate.{u}
+        (prodStdSimplex.nonDegenerateEquiv₁ (q := 1) 0))
+    (prodStdSimplex.isoOfNonDegenerate.{u}
+        (prodStdSimplex.nonDegenerateEquiv₁ (q := 1) 1))
     (topIso (Δ[1] ⊗ Δ[1])).symm
   all_goals try apply Subcomplex.hom_ext _ rfl
   all_goals
     apply Subcomplex.hom_ext
     dsimp
     rw [Category.assoc, Category.assoc, homOfLE_ι,
-      prodStandardSimplex.isoOfNonDegenerate_hom_ι,
-      prodStandardSimplex.isoOfNonDegenerate_hom_ι,
+      prodStdSimplex.isoOfNonDegenerate_hom_ι,
+      prodStdSimplex.isoOfNonDegenerate_hom_ι,
       ← yonedaEquiv_symm_δ]
     congr 1
     apply Prod.ext <;> ext i <;> fin_cases i <;> rfl

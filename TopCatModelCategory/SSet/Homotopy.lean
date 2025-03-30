@@ -8,7 +8,7 @@ import TopCatModelCategory.SSet.AnodyneExtensions
 import TopCatModelCategory.SSet.Horn
 
 open HomotopicalAlgebra CategoryTheory Category Simplicial MonoidalCategory Opposite
-  ChosenFiniteProducts Limits
+  ChosenFiniteProducts Limits SSet.modelCategoryQuillen
 
 namespace SSet
 
@@ -18,7 +18,7 @@ namespace Subcomplex
 
 variable (A B φ) in
 noncomputable def relativeMorphism : ((ihom X).obj Y).Subcomplex :=
-  Subcomplex.fiber ((MonoidalClosed.pre (C := SSet.{u}) A.ι).app Y)
+  Subcomplex.fiber ((MonoidalClosed.pre A.ι).app Y)
     (ihom₀Equiv.symm (φ ≫ B.ι))
 
 instance [IsFibrant Y] :
@@ -30,7 +30,7 @@ namespace RelativeMorphism
 
 @[simps]
 noncomputable def equiv :
-    RelativeMorphism A B φ ≃ (relativeMorphism A B φ : SSet.{u}) _[0] where
+    RelativeMorphism A B φ ≃ (relativeMorphism A B φ : SSet.{u}) _⦋0⦌ where
   toFun f := ⟨ihom₀Equiv.symm f.map, by
     dsimp [relativeMorphism, fiber]
     rw [ofSimplex_obj₀, Set.mem_preimage, Set.mem_singleton_iff, ← f.comm,
@@ -55,7 +55,7 @@ noncomputable def equiv {f g : RelativeMorphism A B φ} :
       (Subcomplex.lift (MonoidalClosed.curry h.h) sorry) (by
         rw [← cancel_mono (Subpresheaf.ι _), assoc, Subcomplex.lift_ι, const_comp,
           Subpresheaf.ι_app, equiv_apply_coe, ← h.h₀]
-        apply (yonedaEquiv _ _).injective
+        apply yonedaEquiv.injective
         sorry) sorry
   invFun h :=
     { h := MonoidalClosed.uncurry (h.map ≫ Subpresheaf.ι _)

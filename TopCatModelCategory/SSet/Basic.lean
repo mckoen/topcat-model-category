@@ -1,4 +1,4 @@
-import Mathlib.AlgebraicTopology.SimplicialSet.Basic
+import Mathlib.AlgebraicTopology.SimplicialSet.StdSimplex
 
 universe u
 
@@ -6,7 +6,7 @@ open CategoryTheory Simplicial Opposite
 
 namespace SSet
 
-@[simps]
+/-@[simps]
 def const {X Y : SSet.{u}} (y : Y _[0]) : X ⟶ Y where
   app n _ := Y.map (n.unop.const _ 0).op y
   naturality n m f := by
@@ -23,29 +23,28 @@ lemma comp_const {X Y Z : SSet.{u}} (f : X ⟶ Y) (z : Z _[0]) :
 lemma const_comp {X Y Z : SSet.{u}} (y : Y _[0]) (g : Y ⟶ Z) :
     const (X := X) y ≫ g = const (g.app _ y) := by
   ext m x
-  simp [FunctorToTypes.naturality]
+  simp [FunctorToTypes.naturality]-/
 
-lemma yonedaEquiv_apply_comp {X Y : SSet.{u}} {n : SimplexCategory}
-    (f : standardSimplex.obj n ⟶ X) (g : X ⟶ Y) :
-    yonedaEquiv _ _ (f ≫ g) = g.app _ (yonedaEquiv _ _ f) := rfl
+@[deprecated (since := "2025-03-19")]
+alias yonedaEquiv_apply_comp := yonedaEquiv_comp
 
 @[reassoc]
-lemma standardSimplex.map_comp_yonedaEquiv_symm {X : SSet.{u}} {n m : SimplexCategory}
+lemma stdSimplex.map_comp_yonedaEquiv_symm {X : SSet.{u}} {n m : SimplexCategory}
     (x : X.obj (op n)) (f : m ⟶ n) :
-      standardSimplex.map f ≫ (yonedaEquiv _ _).symm x =
-        (yonedaEquiv _ _).symm (X.map f.op x) := by
-  apply (yonedaEquiv _ _).injective
+      stdSimplex.map f ≫ yonedaEquiv.symm x =
+        yonedaEquiv.symm (X.map f.op x) := by
+  apply yonedaEquiv.injective
   conv_rhs => rw [Equiv.apply_symm_apply, ← Category.id_comp f]
   rfl
 
-lemma yonedaEquiv_const {X : SSet.{u}} (x : X _[0]) :
-    (yonedaEquiv _ _) (const x : Δ[0] ⟶ X) = x := by
+lemma yonedaEquiv_const {X : SSet.{u}} (x : X _⦋0⦌) :
+    yonedaEquiv (const x : Δ[0] ⟶ X) = x := by
   simp [yonedaEquiv, yonedaCompUliftFunctorEquiv]
 
 @[simp]
-lemma yonedaEquiv_symm_zero {X : SSet.{u}} (x : X _[0]) :
-    (yonedaEquiv _ _).symm x = const x := by
-  apply (yonedaEquiv _ _).injective
+lemma yonedaEquiv_symm_zero {X : SSet.{u}} (x : X _⦋0⦌) :
+    yonedaEquiv.symm x = const x := by
+  apply yonedaEquiv.injective
   simp [yonedaEquiv_const]
 
 end SSet

@@ -1,4 +1,4 @@
-import Mathlib.CategoryTheory.MorphismProperty.Limits
+/-import Mathlib.CategoryTheory.MorphismProperty.Limits
 
 universe w t t' v u
 
@@ -121,4 +121,4 @@ lemma nonempty_attachCells_iff :
           rw [Category.assoc, ← eq₁, reassoc_of% eq₂]
         isPushout := sq }⟩
 
-end HomotopicalAlgebra
+end HomotopicalAlgebra-/
