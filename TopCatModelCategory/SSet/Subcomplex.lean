@@ -103,8 +103,16 @@ lemma max_min (S₁ S₂ T : Subpresheaf P) :
     (S₁ ⊔ S₂) ⊓ T = (S₁ ⊓ T) ⊔ (S₂ ⊓ T) := by
   aesop
 
+lemma min_max (S₁ S₂ T : Subpresheaf P) :
+    T ⊓ (S₁ ⊔ S₂) = (T ⊓ S₁) ⊔ (T ⊓ S₂) := by
+  aesop
+
 lemma iSup_min {ι : Type*} (S : ι → Subpresheaf P) (T : Subpresheaf P) :
     iSup S ⊓ T = ⨆ i, S i ⊓ T := by
+  aesop
+
+lemma min_iSup {ι : Type*} (S : ι → Subpresheaf P) (T : Subpresheaf P) :
+    T ⊓ iSup S = ⨆ i, T ⊓ S i := by
   aesop
 
 end Subpresheaf

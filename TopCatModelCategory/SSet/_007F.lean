@@ -136,6 +136,7 @@ instance (a b : Fin (n + 2)) (hab : a ≤ b) : Mono (g a b hab) := by
   apply_fun (fun f ↦ f.toOrderHom e) at H'
   simp [Hom.toOrderHom, standardSimplex.objMk, g₂, standardSimplex.objEquiv,
     Equiv.ulift, Hom.mk, CategoryStruct.comp, OrderHom.comp, f₂] at H H'
+
   by_cases a.castSucc < g'.toOrderHom e
   all_goals rename_i h'
   · simp [Hom.toOrderHom] at h'
@@ -144,21 +145,37 @@ instance (a b : Fin (n + 2)) (hab : a ≤ b) : Mono (g a b hab) := by
     all_goals rename_i h''
     · simp [Hom.toOrderHom] at h''
       simp [h'', h''.not_le] at H'
-      sorry
+      simp [Fin.predAbove] at H
+      by_cases (b : Fin (n + 1)).succ.castSucc < g'.toOrderHom e
+      all_goals rename_i h'''
+      · simp [Hom.toOrderHom] at h'''
+        simp [h''', h'''.not_le] at H H'
+        have : ¬(g'.toOrderHom e ≤ b.succ) := by
+          simp
+          have := h'''
+          simp [Hom.toOrderHom]
+          have : (b : Fin (n + 1)).succ.castSucc = b.succ := by
+            simp [Fin.castSucc, Fin.succ]
+            sorry
+          sorry
+
+        sorry
+      · simp at h'''
+        simp [Hom.toOrderHom] at h'''
+        simp [h'''.not_lt, h'''] at H H'
+        have : (b : Fin (n + 1)).succ.castSucc = b.succ := by
+          simp [Fin.castSucc, Fin.succ]
+
+          sorry
+
+        sorry
     · simp at h''
       simp [Hom.toOrderHom] at h''
       aesop
   · simp only [len_mk, Nat.reduceAdd, not_lt] at h'
     simp [Hom.toOrderHom] at h'
     simp [Fin.predAbove, h', h'.not_lt] at H H'
-    by_cases a.castSucc < h.toOrderHom e
-    all_goals rename_i h''
-    · simp [Hom.toOrderHom] at h''
-      simp [h'', h''.not_le] at H H'
-      aesop
-    · simp only [len_mk, Nat.reduceAdd, not_lt] at h''
-      simp [Hom.toOrderHom] at h''
-      sorry
+    sorry
 
 /-- `Y(b)` for `0 ≤ b ≤ n`. Goes up to `Y(n)`, the first object in the `τ` filtration. -/
 -- `Y(b) = Y(0) ⊔ [σ00] ⊔ [σ01 ⊔ σ11] ⊔ ... ⊔ [σ0(b-1) ⊔ σ1(b-1) ⊔ ... ⊔ σ(b-1)(b-1)]`
@@ -361,11 +378,13 @@ lemma filtration₃_succ (b : Fin (n + 1)) :
 lemma filtration₃_last : filtration₃ (n.succ) = (⊤ : (Δ[n] ⊗ Δ[2]).Subcomplex) := by
   rw [prodStandardSimplex.subcomplex_eq_top_iff _ rfl]
   intro z hz
+  rw [prodStandardSimplex.objEquiv_non_degenerate_iff] at hz
   dsimp [filtration₃, filtration₁]
   apply Set.mem_union_right
 
+  --#check prodStandardSimplex.objEquiv_non_degenerate_iff
+  --#check standardSimplex.mem_non_degenerate_iff_mono
   -- show that all nondegenerate n+2 simplices are contained in X(n).obj (n + 2). (they are in all the τ's)
-  -- need to understand the nondegen simplices better
   sorry
 
 -- `X(b,a) = X(b) ⊔ ... ⊔ τ a b` for `0 ≤ a ≤ b ≤ n`.
@@ -643,9 +662,9 @@ lemma face_le'' {n} (a b : Fin (n + 1)) (hab : a ≤ b) (j : Fin (n + 2))
       face' a.castSucc (f a b hab) ≤ σ (a.castSucc.pred (Fin.castSucc_ne_zero_iff.mpr ha)) b
         ((Fin.pred_castSucc_lt (Fin.castSucc_ne_zero_iff.mpr ha)).le.trans hab) := by
   rw [face_eq a b hab j hj h ha]
-  simp [face', σ]
-  rw [standardSimplex.face_singleton_compl, image_ofSimplex, ofSimplex_le_iff]
-  rw [prodStandardSimplex.mem_ofSimplex_iff]
+  dsimp [face', σ]
+  rw [standardSimplex.face_singleton_compl, image_ofSimplex, ofSimplex_le_iff,
+    prodStandardSimplex.mem_ofSimplex_iff]
   intro e
   aesop
 
@@ -714,19 +733,28 @@ lemma hornProdSubcomplex_le₂' {n} (b : Fin n) (a : Fin b.succ.1) (h' : a.1 ≠
         (face_le ⟨a, lt_of_le_of_lt a.is_le (Nat.lt_add_right 1 b.2)⟩
           ⟨b.1, Nat.lt_add_right 1 b.isLt⟩ _ j hj h))
 
-noncomputable
-instance : DistribLattice ((Δ[n] ⊗ Δ[2]).Subcomplex) where
-  le_sup_inf S T R := by
-    sorry
+open Subcomplex in
+lemma blah {n} (a b : Fin (n + 1)) (hab : a ≤ b) (ha : ¬a = 0) :
+      (σ a b hab) ⊓ (σ (a.pred ha) b (sorry)) ≤ sorry := by
 
-noncomputable
-instance : Order.Frame ((Δ[n] ⊗ Δ[2]).Subcomplex) where
-  himp := sorry
-  le_himp_iff := sorry
-  compl := sorry
-  himp_bot := sorry
-  inf_sSup_le_iSup_inf := sorry
+  /-
+  simp [σ, f]
+  change Subcomplex.range (f _ _ _) ⊓ Subcomplex.range (f _ _ _) = _
+  rw [range_eq_ofSimplex, range_eq_ofSimplex]
+  apply le_antisymm _ sorry
+  intro ⟨k⟩ h ⟨h₁, h₂⟩
+  change (Δ[n] ⊗ Δ[2]).obj (Opposite.op [k.len]) at h
+  change h ∈ (ofSimplex (((Δ[n] ⊗ Δ[2]).yonedaEquiv [n + 1]) (f a b hab))).obj (Opposite.op [k.len]) at h₁
+  change h ∈ (ofSimplex (((Δ[n] ⊗ Δ[2]).yonedaEquiv [n + 1]) (f _ _ _))).obj (Opposite.op [k.len]) at h₂
+  rw [prodStandardSimplex.mem_ofSimplex_iff] at h₁ h₂
+  rcases h with ⟨p, q⟩
+  simp [prodStandardSimplex.objEquiv, f, standardSimplex.objEquiv, Equiv.ulift,
+    standardSimplex.objMk, f₂, f₂'] at h₁ h₂
+  simp [SimplexCategory.Hom.toOrderHom] at h₁ h₂
+  -/
+  sorry
 
+open Subcomplex in
 def mySq {n} (b : Fin n) (a : Fin b.1) :
     Subcomplex.Sq
       (hornProdSubcomplex
@@ -742,24 +770,32 @@ def mySq {n} (b : Fin n) (a : Fin b.1) :
   min_eq := by
     apply eq_of_le_of_le
     · dsimp [filtration₂]
-      rw [inf_sup_left]
+      rw [Subpresheaf.min_max]
       simp
       refine ⟨?_, ?_⟩
       · dsimp [filtration₁]
-        rw [inf_sup_left]
+        rw [Subpresheaf.min_max]
         simp
         refine ⟨?_, ?_⟩
         · dsimp [Subcomplex.unionProd]
-          rw [inf_sup_left]
+          rw [Subpresheaf.min_max]
           simp
           refine ⟨?_, ?_⟩
-          ·
+          · rw [σeq]
+            intro k
+            change (Set.range fun x_1 ↦
+              ((SSet.uliftFunctor.obj (yoneda _[n])).map _ _, (SSet.uliftFunctor.obj (yoneda _[2])).map _ _)) ∩ _ ⊆ _
+            simp [ChosenFiniteProducts.product, SSet.uliftFunctor, CategoryStruct.comp,
+              OrderHom.comp, SimplexCategory.Hom.mk, SimplexCategory.Hom.toOrderHom]
+            intro ⟨x, y⟩
+            simp
+            intro p h₁ h₂
+            --rw [Subcomplex.ofSimplexProd_eq_range]
+            --rw [Subcomplex.range_prod]
             sorry
           · sorry
-        · rw [inf_iSup₂_eq]
+        · --rw [inf_iSup₂_eq]
           sorry
-      --rw [inf_iSup_eq]
-
       · sorry
     · apply le_inf
       · refine le_of_eq_of_le' ?_ (hornProdSubcomplex_le₁ _ _ _)
