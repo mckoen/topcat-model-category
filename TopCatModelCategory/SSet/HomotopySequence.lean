@@ -81,8 +81,7 @@ lemma exists_deltaStruct [Fibration p] (s : B.PtSimplex (n + 1) b) (i : Fin (n +
     ∃ (t : PtSimplex _ n (basePoint p he)),
           Nonempty (DeltaStruct s t i) := by
   have sq : CommSq (const e) (horn (n + 1) i).ι p s.map := ⟨by
-    have := Subcomplex.homOfLE (horn_le_boundary i) ≫=
-      s.comm
+    have := Subcomplex.homOfLE (horn_le_boundary i) ≫= s.comm
     simp only [Subcomplex.homOfLE_ι_assoc, Subcomplex.ofSimplex_ι] at this
     rw [this, const_comp, comp_const, comp_const, he]⟩
   refine ⟨⟨Subcomplex.lift
