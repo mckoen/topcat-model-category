@@ -4,6 +4,7 @@ import TopCatModelCategory.AlephZero
 import TopCatModelCategory.JoyalTrickDual
 import TopCatModelCategory.Factorization
 import TopCatModelCategory.ModelCategoryCopy
+import TopCatModelCategory.CellComplex
 
 open CategoryTheory Limits MorphismProperty
 
@@ -105,16 +106,10 @@ attribute [local instance] Cardinal.aleph0_isRegular
   Cardinal.orderbot_aleph0_ord_to_type
 
 lemma preservesColimit (X : π.Cat) (hX : X ∈ π.S) {A B : T} (f : A ⟶ B)
-    (hf : RelativeCellComplex
+    (hf : RelativeCellComplex.{w}
       (fun (_ : Cardinal.aleph0.{w}.ord.toType) ↦ (π.I ⊔ π.J).homFamily) f) :
     PreservesColimit hf.F (coyoneda.obj (Opposite.op X)) := by
-  let hf' : RelativeCellComplex.{w}
-      (fun (_ : ℕ) ↦ (π.I ⊔ π.J).homFamily) f :=
-    { toTransfiniteCompositionOfShape :=
-        hf.toTransfiniteCompositionOfShape.ofOrderIso
-          Cardinal.aleph0OrdToTypeOrderIso.{w}.symm
-      attachCells j hj := by
-        sorry }
+  let hf' := hf.ofOrderIso Cardinal.aleph0OrdToTypeOrderIso.{w}.symm
   have := π.preservesColimit' X hX f hf'
   let e := Cardinal.aleph0OrdToTypeOrderIso.{w}.equivalence
   have : hf.F ≅ e.functor ⋙ hf'.F :=
