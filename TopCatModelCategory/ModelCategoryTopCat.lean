@@ -21,8 +21,6 @@ def packageTopCat : TopPackage.{0} TopCat.{0} where
   infiniteCompositions_le_W' := sorry
   hasTwoOutOfThreeProperty := sorry
   isStableUnderRetracts := sorry
-  isSmall_I' := sorry
-  isSmall_J' := sorry
 
 end HomotopicalAlgebra
 
@@ -40,8 +38,10 @@ lemma weakEquivalence_iff_of_fibration {X Y : TopCat.{0}} (f : X ⟶ Y) [Fibrati
 
 open SSet
 
-instance {X Y : TopCat.{0}} (f : X ⟶ Y) [Fibration f] [WeakEquivalence f] :
-    HasLiftingProperty (toTop.map (boundary n).ι) f := sorry
+instance (n : ℕ) : Cofibration (toTop.map (boundary n).ι) := by
+  rw [HomotopicalAlgebra.cofibration_iff]
+  apply MorphismProperty.le_llp_rlp
+  constructor
 
 end ModelCategory
 
