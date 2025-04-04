@@ -1,3 +1,4 @@
+import TopCatModelCategory.AlephZero
 import TopCatModelCategory.AttachCells
 import TopCatModelCategory.CWComplex
 import TopCatModelCategory.CatCommSq

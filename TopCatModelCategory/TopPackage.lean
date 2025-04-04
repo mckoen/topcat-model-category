@@ -39,7 +39,7 @@ structure TopPackage where
   infiniteCompositions_le_W' :
     (coproducts.{w} J').pushouts.transfiniteCompositionsOfShape ℕ ≤ W
   preservesColimit' (X : T) (hX : X ∈ S') {A B : T} (f : A ⟶ B)
-    (hf : RelativeCellComplex.{0} (fun (_ : ℕ) ↦ (I' ⊔ J').homFamily) f) :
+    (hf : RelativeCellComplex.{w} (fun (_ : ℕ) ↦ (I' ⊔ J').homFamily) f) :
     PreservesColimit hf.F (coyoneda.obj (Opposite.op X))
 
 namespace TopPackage
@@ -108,7 +108,19 @@ lemma preservesColimit (X : π.Cat) (hX : X ∈ π.S) {A B : T} (f : A ⟶ B)
     (hf : RelativeCellComplex
       (fun (_ : Cardinal.aleph0.{w}.ord.toType) ↦ (π.I ⊔ π.J).homFamily) f) :
     PreservesColimit hf.F (coyoneda.obj (Opposite.op X)) := by
-  sorry
+  let hf' : RelativeCellComplex.{w}
+      (fun (_ : ℕ) ↦ (π.I ⊔ π.J).homFamily) f :=
+    { toTransfiniteCompositionOfShape :=
+        hf.toTransfiniteCompositionOfShape.ofOrderIso
+          Cardinal.aleph0OrdToTypeOrderIso.{w}.symm
+      attachCells j hj := by
+        sorry }
+  have := π.preservesColimit' X hX f hf'
+  let e := Cardinal.aleph0OrdToTypeOrderIso.{w}.equivalence
+  have : hf.F ≅ e.functor ⋙ hf'.F :=
+    (Functor.leftUnitor _).symm ≪≫ isoWhiskerRight e.unitIso hf.F ≪≫
+      Functor.associator _ _ _
+  apply preservesColimit_of_iso_diagram _ this.symm
 
 instance isCardinalForSmallObjectArgument_I :
     π.I.IsCardinalForSmallObjectArgument Cardinal.aleph0.{w} where
