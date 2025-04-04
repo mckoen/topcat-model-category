@@ -101,9 +101,7 @@ instance : HasFunctorialFactorization (trivialCofibrations SSet) (fibrations SSe
   rw [trivialCofibrations, le_inf_iff,
     llp_rlp_of_isCardinalForSmallObjectArgument _ .aleph0]
   constructor
-  · rw [cofibrations_eq]
-    refine le_trans (retracts_monotone ?_) (retracts_le _)
-    sorry -- use monotonicity
+  · simpa [cofibrations_eq] using J_le_monomorphisms
   · sorry -- J is mapped by the realization functor to trivial cofibrations in `TopCat`
 
 -- the topological realization of a fibration of simplicial sets is a Serre fibration

@@ -1,6 +1,6 @@
 import Mathlib.CategoryTheory.SmallObject.Basic
 import Mathlib.AlgebraicTopology.ModelCategory.Basic
---import Mathlib.AlgebraicTopology.ModelCategory.JoyalTrick
+import TopCatModelCategory.AlephZero
 import TopCatModelCategory.JoyalTrickDual
 import TopCatModelCategory.Factorization
 import TopCatModelCategory.ModelCategoryCopy
@@ -113,14 +113,20 @@ lemma preservesColimit (X : π.Cat) (hX : X ∈ π.S) {A B : T} (f : A ⟶ B)
 instance isCardinalForSmallObjectArgument_I :
     π.I.IsCardinalForSmallObjectArgument Cardinal.aleph0.{w} where
   hasIterationOfShape := by infer_instance
-  preservesColimit {X _ A B} _ h f hf := sorry
-  --π.preservesColimit X (π.src_I_le_S _ h) f hf
+  preservesColimit {X _ A B} _ h f hf :=
+    π.preservesColimit X (π.src_I_le_S _ h) f
+        { toTransfiniteCompositionOfShape := hf.toTransfiniteCompositionOfShape
+          attachCells j hj := (hf.attachCells j hj).reindexCellTypes _
+              (fun ⟨x, hx⟩ ↦ ⟨x, Or.inl hx⟩) (fun _ ↦ Iso.refl _) }
 
 instance isCardinalForSmallObjectArgument_J :
     π.J.IsCardinalForSmallObjectArgument Cardinal.aleph0.{w} where
   hasIterationOfShape := by infer_instance
-  preservesColimit {X _ A B} _ h f hf := sorry
-  --π.preservesColimit X (π.src_J_le_S _ h) f hf
+  preservesColimit {X _ A B} _ h f hf :=
+    π.preservesColimit X (π.src_J_le_S _ h) f
+        { toTransfiniteCompositionOfShape := hf.toTransfiniteCompositionOfShape
+          attachCells j hj := (hf.attachCells j hj).reindexCellTypes _
+              (fun ⟨x, hx⟩ ↦ ⟨x, Or.inr hx⟩) (fun _ ↦ Iso.refl _) }
 
 instance : HasSmallObjectArgument.{w} π.I where
   exists_cardinal := ⟨Cardinal.aleph0.{w}, inferInstance, inferInstance, inferInstance⟩
@@ -141,9 +147,9 @@ lemma infiniteCompositions_le_weakEquivalences :
 lemma transfiniteCompositionsOfShape_aleph0_le_weakEquivalences :
     (coproducts.{w} π.J).pushouts.transfiniteCompositionsOfShape
       Cardinal.aleph0.{w}.ord.toType ≤ weakEquivalences π.Cat := by
-  refine le_trans ?_ π.infiniteCompositions_le_weakEquivalences
-  sorry
-  --rw [transfiniteCompositionsOfShape_aleph0]
+  rw [transfiniteCompositionsOfShape_eq_of_orderIso _
+    Cardinal.aleph0OrdToTypeOrderIso.{w}]
+  exact π.infiniteCompositions_le_weakEquivalences
 
 lemma J_rlp_llp_le_weakEquivalences : π.J.rlp.llp ≤ weakEquivalences π.Cat := by
   rw [SmallObject.llp_rlp_of_isCardinalForSmallObjectArgument' π.J Cardinal.aleph0.{w}]
