@@ -90,8 +90,41 @@ noncomputable def Homotopy.of_eq {f g : RelativeMorphism A B φ} [IsFibrant Y]
     (h : f.homotopyClass = g.homotopyClass) : Homotopy f g :=
   ((Equivalence.quot_mk_eq_iff (Homotopy.equivalence A B φ) _ _).1 h).some
 
+@[simps]
+def botEquiv :
+    RelativeMorphism (⊥ : X.Subcomplex) (⊥ : Y.Subcomplex)
+      (botIsInitial.to _) ≃ (X ⟶ Y) where
+  toFun f := f.map
+  invFun f := { map := f }
+  left_inv _ := rfl
+  right_inv _ := rfl
+
 end RelativeMorphism
 
 end Subcomplex
+
+def Homotopy (f g : X ⟶ Y) := (Subcomplex.RelativeMorphism.botEquiv.symm f).Homotopy
+      (Subcomplex.RelativeMorphism.botEquiv.symm g)
+
+namespace Homotopy
+
+variable {f g : X ⟶ Y} (h : Homotopy f g)
+
+@[reassoc (attr := simp)]
+lemma h₀ : ι₀ ≫ h.h = f :=
+  Subcomplex.RelativeMorphism.Homotopy.h₀ h
+
+@[reassoc (attr := simp)]
+lemma h₁ : ι₁ ≫ h.h = g :=
+  Subcomplex.RelativeMorphism.Homotopy.h₁ h
+
+@[simps]
+def mk (h : X ⊗ Δ[1] ⟶ Y) (h₀ : ι₀ ≫ h = f) (h₁ : ι₁ ≫ h = g): Homotopy f g where
+  h := h
+  rel := by
+    ext _ ⟨⟨_, hx⟩, _⟩
+    simp at hx
+
+end Homotopy
 
 end SSet
