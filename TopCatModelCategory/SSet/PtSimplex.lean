@@ -625,9 +625,9 @@ noncomputable def relStruct₀ (h : p.Homotopy q) : RelStruct₀ p q := by
       (KanComplex.FundamentalGroupoid.Edge.mk
         ((stdSimplex.leftUnitor _).inv ≫ h.h) ?_ ?_)).symm
     · dsimp
-      rw [← stdSimplex.ι₀_stdSimplex_zero_assoc, h.h₀, map_eq_const_equiv₀]
+      rw [← ι₀_stdSimplex_zero_assoc, h.h₀, map_eq_const_equiv₀]
     · dsimp
-      rw [← stdSimplex.ι₁_stdSimplex_zero_assoc, h.h₁, map_eq_const_equiv₀]
+      rw [← ι₁_stdSimplex_zero_assoc, h.h₁, map_eq_const_equiv₀]
   have hrel (k : Fin (n + 2)) : stdSimplex.map (SimplexCategory.δ k) ▷ Δ[1] ≫ h.h =
     const x := by
       have := boundary.ι k ▷ _ ≫= h.rel

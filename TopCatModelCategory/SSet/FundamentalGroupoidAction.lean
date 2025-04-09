@@ -20,8 +20,8 @@ structure ActionStruct {X : SSet.{u}} {x₀ x₁ : FundamentalGroupoid X} {n : �
         (const ⟨x₁.pt, Subcomplex.mem_ofSimplex_obj x₁.pt⟩)) where
   map : Δ[n] ⊗ Δ[1] ⟶ X
   whiskerRight_ι_comp_map : (boundary n).ι ▷ Δ[1] ≫ map = snd _ _ ≫ p.map
-  ι₀_map : ι₀ ≫ map = s.map
-  ι₁_map : ι₁ ≫ map = t.map
+  ι₀_map : ι₀ ≫ map = s.map := by aesop_cat
+  ι₁_map : ι₁ ≫ map = t.map := by aesop_cat
 
 namespace action
 
@@ -85,6 +85,12 @@ noncomputable def action (X : SSet.{u}) [IsFibrant X] (n : ℕ) :
   map {x y} p := action.map p
   map_id := sorry
   map_comp := sorry
+
+lemma action.bijective_map (n : ℕ) {X : SSet.{u}} {x y : FundamentalGroupoid X} [IsFibrant X]
+    (p : x ⟶ y) :
+    Function.Bijective (action.map (n := n) p) := by
+  rw [← isIso_iff_bijective]
+  exact inferInstanceAs (IsIso ((action X n).map p))
 
 @[simps]
 def actionMap {X Y : SSet.{u}} [IsFibrant X] [IsFibrant Y] (f : X ⟶ Y) (n : ℕ) :

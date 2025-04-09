@@ -49,6 +49,7 @@ import TopCatModelCategory.SSet.HomotopySequence
 import TopCatModelCategory.SSet.Horn
 import TopCatModelCategory.SSet.IsFiniteCoproducts
 import TopCatModelCategory.SSet.KanComplexW
+import TopCatModelCategory.SSet.KanComplexWHomotopy
 import TopCatModelCategory.SSet.MinimalFibrations
 import TopCatModelCategory.SSet.MonoCoprod
 import TopCatModelCategory.SSet.Monoidal

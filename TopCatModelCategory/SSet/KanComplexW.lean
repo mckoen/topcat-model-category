@@ -1,4 +1,3 @@
-import TopCatModelCategory.SSet.Homotopy
 import TopCatModelCategory.SSet.FundamentalGroupoidAction
 
 universe u

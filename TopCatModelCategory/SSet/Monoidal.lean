@@ -85,13 +85,13 @@ lemma leftUnitor_inv_map_δ_one :
       ι₀ ≫ (β_ _ _).hom := rfl
 
 @[reassoc]
-lemma ι₀_stdSimplex_zero :
+lemma _root_.SSet.ι₀_stdSimplex_zero :
     ι₀ = stdSimplex.map (SimplexCategory.δ 1) ≫ (stdSimplex.leftUnitor Δ[1]).inv := by
   ext : 1
   all_goals exact yonedaEquiv.injective (by ext i; fin_cases i; rfl)
 
 @[reassoc]
-lemma ι₁_stdSimplex_zero :
+lemma _root_.SSet.ι₁_stdSimplex_zero :
     ι₁ = stdSimplex.map (SimplexCategory.δ 0) ≫ (stdSimplex.leftUnitor Δ[1]).inv := by
   ext : 1
   all_goals exact yonedaEquiv.injective (by ext i; fin_cases i; rfl)
