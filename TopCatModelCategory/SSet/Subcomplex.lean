@@ -608,6 +608,14 @@ lemma preimage_image_of_isIso {X Y : SSet.{u}} (f : X ⟶ Y) (B : Y.Subcomplex) 
   · intro n y hy
     exact ⟨(inv f).app _ y, by simpa [← FunctorToTypes.comp]⟩
 
+@[simp]
+lemma image_preimage_of_isIso {X Y : SSet.{u}} (f : X ⟶ Y) (A : X.Subcomplex) [IsIso f] :
+    (A.image f).preimage f = A := by
+  rw [preimage_eq_iff]
+  apply le_antisymm
+  · exact inf_le_left
+  · apply le_inf le_rfl (image_le_range A f)
+
 end
 
 section

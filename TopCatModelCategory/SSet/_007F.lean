@@ -48,34 +48,29 @@ def f₂ {n} (a b : Fin (n + 1)) (hab : a ≤ b) : Fin (n + 2) →o Fin 3 where
         simp [h, h', p, q]
 
 /-- `[n + 2] → [2]`. -/
-abbrev g₂ {n} (a b : Fin (n + 2)) (hab : a ≤ b) : Fin (n + 3) →o Fin 3 := f₂ a b (by simp [hab])
+abbrev g₂ {n} (a b : Fin (n + 2)) (hab : a ≤ b) : Fin (n + 3) →o Fin 3 := f₂ a b hab
 
 open stdSimplex
 
 open SimplexCategory in
 noncomputable
 def f {n} (a b : Fin (n + 1)) (hab : a ≤ b) : Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2] :=
-  ((Δ[n] ⊗ Δ[2]).yonedaEquiv).symm ⟨⟨σ a⟩, objMk (f₂ a b hab)⟩
+  SSet.yonedaEquiv.symm (⟨σ a⟩, objMk (f₂ a b hab))
 
 open SimplexCategory in
 noncomputable
 def g {n} (a b : Fin (n + 2)) (hab : a ≤ b) : Δ[n + 2] ⟶ Δ[n] ⊗ Δ[2] :=
-  ((Δ[n] ⊗ Δ[2]).yonedaEquiv).symm ⟨objMk (g₁ a b), objMk (g₂ a b hab)⟩
+  SSet.yonedaEquiv.symm (objMk (g₁ a b), objMk (g₂ a b hab))
 
 open Subcomplex in
 noncomputable
 def σ {n} (a b : Fin (n + 1)) (hab : a ≤ b) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
-  ofSimplex <| (Δ[n] ⊗ Δ[2]).yonedaEquiv (f a b hab)
-
-open Subpresheaf in
-lemma σeq {n} (a b : Fin (n + 1)) (hab : a ≤ b) : σ a b hab = Subpresheaf.range (f a b hab) := by
-  dsimp [σ]
-  rw [← Subcomplex.range_eq_ofSimplex]
+  range (f a b hab)
 
 open Subcomplex in
 noncomputable
 def τ {n} (a b : Fin (n + 2)) (hab : a ≤ b) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
-  ofSimplex <| (Δ[n] ⊗ Δ[2]).yonedaEquiv (g a b hab)
+  range (g a b hab)
 
 open SimplexCategory in
 instance (a b : Fin (n + 1)) (hab : a ≤ b) : Mono (f a b hab) := by
@@ -180,9 +175,8 @@ instance (a b : Fin (n + 2)) (hab : a ≤ b) : Mono (g a b hab) := by
     simp [Fin.predAbove, h', h'.not_lt] at H H'
     sorry
 
-/-- `Y(b)` for `0 ≤ b ≤ n`. Goes up to `Y(n)`, the first object in the `τ` filtration. -/
--- `Y(b) = Y(0) ⊔ [σ00] ⊔ [σ01 ⊔ σ11] ⊔ ... ⊔ [σ0(b-1) ⊔ σ1(b-1) ⊔ ... ⊔ σ(b-1)(b-1)]`
--- ``Y(n) = Y(0) ⊔ [σ00] ⊔ [σ01 ⊔ σ11] ⊔ ... ⊔ [σ0(n-1) ⊔ σ1(n-1) ⊔ ... ⊔ σ(n-1)(n-1)]`
+/-- `X(b)` for `0 ≤ b ≤ n`. Goes up to `X(n)`, the first object in the `τ` filtration.
+`X(b) = X(0) ⊔ [σ00] ⊔ [σ01 ⊔ σ11] ⊔ ... ⊔ [σ0(b-1) ⊔ σ1(b-1) ⊔ ... ⊔ σ(b-1)(b-1)]` -/
 noncomputable
 def filtration₁ {n} (b : Fin (n + 1)) :
     (Δ[n] ⊗ Δ[2]).Subcomplex :=
@@ -196,50 +190,36 @@ lemma filtration₁_zero :
       (Subcomplex.unionProd (boundary n) (horn 2 1)) := by
   simp [filtration₁]
 
-/-- `Y(b) ↪ Y(b + 1)` for `b < n` is just the union of `Y(b.castSucc)` with `[σ0b ⊔ ... ⊔ σbb]` -/
--- `Y(n - 1) ↪ Y(n)` is just the union of `Y(n - 1)` with `[σ0(n - 1) ⊔ ... ⊔ σ(n - 1)(n - 1)]`
+/-- `X(b) ↪ X(b + 1)` for `b < n` is just the union of `X(b.castSucc)` with `[σ0b ⊔ ... ⊔ σbb]` -/
+-- `X(n - 1) ↪ X(n)` is just the union of `X(n - 1)` with `[σ0(n - 1) ⊔ ... ⊔ σ(n - 1)(n - 1)]`
 lemma filtration₁_succ (b : Fin n) :
     filtration₁ b.succ =
       filtration₁ b.castSucc ⊔ -- 0 ≤ i ≤ b, ⨆ σib
-        (⨆ (i : Fin b.succ.1), σ ⟨i, i.2.trans b.succ.2⟩ b.castSucc (Fin.le_castSucc_iff.mpr i.2)) := by
-    simp [filtration₁]
-    apply le_antisymm
-    · apply sup_le
-      · apply le_sup_of_le_left <| le_sup_of_le_left le_rfl
-      · apply iSup₂_le
-        intro i k
-        by_cases i.1 < b; all_goals rename_i h
-        · apply le_sup_of_le_left
-          apply le_sup_of_le_right
-          apply le_iSup₂_of_le ⟨i, h⟩ k
-          rfl
-        · have : i.1 = b := by
-            rw [not_lt] at h
-            refine le_antisymm (Fin.is_le i) h
-          apply le_sup_of_le_right
-          apply le_iSup_of_le ⟨k, by simp [← this]⟩
-          simp [this]
-          rfl
-    · apply sup_le
-      · apply sup_le
-        · simp only [le_sup_left]
-        · apply le_sup_of_le_right
-          apply iSup₂_le
-          intro i k
-          apply le_iSup₂_of_le ⟨i, Nat.lt_add_right 1 i.2⟩ k
-          rfl
-      · apply le_sup_of_le_right
-        apply iSup_le
-        intro i
-        apply le_iSup₂_of_le ⟨b, by simp⟩ i
+        (⨆ (i : Fin b.succ.1), σ ⟨i, by omega⟩ b.castSucc (Fin.le_castSucc_iff.mpr i.2)) := by
+  simp [filtration₁]
+  apply le_antisymm
+  · apply sup_le
+    · apply le_sup_of_le_left (le_sup_of_le_left le_rfl)
+    · apply iSup₂_le
+      intro i k
+      by_cases i.1 < b; all_goals rename_i h
+      · exact le_sup_of_le_left (le_sup_of_le_right (le_iSup₂_of_le ⟨i, h⟩ k le_rfl))
+      · have : i.1 = b := by
+          rw [not_lt] at h
+          refine le_antisymm (Fin.is_le i) h
+        apply le_sup_of_le_right
+        apply le_iSup_of_le ⟨k, by simp [← this]⟩
+        simp [this]
         rfl
+  · apply sup_le
+    · apply sup_le le_sup_left
+      · exact le_sup_of_le_right
+          (iSup₂_le fun i k ↦ le_iSup₂_of_le ⟨i, Nat.lt_add_right 1 i.isLt⟩ k le_rfl)
+    · refine le_sup_of_le_right (iSup_le fun i ↦ le_iSup₂_of_le ⟨b, by simp⟩ i le_rfl)
 
--- `Y(b,a) = Y(b) ⊔ ... ⊔ σ (a - 1) b` for `0 ≤ a ≤ b < n`, if k : Fin a.1
-
--- `Y(b,a) = Y(b) ⊔ ... ⊔ σ a b` for `0 ≤ a ≤ b < n`. if k : Fin.a.succ.1
--- `Y(b,a + 1) = Y(b) ⊔ ... ⊔ σ (a + 1) b`
--- `Y(b,b) = Y(b) ⊔ σ0b ... ⊔ σbb`
--- `Y(n - 1, n - 1) = Y(n - 1) ⊔ σ0(n - 1) ... ⊔ σ(n - 1)(n - 1) = Y(n)`
+-- `X(b,a) = X(b) ⊔ ... ⊔ σ a b` for `0 ≤ a ≤ b < n`. if k : Fin a.succ.1
+-- `X(b,b) = X(b) ⊔ σ0b ... ⊔ σbb = X(b + 1)`
+-- `X(n - 1, n - 1) = X(n - 1) ⊔ σ0(n - 1) ... ⊔ σ(n - 1)(n - 1) = X(n)`
 noncomputable
 def filtration₂ {n} (b : Fin n) (a : Fin b.succ.1) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
   (filtration₁ b) ⊔ (⨆ (k : Fin a.succ.1), σ k b (by
@@ -250,33 +230,27 @@ def filtration₂ {n} (b : Fin n) (a : Fin b.succ.1) : (Δ[n] ⊗ Δ[2]).Subcomp
     refine (Fin.natCast_le_natCast ?_ ?_).mpr ?_
     all_goals linarith))
 
--- `Y(b,0) = Y(b) ∪ (σ0b)` for `0 ≤ b < n`
--- if we adjust defn above then Y(b,0) = Y(b). not sure which is better
+-- `X(b,0) = X(b) ∪ (σ 0 b)` for `0 ≤ b < n`
 lemma filtration₂_zero (b : Fin n) :
     filtration₂ b ⟨0, Nat.zero_lt_succ b⟩ = filtration₁ b ⊔ (σ 0 b (Fin.zero_le _)) := by
   simp [filtration₂]
   rfl
 
--- `Y(b,b) = Y(b) ⊔ σ0b ... ⊔ σbb`
--- `Y(b,b) = Y(b + 1)` for `0 ≤ b < n`
--- `Y(0, 0) = Y(0) ⊔ σ00 = Y(1)`
--- `Y(n - 1, n - 1) = Y(n)`
+-- `X(b,b) = X(b + 1)` for `0 ≤ b < n`
+-- `X(0, 0) = X(0) ⊔ σ00 = X(1)`
+-- `X(n - 1, n - 1) = X(n)`
 lemma filtration₂_last (b : Fin n) :
     filtration₂ b ⟨b, Nat.lt_add_one b⟩ = filtration₁ b.succ := by
   simp [filtration₂]
   rw [filtration₁_succ]
   apply le_antisymm
-  · apply sup_le (le_sup_of_le_left le_rfl)
-    apply le_sup_of_le_right
-    apply iSup_le
-    intro i
-    apply le_iSup_of_le i
+  · refine sup_le (le_sup_of_le_left le_rfl) (le_sup_of_le_right (iSup_le fun i ↦ ?_))
     have : (i : Fin (n + 1)) = ⟨i, LT.lt.trans i.isLt b.succ.isLt⟩ := by
       refine Fin.eq_mk_iff_val_eq.mpr ?_
       simp only [Fin.val_natCast, Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one]
       refine i.2.trans (Nat.add_lt_add_right b.2 1)
     simp_rw [this]
-    rfl
+    exact le_iSup_iff.mpr fun b_1 a ↦ a i
   · refine sup_le (le_sup_of_le_left le_rfl) (le_sup_of_le_right (iSup_le fun i ↦ ?_))
     apply le_iSup_of_le i
     have : (i : Fin (n + 1)) = ⟨i, LT.lt.trans i.isLt b.succ.isLt⟩ := by
@@ -290,43 +264,27 @@ lemma filtration₂_last (b : Fin n) :
 -- e.g. `Y(n - 1) ↪ Y(n)` factors as `Y(n - 1) ↪ Y(n - 1,0) ↪ Y(n - 1,1) ↪ ... ↪ Y(n - 1,n - 1) = Y(n)`
 
 -- `0 ≤ a ≤ b < n`
--- `Y(b,a) = Y(b) ⊔ ... ⊔ σab`
--- `Y(b,a + 1) = Y(b) ⊔ ... ⊔ σ(a + 1)b`
-/-- `Y(b,a) ↪ Y(b, a + 1)` for `a < b ≤ n` is just the union of `Y(b,a)` with `σ(a + 1)b`. -/
+-- `X(b,a) = X(b) ⊔ ... ⊔ σab`
+-- `X(b,a + 1) = X(b) ⊔ ... ⊔ σ(a + 1)b`
+/-- `X(b,a) ↪ X(b, a + 1)` for `a < b ≤ n` is just the union of `X(b,a)` with `σ(a + 1)b`. -/
 lemma filtration₂_succ (b : Fin n) (a : Fin b.1) :
     filtration₂ b a.succ = (filtration₂ b a.castSucc) ⊔
       (σ a.succ b (Fin.natCast_mono b.2.le (Fin.is_le a.succ))) := by
-  simp [filtration₂]
+  dsimp [filtration₂]
   apply le_antisymm
-  · apply sup_le (le_sup_of_le_left le_sup_left)
-    apply iSup_le
-    intro ⟨i, hi⟩
-    dsimp at hi ⊢
-    cases lt_or_eq_of_le (Nat.le_of_lt_succ hi)
-    · rename_i h
-      apply le_sup_of_le_left
-      apply le_sup_of_le_right
-      apply le_iSup_of_le ⟨i, h⟩
-      rfl
-    · rename_i h
-      simp_rw [h]
-      apply le_sup_of_le_right
-      rfl
+  · refine sup_le (le_sup_of_le_left le_sup_left) (iSup_le fun ⟨i, hi⟩ ↦ ?_)
+    cases lt_or_eq_of_le (Nat.le_of_lt_succ hi); all_goals rename_i h
+    · exact le_sup_of_le_left (le_sup_of_le_right (le_iSup_of_le ⟨i, h⟩ (le_rfl)))
+    · subst h
+      exact le_sup_of_le_right le_rfl
   · apply sup_le
-    · apply sup_le le_sup_left
-      apply le_sup_of_le_right
-      apply iSup_le
-      intro i
-      apply le_iSup_of_le ⟨i, Nat.lt_add_right 1 i.2⟩
-      rfl
-    · apply le_sup_of_le_right
-      apply le_iSup_of_le ⟨a + 1, lt_add_one _⟩
-      rfl
+    · exact sup_le le_sup_left
+        (le_sup_of_le_right (iSup_le (fun i ↦ le_iSup_of_le ⟨i, by omega⟩ le_rfl)))
+    · exact le_sup_of_le_right (le_iSup_of_le ⟨a + 1, lt_add_one _⟩ le_rfl)
 
-/-- `X(b)` for `0 ≤ b ≤ n + 1`. Goes up to `X(n + 1)`. -/
--- `X(b) = Y(n) ⊔ [τ00] ⊔ [τ01 ⊔ τ11] ⊔ ... ⊔ [τ0(b-1) ⊔ τ1(b-1) ⊔ ... ⊔ τ(b-1)(b-1)]`
--- `X(n) = Y(n) ⊔ [τ00] ⊔ [τ01 ⊔ τ11] ⊔ ... ⊔ [τ0(n-1) ⊔ τ1(n-1) ⊔ ... ⊔ τ(n-1)(n-1)]`
--- `X(n + 1) = X(n) ⊔ [τ0n ⊔ τ1n ⊔ ... ⊔ τnn]`
+/-- `Y(b)` for `0 ≤ b ≤ n + 1`. Goes up to `Y(n + 1)`. -/
+-- `Y(b) = X(n) ⊔ [τ00] ⊔ [τ01 ⊔ τ11] ⊔ ... ⊔ [τ0(b-1) ⊔ τ1(b-1) ⊔ ... ⊔ τ(b-1)(b-1)]`
+-- `Y(n + 1) = Y(n) ⊔ [τ0n ⊔ τ1n ⊔ ... ⊔ τnn]`
 noncomputable
 def filtration₃ {n} (b : Fin (n + 2)) :
     (Δ[n] ⊗ Δ[2]).Subcomplex :=
@@ -339,44 +297,29 @@ lemma filtration₃_zero :
     filtration₃ (0 : Fin (n + 2)) = filtration₁ n := by
   simp [filtration₃]
 
-/-- `X(b) ↪ X(b + 1)` for `b ≤ n` is just the union of `X(b.castSucc)` with `[τ0b ⊔ ... ⊔ τbb]` -/
--- `X(n) ↪ X(n + 1)` is just the union of `X(n)` with `[τ0n ⊔ ... ⊔ τnn]`
+/-- `Y(b) ↪ Y(b + 1)` for `b < n + 1` is just the union of `Y(b.castSucc)` with `[τ0b ⊔ ... ⊔ τbb]` -/
+-- `Y(n) ↪ Y(n + 1)` is just the union of `Y(n)` with `[τ0n ⊔ ... ⊔ τnn]`
 lemma filtration₃_succ (b : Fin (n + 1)) :
     filtration₃ b.succ =
       filtration₃ b.castSucc ⊔ -- 0 ≤ i ≤ b, ⨆ σib
         (⨆ (i : Fin b.succ.1), τ ⟨i, i.2.trans b.succ.2⟩ b.castSucc (Fin.le_castSucc_iff.mpr i.2)) := by
-    simp [filtration₁]
+    dsimp [filtration₁]
     apply le_antisymm
-    · apply sup_le
-      · apply le_sup_of_le_left <| le_sup_of_le_left le_rfl
-      · apply iSup₂_le
-        intro i k
+    · apply sup_le (le_sup_of_le_left (le_sup_of_le_left le_rfl))
+      · apply iSup₂_le (fun i k ↦ ?_)
         by_cases i.1 < b; all_goals rename_i h
-        · apply le_sup_of_le_left
-          apply le_sup_of_le_right
-          apply le_iSup₂_of_le ⟨i, h⟩ k
-          rfl
+        · exact le_sup_of_le_left (le_sup_of_le_right (le_iSup₂_of_le ⟨i, h⟩ k le_rfl))
         · have : i.1 = b := by
             rw [not_lt] at h
             refine le_antisymm (Fin.is_le i) h
-          apply le_sup_of_le_right
-          apply le_iSup_of_le ⟨k, by simp [← this]⟩
+          refine le_sup_of_le_right (le_iSup_of_le ⟨k, by simp [← this]⟩ ?_)
           simp [this]
           rfl
     · apply sup_le
-      · apply sup_le
-        · apply le_sup_of_le_left
-          rfl
-        · apply le_sup_of_le_right
-          apply iSup₂_le
-          intro i k
-          apply le_iSup₂_of_le ⟨i, Nat.lt_add_right 1 i.2⟩ k
-          rfl
-      · apply le_sup_of_le_right
-        apply iSup_le
-        intro i
-        apply le_iSup₂_of_le ⟨b, by simp⟩ i
-        rfl
+      · apply sup_le (le_sup_of_le_left le_rfl)
+        · exact le_sup_of_le_right
+            (iSup₂_le fun i k ↦ le_iSup₂_of_le ⟨i, Nat.lt_add_right 1 i.isLt⟩ k le_rfl)
+      · exact le_sup_of_le_right (iSup_le fun i ↦ le_iSup₂_of_le ⟨b, Nat.lt_add_one b⟩ i le_rfl)
 
 lemma filtration₃_last : filtration₃ (n.succ) = (⊤ : (Δ[n] ⊗ Δ[2]).Subcomplex) := by
   rw [prodStdSimplex.subcomplex_eq_top_iff _ rfl]
@@ -386,10 +329,10 @@ lemma filtration₃_last : filtration₃ (n.succ) = (⊤ : (Δ[n] ⊗ Δ[2]).Sub
   -- show that all nondegenerate n+2 simplices are contained in X(n).obj (n + 2). (they are in all the τ's)
   sorry
 
--- `X(b,a) = X(b) ⊔ ... ⊔ τ a b` for `0 ≤ a ≤ b ≤ n`.
--- `X(b,a + 1) = X(b) ⊔ ... ⊔ τ (a + 1) b`
--- `X(b,b) = X(b) ⊔ τ0b ... ⊔ τbb`
--- `X(n, n) = X(n) ⊔ τ0n ... ⊔ τnn = X(n + 1) = Δ[n] ⊗ Δ[2]`
+-- `Y(b,a) = Y(b) ⊔ ... ⊔ τ a b` for `0 ≤ a ≤ b ≤ n`.
+-- `Y(b,a + 1) = Y(b) ⊔ ... ⊔ τ (a + 1) b`
+-- `Y(b,b) = Y(b) ⊔ τ0b ... ⊔ τbb = Y(b + 1)`
+-- `Y(n, n) = Y(n) ⊔ τ0n ... ⊔ τnn = Y(n + 1) = Δ[n] ⊗ Δ[2]`
 noncomputable
 def filtration₄ {n} (b : Fin (n + 1)) (a : Fin b.succ.1) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
   (filtration₃ b) ⊔ (⨆ (k : Fin a.succ.1), τ k b (by
@@ -406,70 +349,46 @@ lemma filtration₄_zero (b : Fin (n + 1)) :
   simp [filtration₄]
   rfl
 
--- `X(b,b) = X(b) ⊔ τ0b ... ⊔ τbb`
--- `X(b,b) = X(b + 1)` for `0 ≤ b < n`
--- `X(0, 0) = X(0) ⊔ τ00 = X(1)`
--- `X(n, n) = X(n + 1)`
+-- `Y(b,b) = X(b + 1)` for `0 ≤ b < n + 1`
+-- `Y(0, 0) = X(n) ⊔ τ00 = Y(1)`
+-- `Y(n, n) = Y(n + 1)`
 lemma filtration₄_last (b : Fin (n + 1)) :
     filtration₄ b ⟨b, Nat.lt_add_one b⟩ = filtration₃ b.succ := by
   simp [filtration₄]
   rw [filtration₃_succ]
   apply le_antisymm
-  · apply sup_le (le_sup_of_le_left le_rfl)
-    apply le_sup_of_le_right
-    apply iSup_le
-    intro i
-    apply le_iSup_of_le i
+  · refine sup_le (le_sup_of_le_left le_rfl) (le_sup_of_le_right (iSup_le fun i ↦ ?_))
     have : (i : Fin (n + 2)) = ⟨i, LT.lt.trans i.isLt b.succ.isLt⟩ := by
       refine Fin.eq_mk_iff_val_eq.mpr ?_
       simp only [Fin.val_natCast, Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one]
       refine i.2.trans (Nat.add_lt_add_right b.2 1)
     simp_rw [this]
-    rfl
-  · apply sup_le (le_sup_of_le_left le_rfl)
-    apply le_sup_of_le_right
-    apply iSup_le
-    intro i
+    exact le_iSup_iff.mpr fun b_1 a ↦ a i
+  · refine sup_le (le_sup_of_le_left le_rfl) (le_sup_of_le_right (iSup_le fun i ↦ ?_))
     apply le_iSup_of_le i
-    have : (i : Fin (n + 2)) = ⟨i, LT.lt.trans i.isLt b.succ.isLt⟩ := by
+    have : (i : Fin (n + 2)) = ⟨i, i.isLt.trans b.succ.isLt⟩ := by
       refine Fin.eq_mk_iff_val_eq.mpr ?_
       simp only [Fin.val_natCast, Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one]
       refine i.2.trans (Nat.add_lt_add_right b.2 1)
     simp_rw [this]
     rfl
 
--- `X(b,a) = X(b) ⊔ ... ⊔ τab`
--- `X(b,a + 1) = X(b) ⊔ ... ⊔ τ(a + 1)b`
-/-- `X(b,a) ↪ X(b, a + 1)` for `a < b ≤ n + 1` is just the union of `X(b,a)` with `τ(a + 1)b`. -/
-lemma filtration₄_succ (b : Fin n) (a : Fin b.1) :
-    filtration₂ b a.succ = (filtration₂ b a.castSucc) ⊔
-      (σ a.succ b (Fin.natCast_mono b.2.le (Fin.is_le a.succ))) := by
-  simp [filtration₂]
+/-- `Y(b,a) ↪ Y(b, a + 1)` for `a < b ≤ n + 1` is just the union of `Y(b,a)` with `τ(a + 1)b`. -/
+lemma filtration₄_succ (b : Fin (n + 2)) (a : Fin b.1) :
+    filtration₄ b a.succ = (filtration₄ b a.castSucc) ⊔
+      (τ a.succ b (Fin.natCast_mono b.2.le (Fin.is_le a.succ))) := by
+  simp [filtration₄]
   apply le_antisymm
-  · apply sup_le (le_sup_of_le_left le_sup_left)
-    apply iSup_le
-    intro ⟨i, hi⟩
-    dsimp at hi ⊢
-    cases lt_or_eq_of_le (Nat.le_of_lt_succ hi)
-    · rename_i h
-      apply le_sup_of_le_left
-      apply le_sup_of_le_right
-      apply le_iSup_of_le ⟨i, h⟩
-      rfl
-    · rename_i h
+  · refine sup_le (le_sup_of_le_left le_sup_left) (iSup_le fun ⟨i, hi⟩ ↦ ?_)
+    cases lt_or_eq_of_le (Nat.le_of_lt_succ hi); all_goals rename_i h
+    · exact le_sup_of_le_left (le_sup_of_le_right (le_iSup_of_le ⟨i, h⟩ le_rfl))
+    · apply le_sup_of_le_right
       simp_rw [h]
-      apply le_sup_of_le_right
       rfl
   · apply sup_le
-    · apply sup_le le_sup_left
-      apply le_sup_of_le_right
-      apply iSup_le
-      intro i
-      apply le_iSup_of_le ⟨i, Nat.lt_add_right 1 i.2⟩
-      rfl
-    · apply le_sup_of_le_right
-      apply le_iSup_of_le ⟨a + 1, lt_add_one _⟩
-      rfl
+    · exact sup_le le_sup_left
+        (le_sup_of_le_right (iSup_le fun i ↦ le_iSup_of_le ⟨i, Nat.lt_add_right 1 i.2⟩ le_rfl))
+    · exact le_sup_of_le_right (le_iSup_of_le ⟨a + 1, lt_add_one _⟩ le_rfl)
 
 lemma filtration₄_last' : filtration₄ n ⟨n, by simp⟩ = (⊤ : (Δ[n] ⊗ Δ[2]).Subcomplex) := by
   have h₁ := filtration₄_last n n
@@ -477,75 +396,63 @@ lemma filtration₄_last' : filtration₄ n ⟨n, by simp⟩ = (⊤ : (Δ[n] ⊗
   simp at h₁ h₂
   rw [h₁, h₂]
 
--- the image of Λ[n + 1, a + 1] under σab : Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2]
--- (f a b hab).app k <| (subcomplexHorn (n + 1) (a.succ)).obj k
+/-- the image of Λ[n + 1, a + 1] under σab : Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2] -/
+@[simp]
 noncomputable
 def hornProdSubcomplex {n} (a b : Fin (n + 1)) (hab : a ≤ b) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
-  Subcomplex.image (horn (n + 1) a.succ) (f a b hab)
+  (horn (n + 1) a.succ).image (f a b hab)
 
+/-- the image of ∂Δ[n + 1] under σab : Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2] -/
+@[simp]
 noncomputable
 def boundaryProdSubcomplex {n} (a b : Fin (n + 1)) (hab : a ≤ b) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
-  Subcomplex.image (boundary (n + 1)) (f a b hab)
+  (boundary (n + 1)).image (f a b hab)
 
---image of i-th face under some f : Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2]
+/-- image of i-th face under some f : Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2] -/
+@[simp]
 noncomputable
-def SSet.face' {n} (i : Fin (n + 2)) (f : Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2]) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
-  Subcomplex.image (face {i}ᶜ) f
+def face_image {n} (i : Fin (n + 2)) (f : Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2]) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
+  (face {i}ᶜ).image f
 
 -- image of Λ[n + 1, a + 1] under (f a b hab) is the union of the image under f of all faces except
 -- the (a + 1)-th
 lemma hornProdSubcomplex_eq_iSup (a b : Fin (n + 1)) (hab : a ≤ b) :
     hornProdSubcomplex a b hab =
-      ⨆ (j : ({a.succ}ᶜ : Set (Fin (n + 2)))), face' j.1 (f a b hab) := by
-  dsimp [hornProdSubcomplex, face']
+      ⨆ (j : ({a.succ}ᶜ : Set (Fin (n + 2)))), face_image j.1 (f a b hab) := by
+  dsimp [hornProdSubcomplex, face_image]
   rw [horn_eq_iSup]
   aesop
 
 lemma boundaryProdSubcomplex_eq_iSup (a b : Fin (n + 1)) (hab : a ≤ b) :
     boundaryProdSubcomplex a b hab =
-      ⨆ (j : Fin (n + 2)), face' j.1 (f a b hab) := by
-  dsimp [boundaryProdSubcomplex, face']
+      ⨆ (j : Fin (n + 2)), face_image j.1 (f a b hab) := by
+  dsimp [boundaryProdSubcomplex, face_image]
   rw [boundary_eq_iSup]
   aesop
 
--- Λ[n + 1, a + 1] ≤ σab, so Λ[n + 1, a] ≤ σ(a - 1)b
-open Subcomplex in
-lemma hornProdSubcomplex_le₁ {n} (a b : Fin (n + 1)) (hab : a ≤ b) :
+open Subcomplex
+
+lemma hornProdSubcomplex_le_σ {n} (a b : Fin (n + 1)) (hab : a ≤ b) :
     hornProdSubcomplex.{u} a b hab ≤ σ a b hab := by
   rw [hornProdSubcomplex_eq_iSup]
-  dsimp [face', σ]
-  apply iSup_le
-  intro ⟨j, hj⟩
-  rw [face_singleton_compl, image_ofSimplex, ofSimplex_le_iff,
-    prodStdSimplex.mem_ofSimplex_iff]
-  intro i
-  simp [Set.mem_range]
-  intro k h
-  exact ⟨_, h⟩
+  exact iSup_le fun j ↦ image_le_range _ (f a b hab)
 
-open Subcomplex in
 lemma face_le_σ {n} (a b : Fin (n + 1)) (hab : a ≤ b) (j : Fin (n + 2)) :
-      face' j (f a b hab) ≤ σ a b hab := by
-  dsimp [face', σ]
-  rw [face_singleton_compl, image_ofSimplex, ofSimplex_le_iff,
-    prodStdSimplex.mem_ofSimplex_iff]
-  intro e
-  aesop
+    face_image j (f a b hab) ≤ σ a b hab := image_le_range _ (f a b hab)
 
--- each face except the a-th and (a+1)-th is contained in the unionProd
-open Subcomplex in
-lemma face_le {n} (a b : Fin (n + 1)) (hab : a ≤ b) (j : Fin (n + 2))
-    (hj : j ∈ ({a.succ}ᶜ :  Set (Fin (n + 2)))) (h : ¬j = a.castSucc) :
-      face' j (f a b hab) ≤ (boundary n).unionProd (horn 2 1) := by
-  dsimp [Subcomplex.unionProd, face']
-  all_goals rw [face_singleton_compl, image_ofSimplex, ofSimplex_le_iff]
-  right --then check every other face
+/-- each face of σab except the a-th and (a+1)-th is contained in (boundary n).unionProd (horn 2 1) -/
+lemma face_le_boundary_unionProd_horn {n} (a b : Fin (n + 1)) (hab : a ≤ b) (j : Fin (n + 2))
+    (hj : ¬j = a.succ) (hj' : ¬j = a.castSucc) :
+      face_image j (f a b hab) ≤ (boundary n).unionProd (horn 2 1) := by
+  dsimp [Subcomplex.unionProd, face_image]
+  apply le_sup_of_le_right
+  rw [face_singleton_compl, image_ofSimplex, ofSimplex_le_iff]
   refine ⟨?_, by simp only [Subpresheaf.top_obj, Set.top_eq_univ, Set.mem_univ]⟩
-  change ¬Function.Surjective (a.predAbove ∘ j.succAbove)
+  change ¬Function.Surjective (a.predAbove ∘ j.succAbove) --this is the crux of the proof
   intro h'
   have : j < a.castSucc ∨ a.succ < j := by
     cases Fin.lt_or_lt_of_ne hj
-    all_goals cases Fin.lt_or_lt_of_ne h
+    all_goals cases Fin.lt_or_lt_of_ne hj'
     · left; assumption
     · rename_i q q'
       exfalso
@@ -595,14 +502,13 @@ lemma face_le {n} (a b : Fin (n + 1)) (hab : a ≤ b) (j : Fin (n + 2))
       rw [he]
       exact Fin.castSucc_pred_lt (Fin.ne_zero_of_lt hj')
 
--- the 0-th face of σ0b is contained in the unionProd
-open Subcomplex in
-lemma face_le' {n} (b : Fin (n + 1)):
-      face' 0 (f 0 b b.zero_le) ≤ (boundary n).unionProd (horn 2 1) := by
-  dsimp [Subcomplex.unionProd, face']
+/-- the 0-th face of σ0b is contained in the unionProd -/
+lemma zero_face_le {n} (b : Fin (n + 1)):
+      face_image 0 (f 0 b b.zero_le) ≤ (boundary n).unionProd (horn 2 1) := by
+  dsimp [Subcomplex.unionProd, face_image]
+  apply le_sup_of_le_left
   rw [face_singleton_compl, image_ofSimplex, ofSimplex_le_iff]
   simp
-  left
   refine ⟨trivial, ?_⟩
   change Set.range (f₂' 0 b ∘ Fin.succ) ∪ {1} ≠ Set.univ
   intro h'
@@ -613,14 +519,12 @@ lemma face_le' {n} (b : Fin (n + 1)):
   have := he e.succ_ne_zero
   aesop
 
---for a > 0 show a-th face of σab = a-th face of σ(a-1)b
-open Subcomplex in
-lemma face_eq {n} (a b : Fin (n + 1)) (hab : a ≤ b) (j : Fin (n + 2)) (hj : ¬j = a.succ)
-    (h : j = a.castSucc) (ha : ¬a = 0) :
-    face'.{u} a.castSucc (f a b hab) =
-      face'.{u} a.castSucc (f (a.castSucc.pred (Fin.castSucc_ne_zero_iff.mpr ha)) b
+/-- for a > 0 the a-th face of σab is the a-th face of σ(a-1)b -/
+lemma face_eq_face_pred {n} (a b : Fin (n + 1)) (hab : a ≤ b) (ha : ¬a = 0) :
+    face_image.{u} a.castSucc (f a b hab) =
+      face_image.{u} a.castSucc (f (a.castSucc.pred (Fin.castSucc_ne_zero_iff.mpr ha)) b
         (by rw [Fin.pred_le_iff]; exact ((Fin.castSucc_le_castSucc_iff.2 hab).trans (Fin.castSucc_le_succ b)))) := by
-  dsimp [Subcomplex.unionProd, face']
+  dsimp [Subcomplex.unionProd, face_image]
   rw [face_singleton_compl, image_ofSimplex]
   simp
   congr
@@ -674,23 +578,15 @@ lemma face_eq {n} (a b : Fin (n + 1)) (hab : a ≤ b) (j : Fin (n + 2)) (hj : ¬
       Fin.succAboveOrderEmb, OrderHom.comp, objMk]
     aesop
 
--- show a-th face of σab ≤ σ(a-1)b
-open Subcomplex in
-lemma face_le'' {n} (a b : Fin (n + 1)) (hab : a ≤ b) (j : Fin (n + 2))
-    (hj : j ∈ ({a.succ}ᶜ : Set (Fin (n + 2)))) (h : j = a.castSucc) (ha : a ≠ 0) :
-      face' a.castSucc (f a b hab) ≤ σ (a.castSucc.pred (Fin.castSucc_ne_zero_iff.mpr ha)) b
-        ((Fin.pred_castSucc_lt (Fin.castSucc_ne_zero_iff.mpr ha)).le.trans hab) := by
-  rw [face_eq a b hab j hj h ha]
-  dsimp [face', σ]
-  rw [face_singleton_compl, image_ofSimplex, ofSimplex_le_iff,
-    prodStdSimplex.mem_ofSimplex_iff]
-  intro e
-  aesop
+/-- the a-th face of σab is contained in σ(a-1)b -/
+lemma face_le_σ_pred {n} (a b : Fin (n + 1)) (hab : a ≤ b) (ha : a ≠ 0) :
+    face_image a.castSucc (f a b hab) ≤ σ (a.castSucc.pred (Fin.castSucc_ne_zero_iff.mpr ha)) b
+      ((Fin.pred_castSucc_lt (Fin.castSucc_ne_zero_iff.mpr ha)).le.trans hab) := by
+  rw [face_eq_face_pred a b hab ha]
+  exact image_le_range _ _
 
--- 0 ≤ a < b < n
--- Λ[n + 1, (a + 1) + 1] ↪ Y(b,a) = Y(b) ⊔ ... ⊔ σ a b
-open Subcomplex in
-lemma hornProdSubcomplex_le₂ {n} (b : Fin n) (a : Fin b.1) :
+/-- for 0 ≤ a < b < n, Λ[n + 1, (a + 1) + 1] ≤ X(b,a) = X(b) ⊔ ... ⊔ σ a b -/
+lemma hornProdSubcomplex_le_filt {n} (b : Fin n) (a : Fin b.1) :
     hornProdSubcomplex
       ⟨a.succ, lt_of_le_of_lt a.succ.le_val_last (Nat.lt_add_right 1 (by simp [b.2]))⟩
       ⟨b.1, Nat.lt_add_right 1 b.2⟩ (by simpa using a.succ.le_val_last) ≤
@@ -704,12 +600,12 @@ lemma hornProdSubcomplex_le₂ {n} (b : Fin n) (a : Fin b.1) :
     all_goals rename_i ha
     · apply le_sup_of_le_left
       apply le_sup_of_le_left
-      simp only [h, ha, Fin.castSucc_zero, Fin.isValue, face_le']
+      simp only [h, ha, Fin.castSucc_zero, Fin.isValue, zero_face_le]
     · dsimp
       rw [h]
       apply le_sup_of_le_right
       apply le_iSup_of_le <| ⟨a.1, by aesop⟩
-      refine (le_of_eq_of_le') ?_ (face_le'' _ _ _ _ hj h ha)
+      refine (le_of_eq_of_le') ?_ (face_le_σ_pred _ _ _ ha)
       congr
       · ext
         refine Eq.symm (Fin.val_cast_of_lt (a.isLt.trans (Nat.lt_add_right 1 b.2)))
@@ -717,13 +613,11 @@ lemma hornProdSubcomplex_le₂ {n} (b : Fin n) (a : Fin b.1) :
   · exact
     le_sup_of_le_left
       (le_sup_of_le_left
-        (face_le ⟨a.succ, lt_of_le_of_lt a.succ.le_val_last (Nat.lt_add_right 1 (by simp [b.2]))⟩
+        (face_le_boundary_unionProd_horn ⟨a.succ, lt_of_le_of_lt a.succ.le_val_last (Nat.lt_add_right 1 (by simp [b.2]))⟩
           ⟨b.1, Nat.lt_add_right 1 b.isLt⟩ _ j hj h))
 
--- 0 < a ≤ b < n
--- Λ[n + 1, a + 1] ↪ Y(b, a - 1) = Y(b) ⊔ ... ⊔ σ (a - 1) b
-open Subcomplex in
-lemma hornProdSubcomplex_le₂' {n} (b : Fin n) (a : Fin b.succ.1) (h' : a.1 ≠ 0) :
+/-- for 0 < a ≤ b < n, Λ[n + 1, a + 1] ≤ X(b, a - 1) = X(b) ⊔ ... ⊔ σ (a - 1) b -/
+lemma hornProdSubcomplex_le_filt' {n} (b : Fin n) (a : Fin b.succ.1) (h' : a.1 ≠ 0) :
     hornProdSubcomplex
       ⟨a, lt_of_le_of_lt a.is_le (Nat.lt_add_right 1 b.2)⟩ ⟨b.1, Nat.lt_add_right 1 b.2⟩ a.is_le ≤
         filtration₂ b ⟨a.pred (by aesop), (Nat.sub_one_lt h').trans a.isLt⟩ := by
@@ -736,12 +630,12 @@ lemma hornProdSubcomplex_le₂' {n} (b : Fin n) (a : Fin b.succ.1) (h' : a.1 ≠
     all_goals rename_i ha
     · apply le_sup_of_le_left
       apply le_sup_of_le_left
-      simp only [h, ha, Fin.castSucc_zero, Fin.isValue, face_le']
+      simp only [h, ha, Fin.castSucc_zero, Fin.isValue, zero_face_le]
     · dsimp
       rw [h]
       apply le_sup_of_le_right
       apply le_iSup_of_le <| ⟨a.1.pred, by simp⟩
-      refine (le_of_eq_of_le') ?_ (face_le'' _ _ _ _ hj h ha)
+      refine (le_of_eq_of_le') ?_ (face_le_σ_pred _ _ _ ha)
       congr
       · ext
         refine Eq.symm (Fin.val_cast_of_lt <| Nat.sub_one_lt_of_le (Nat.zero_lt_of_ne_zero h') (lt_of_le_of_lt a.is_le (Nat.lt_add_right 1 b.2)).le)
@@ -749,142 +643,111 @@ lemma hornProdSubcomplex_le₂' {n} (b : Fin n) (a : Fin b.succ.1) (h' : a.1 ≠
   · exact
     le_sup_of_le_left
       (le_sup_of_le_left
-        (face_le ⟨a, lt_of_le_of_lt a.is_le (Nat.lt_add_right 1 b.2)⟩
+        (face_le_boundary_unionProd_horn ⟨a, lt_of_le_of_lt a.is_le (Nat.lt_add_right 1 b.2)⟩
           ⟨b.1, Nat.lt_add_right 1 b.isLt⟩ _ j hj h))
 
--- if X ≅ Y, then we have an order isomorphism of the subcomplexes
-open Subcomplex in
-def Subcomplex.orderIso {X Y : SSet} (f : X ≅ Y) : X.Subcomplex ≃o Y.Subcomplex where
-  toFun A := A.image f.hom
-  invFun B := B.image f.inv
-  left_inv A := by aesop
-  right_inv B := by aesop
-  map_rel_iff' := by
-    intro A A'
-    simp
-    constructor
-    · intro h
-      apply_fun (fun A ↦ (Subcomplex.image A f.inv)) at h
-      simp at h
-      convert h
-      · aesop
-      · aesop
-      · refine Monotone.apply₂ ?_ f.inv
-        refine Monotone.of_map_sup ?_
-        aesop
-    · intro h
-      apply_fun (fun A ↦ (Subcomplex.image A f.hom)) at h
-      exact h
-      refine Monotone.apply₂ ?_ f.hom
-      refine Monotone.of_map_sup ?_
-      aesop
+def image_monotone {X Y : SSet} (f : X ⟶ Y) :
+    Monotone (fun (A : Subcomplex X) ↦ A.image f) := by
+  refine Monotone.apply₂ (Monotone.of_map_sup ?_) f
+  intro A B
+  ext
+  aesop
 
-noncomputable
-def Subcomplex.orderIso' {X Y : SSet} (f : X ⟶ Y) [hf : Mono f] :
+def preimage_monotone {X Y : SSet} (f : X ⟶ Y) :
+    Monotone (fun (B : Subcomplex Y) ↦ B.preimage f) := by
+  refine Monotone.apply₂ (Monotone.of_map_sup ?_) f
+  intro A B
+  ext
+  aesop
+
+/-- if X ≅ Y, then we have an order isomorphism of their subcomplexes -/
+@[simps!]
+def subcomplex_orderIso {X Y : SSet} (f : X ⟶ Y) [IsIso f] : X.Subcomplex ≃o Y.Subcomplex where
+  toFun A := A.image f
+  invFun B := B.preimage f
+  left_inv A := image_preimage_of_isIso f A
+  right_inv B := preimage_image_of_isIso f B
+  map_rel_iff' := ⟨fun h ↦ by simpa using preimage_monotone f h, fun h ↦ image_monotone f h⟩
+
+@[simps!]
+def range_orderIso {X Y : SSet} (f : X ⟶ Y) [hf : Mono f] :
     X.Subcomplex ≃o (Subcomplex.range f).toSSet.Subcomplex :=
-  Subcomplex.orderIso (asIso <| toRangeSubcomplex f)
+  subcomplex_orderIso (toRangeSubcomplex f)
 
-/- if f : X ⟶ Y, then we have an order hom from subcomplexes of the range into
+@[simp]
+lemma subcomplex_orderIso.symm_apply_eq' {X Y : SSet} (f : X ⟶ Y) [hf : IsIso f] (A : Subcomplex X) :
+    (subcomplex_orderIso f).symm (A.image f) = A := (OrderIso.symm_apply_eq _).2 rfl
+
+/-- if f : X ⟶ Y, then we have an order hom from subcomplexes of the range into
  subcomplexes of Y -/
-open Subcomplex in
-def Subcomplex.orderHom {X Y : SSet} (f : X ⟶ Y) :
+ @[simps!]
+def subcomplex_orderHom {X Y : SSet} (f : X ⟶ Y) :
     (Subcomplex.range f).toSSet.Subcomplex →o (Y.Subcomplex) where
   toFun A := A.image (Subcomplex.range f).ι
-  monotone' := by
-    intro A A' h
-    dsimp
-    apply_fun (fun A ↦ Subcomplex.image A (range f).ι) at h
-    exact h
-    refine Monotone.apply₂ ?_ (range f).ι
-    refine Monotone.of_map_sup ?_
-    aesop
+  monotone' := image_monotone _
 
-open Subcomplex in
+@[simp]
 lemma aux {X : SSet} (R : X.Subcomplex) (A : R.toSSet.Subcomplex) :
     A.image R.ι ⊓ range R.ι = A.image R.ι := by
   apply le_antisymm
   simp [Subpresheaf.range_ι, inf_le_left]
   apply le_inf (le_rfl) (image_le_range A _)
 
-/- if f : X ⟶ Y is a mono, then we have an order hom from subcomplexes of the range
+/-- if f : X ⟶ Y is a mono, then we have an order embedding from subcomplexes of the range
 into subcomplexes of Y -/
-open Subcomplex in
-def Subcomplex.orderEmbedding {X Y : SSet} (f : X ⟶ Y) [Mono f] :
+@[simps!]
+def subcomplex_orderEmbedding {X Y : SSet} (f : X ⟶ Y) [Mono f] :
     (Subcomplex.range f).toSSet.Subcomplex ↪o (Y.Subcomplex) where
   toFun A := A.image (Subcomplex.range f).ι
   inj' := by
     intro A A' h
     dsimp at h
     apply_fun (fun A ↦ Subcomplex.preimage A (range f).ι) at h
-    rwa [(preimage_eq_iff _ _ _).2 (aux (range f) A), (preimage_eq_iff _ _ _).2 (aux (range f) A')] at h
+    rwa [(preimage_eq_iff _ _ _).2 (aux (range f) A),
+      (preimage_eq_iff _ _ _).2 (aux (range f) A')] at h
   map_rel_iff' := by
-    have : Monotone (fun A ↦ Subcomplex.image A (range f).ι) := by
-      refine Monotone.apply₂ ?_ (range f).ι
-      refine Monotone.of_map_sup ?_
-      aesop
     intro A A'
     dsimp
     constructor
     · intro h
-      apply_fun (fun A ↦ Subcomplex.preimage A (range f).ι) at h
-      dsimp at h
-      rwa [(preimage_eq_iff _ _ _).2 (aux (range f) A), (preimage_eq_iff _ _ _).2 (aux (range f) A')] at h
-      exact Monotone.of_map_inf fun x ↦ congrFun rfl
-    · apply this
+      have := preimage_monotone (range f).ι h
+      dsimp at this
+      rwa [(preimage_eq_iff _ _ _).2 (aux (range f) A),
+        (preimage_eq_iff _ _ _).2 (aux (range f) A')] at this
+    · apply image_monotone
 
-/- if R ≤ X, then we have an order isomorphism between subcomplexes of R and subcomplexes of X
+/-- if R ≤ X, then we have an order isomorphism between subcomplexes of R and subcomplexes of X
 contained in R -/
-open Subcomplex in
-def Subcomplex.orderIso'' {X : SSet} (R : X.Subcomplex) :
-    OrderIso (R.toSSet.Subcomplex) {p : X.Subcomplex // p ≤ R} where
-  toFun A := ⟨A.image R.ι, (image_le_iff A R.ι R).mpr (by simp only [Subcomplex.preimage_ι, le_top])⟩
+@[simps!]
+def subset_orderIso {X : SSet} (R : X.Subcomplex) :
+    (R.toSSet.Subcomplex) ≃o {p : X.Subcomplex // p ≤ R} where
+  toFun A := ⟨A.image R.ι, by simpa only [Subpresheaf.range_ι] using image_le_range A R.ι⟩
   invFun := fun ⟨A, hA⟩ ↦ range (homOfLE hA)
   left_inv A := by aesop
   right_inv := fun ⟨B, hB⟩ ↦ by
     simp [Subcomplex.homOfLE, Subpresheaf.homOfLe]
     ext
     aesop
-  map_rel_iff':= by
+  map_rel_iff' := by
     intro A A'
     simp
     constructor
     · intro h
-      apply_fun (fun A ↦ Subcomplex.preimage A R.ι) at h
-      dsimp at h
-      rwa [(preimage_eq_iff _ _ _).2 (aux R A), (preimage_eq_iff _ _ _).2 (aux R A')] at h
-      have := preimage_eq_iff R.ι A (A.image R.ι)
-      exact Monotone.of_map_inf fun x ↦ congrFun rfl
+      have := preimage_monotone R.ι h
+      dsimp at this
+      rwa [(preimage_eq_iff _ _ _).2 (aux R A), (preimage_eq_iff _ _ _).2 (aux R A')] at this
     · intro h
-      apply_fun (fun A ↦ (Subcomplex.image A R.ι)) at h
-      exact h
-      refine Monotone.apply₂ ?_ R.ι
-      refine Monotone.of_map_sup ?_
-      aesop
+      exact image_monotone _ h
 
--- bad proof because im lazy
-open Subcomplex in
 lemma image_le_boundary_iff' {n} {X : SSet} (f : Δ[n] ⟶ X) [Mono f]
       (A : (range f).toSSet.Subcomplex) :
     A ≤ ((boundary n).image (toRangeSubcomplex f)) ↔ A ≠ ⊤ := by
   constructor
   · intro h h'
-    apply_fun (fun A ↦ Subcomplex.preimage A (asIso (toRangeSubcomplex f)).hom) at h
-    dsimp at h
-    have : (∂Δ[n].image (toRangeSubcomplex f)).preimage (toRangeSubcomplex f) = ∂Δ[n] := by
-      apply le_antisymm
-      · intro k x
-        simp [toRangeSubcomplex, Subpresheaf.toRange, Subpresheaf.lift]
-        intro y hy heq
-        have := (NatTrans.mono_iff_mono_app f).1 (by infer_instance) k
-        rw [mono_iff_injective] at this
-        have := this heq
-        (expose_names; exact Set.mem_of_eq_of_mem (this_1 (id (Eq.symm heq))) hy)
-      · rw [← image_le_iff]
-    rw [this, subcomplex_le_boundary_iff, h'] at h
+    rw [← (range_orderIso f).symm.map_rel_iff'] at h
+    simp [range_orderIso, subcomplex_orderIso.symm_apply_eq'] at h
+    rw [subcomplex_le_boundary_iff, h'] at h
     exact h rfl
-    refine Monotone.apply₂ ?_ _
-    refine Monotone.of_map_sup ?_
-    exact fun x y ↦ rfl
   · intro h
     have : A.preimage (toRangeSubcomplex f) ≠ ⊤ := by
       intro h'
@@ -901,90 +764,53 @@ lemma image_le_boundary_iff' {n} {X : SSet} (f : Δ[n] ⟶ X) [Mono f]
     intro j k l p i o
     aesop
 
--- bad proof because im lazy
-open Subcomplex in
+lemma helper {X Y : SSet} (f : X ⟶ Y) (A : Subcomplex X) :
+    range (Subcomplex.homOfLE (image_le_range A f)) = A.image (toRangeSubcomplex f) := by
+  aesop
+
+lemma helper' {X Y : SSet} (f : X ⟶ Y) [Mono f] (A : Subcomplex X) :
+    (range_orderIso f).symm ((subset_orderIso (range f)).symm ⟨A.image f, image_le_range A f⟩) = A := by
+  dsimp [range_orderIso, subcomplex_orderIso, subset_orderIso]
+  simp [OrderIso.symm]
+  rw [helper]
+  exact image_preimage_of_isIso (toRangeSubcomplex f) A
+
+-- bad proof
 lemma image_le_boundary_iff {n} {X : SSet} (f : Δ[n] ⟶ X) [Mono f]
-      (A : X.Subcomplex) (hA : A ≤ Subcomplex.range f) :
-    A ≤ (boundary n).image f ↔ A ≠ (Subcomplex.range f) := by
-  let bdry := image_le_boundary_iff' f ((orderIso'' (range f)).invFun ⟨A, hA⟩)
+    (A : X.Subcomplex) (hA : A ≤ range f) :
+      A ≤ (boundary n).image f ↔ A ≠ (range f) := by
+  let iso := OrderIso.trans (subset_orderIso (range f)).symm (range_orderIso f).symm
+  have : iso ⟨∂Δ[n].image f, image_le_range _ _⟩ = ∂Δ[n] := by
+    dsimp [iso]
+    exact helper' _ _
   constructor
-  · intro h p
-    refine bdry.1 ?_ ?_
-    · rw [← (orderIso'' (range f)).map_rel_iff']
-      simp [orderIso'']
-      intro k x hx
-      aesop
-    · subst p
-      simp [orderIso'']
-      exact range_eq_top (𝟙 (range f).toSSet)
   · intro h
-    have : (orderIso'' (range f)).invFun ⟨A, hA⟩ ≠ ⊤ := by
-      intro h'
-      apply h
-      apply_fun (fun A ↦ Subcomplex.image A (range f).ι) at h'
-      rw [image_top] at h'
-      simp [orderIso''] at h'
-      rw [← h']
-      ext
-      simp [image, Subcomplex.homOfLE, Subpresheaf.homOfLe]
-      aesop
-    rw [← bdry] at this
-    apply_fun (fun A ↦ Subcomplex.image A (range f).ι) at this
-    simp [orderIso''] at this
-    have a : A = (range (Subcomplex.homOfLE hA)).image (range f).ι := by
-      ext
-      simp [Subcomplex.homOfLE, Subpresheaf.homOfLe]
-      aesop
-    have b : ∂Δ[n].image f = (∂Δ[n].image (toRangeSubcomplex f)).image (range f).ι := by aesop
-    rwa [a, b]
-    refine Monotone.apply₂ ?_ (range f).ι
-    refine Monotone.of_le_map_sup ?_
-    intro j k l p i o
-    aesop
-
-lemma hornProdSubcomplex_le_boundary_iff {a b hab} (A : (Δ[n] ⊗ Δ[2]).Subcomplex) (hA : A ≤ σ a b hab) :
-    A ≤ (boundaryProdSubcomplex a b hab) ↔ A ≠ (σ a b hab) := by
-  dsimp only [boundaryProdSubcomplex]
-  rw [σeq] at hA ⊢
-  apply image_le_boundary_iff (f a b hab) _ hA
-
-/-
--- definitely a better way to do this
-lemma le_horn_condition_aux' {n : ℕ} {a b : Fin (n + 1)} {hab : a ≤ b} :
-    ¬ face' a.succ (f a b hab) = ⊥ := by
-  intro h
-  have := congrArg (fun A ↦ A.obj (.op ⦋0⦌)) h
-  simp [face', face] at this
-  refine Set.Nontrivial.ne_empty ?_ this
-  let f : Δ[n + 1] _⦋0⦌ :=
-    stdSimplex.objEquiv.invFun <| SimplexCategory.Hom.mk ⟨fun x ↦ 0, monotone_const⟩
-  use f
-  simp
-  refine ⟨?_, ?_⟩
-  · intro x
-    dsimp [f]
-    change ¬ (0 : Fin (n + 2)) = _
+    replace h : (⟨A, hA⟩ : {p : X.Subcomplex // p ≤ range f}) ≤
+      ⟨∂Δ[n].image f, image_le_range _ _⟩ := h
+    rw [← iso.map_rel_iff', RelIso.coe_fn_toEquiv, this, subcomplex_le_boundary_iff] at h
     intro h'
-    have := (Fin.succ_pos a).not_le
-    simp_all only [le_refl, not_true_eq_false, f]
-  ·
+    subst h'
+    apply h
+    simp [iso, subset_orderIso, OrderIso.symm, range_eq_top_iff]
+    infer_instance
+  · intro h
+    change (⟨A, hA⟩ : {p : X.Subcomplex // p ≤ range f}) ≤
+      ⟨∂Δ[n].image f, image_le_range _ _⟩
+    rw [← iso.map_rel_iff']
+    dsimp
+    rw [this, subcomplex_le_boundary_iff]
+    intro h'
+    apply h
+    simp [iso, subset_orderIso, OrderIso.symm] at h'
     sorry
 
-lemma le_horn_condition_aux {a b hab} (A : (Δ[n] ⊗ Δ[2]).Subcomplex)
-    (h : A ⊓ (face' a.succ (f a b hab)) = ⊥) : A ≠ σ a b hab := by
-  intro h'
-  rw [h'] at h
-  have := inf_le_inf (face_le_σ a b hab a.succ) (le_refl (face' a.succ (f a b hab)))
-  simp only [le_refl, inf_of_le_left, and_true] at this
-  apply le_horn_condition_aux'
-  rw [h] at this
-  exact le_bot_iff.mp this
--/
+lemma hornProdSubcomplex_le_boundary_iff {a b hab} (A : (Δ[n] ⊗ Δ[2]).Subcomplex) (hA : A ≤ σ a b hab) :
+    A ≤ (boundaryProdSubcomplex a b hab) ↔ A ≠ (σ a b hab) :=
+  image_le_boundary_iff (f a b hab) _ hA
 
 #check stdSimplex.subcomplex_le_horn_iff
-open Subcomplex in
 lemma le_horn_condition {a b hab} (A : (Δ[n] ⊗ Δ[2]).Subcomplex) (hA : A ≤ σ a b hab) :
-    A ≤ hornProdSubcomplex a b hab ↔ ¬ face'.{u} a.succ (f a b hab) ≤ A := by
+    A ≤ hornProdSubcomplex a b hab ↔ ¬ face_image.{u} a.succ (f a b hab) ≤ A := by
   --have := stdSimplex.subcomplex_le_horn_iff
   refine ⟨?_, ?_⟩
   · intro h h'
@@ -998,48 +824,12 @@ lemma le_horn_condition {a b hab} (A : (Δ[n] ⊗ Δ[2]).Subcomplex) (hA : A ≤
     have := preimage_eq_iff (f a b hab) (A.preimage (f a b hab)) A
     -/
     sorry
-/-
-  have h' := (hornProdSubcomplex_le_boundary_iff _ A hA).2 <| le_horn_condition_aux _ A h
-  rw [boundaryProdSubcomplex_eq_iSup] at h'
-  rw [hornProdSubcomplex_eq_iSup]
-  have : ⨆ (j : Fin (n + 2)), face' j.1 (f a b hab) =
-      (⨆ (j : ({a.succ}ᶜ : Set (Fin (n + 2)))), face' j.1 (f a b hab)) ⊔ (face' a.succ (f a b hab)) := by
-    apply le_antisymm
-    · apply iSup_le
-      intro i
-      by_cases i = a.succ
-      all_goals rename_i h''
-      · rw [h'']
-        apply le_sup_of_le_right
-        convert le_rfl
-        ext
-        refine Eq.symm (Fin.val_cast_of_lt ?_)
-        aesop
-      · apply le_sup_of_le_left
-        apply le_iSup_of_le ⟨i, h''⟩
-        simp only [Fin.cast_val_eq_self, le_refl]
-    · apply sup_le
-      · simp
-        intro i hi
-        apply le_iSup_of_le i
-        exact le_rfl
-      · apply le_iSup_of_le a.succ
-        simp
-        convert le_rfl
-        aesop
-  rw [this] at h'
-  have p := inf_le_inf h' (le_refl A)
-  rw [Subpresheaf.max_min, inf_of_le_left (le_refl _),
-    inf_comm (face' _ (f a b hab)), h, sup_bot_eq] at p
-  simpa using p
--/
 
 -- for σ a b into σ (a + 1) b
 -- could also do σ (a - 1) b into σ a b
 /- (a + 1)-th face is not contained in  -/
-open Subcomplex in
 def mySq {n} (b : Fin n) (a : Fin b.1) :
-    Subcomplex.Sq
+    Sq
       (hornProdSubcomplex
         ⟨a.1.succ, lt_of_le_of_lt a.succ.le_val_last (Nat.lt_add_right 1 (by simp [b.2]))⟩
           b.castSucc (by simpa only [Fin.natCast_eq_last] using a.succ.le_val_last))
@@ -1074,10 +864,10 @@ def mySq {n} (b : Fin n) (a : Fin b.1) :
         simp at h h'
         sorry
     · apply le_inf
-      · refine le_of_eq_of_le' ?_ (hornProdSubcomplex_le₁ _ _ _)
+      · refine le_of_eq_of_le' ?_ (hornProdSubcomplex_le_σ _ _ _)
         congr
         · exact Eq.symm (Nat.mod_eq_of_lt (lt_of_le_of_lt a.succ.le_val_last (by simp [Nat.lt_add_right 1 b.2])))
-      · exact hornProdSubcomplex_le₂ _ _
+      · exact hornProdSubcomplex_le_filt _ _
 
 -- show σ(a + 1)b ⊓ Y(b, a) = Λ[n + 1, (a + 1) + 1]
 -- show σab ⊓ Y(b, a - 1) = Λ[n + 1, a + 1]
