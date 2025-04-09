@@ -10,7 +10,6 @@ namespace SSet
 
 variable {X Y : SSet.{u}}
 
-
 variable (X Y) in
 structure HomotopyEquiv where
   hom : X ⟶ Y
@@ -51,6 +50,15 @@ noncomputable def edgeOfHomotopy : FundamentalGroupoid.Edge { pt := y₀ } { pt 
       rfl
     · simp [← hy₁])
 
+noncomputable def mapFundamentalGroupoidIsoOfHomotopy [IsFibrant X] :
+    mapFundamentalGroupoid f₀ ≅ mapFundamentalGroupoid f₁ :=
+  NatIso.ofComponents
+    (fun x ↦ asIso (FundamentalGroupoid.homMk (edgeOfHomotopy h x.pt rfl rfl)))
+    (fun {x₀ x₁} p ↦ by
+      obtain ⟨p, rfl⟩ := FundamentalGroupoid.homMk_surjective p
+      dsimp
+      sorry)
+
 lemma congr_mapπ_of_homotopy :
     (FundamentalGroupoid.action.map (FundamentalGroupoid.homMk
       (edgeOfHomotopy h x hy₀ hy₁))).comp (mapπ f₀ n x y₀ hy₀) = mapπ f₁ n x y₁ hy₁ := by
@@ -76,7 +84,17 @@ lemma bijective_mapπ_iff_of_homotopy [IsFibrant X] :
 variable [IsFibrant X]
 
 lemma isEquivalence_mapFundamentalGroupoid_homotopyEquivHom (e : HomotopyEquiv X Y) :
-    (mapFundamentalGroupoid e.hom).IsEquivalence := sorry
+    (mapFundamentalGroupoid e.hom).IsEquivalence := by
+  let e : FundamentalGroupoid X ≌ FundamentalGroupoid Y :=
+    CategoryTheory.Equivalence.mk
+      (mapFundamentalGroupoid e.hom) (mapFundamentalGroupoid e.inv)
+        ((idMapFundamentalGroupoidIso X).symm ≪≫
+          (mapFundamentalGroupoidIsoOfHomotopy e.homInvId).symm ≪≫
+          compMapFundamentalGroupoidIso e.hom e.inv)
+        ((compMapFundamentalGroupoidIso e.inv e.hom).symm ≪≫
+          (mapFundamentalGroupoidIsoOfHomotopy e.invHomId) ≪≫
+          idMapFundamentalGroupoidIso Y)
+  exact e.isEquivalence_functor
 
 lemma isEquivalence_mapFundamentalGroupoid_homotopyEquivInv (e : HomotopyEquiv X Y) :
     (mapFundamentalGroupoid e.inv).IsEquivalence :=
