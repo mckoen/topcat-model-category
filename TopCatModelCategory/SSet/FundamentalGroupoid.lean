@@ -178,6 +178,16 @@ lemma Edge.comm₀ {x₀ x₁ : FundamentalGroupoid X} (p : Edge x₀ x₁) :
     Subcomplex.topIso_inv_app_coe] at this
   exact this
 
+lemma Edge.comm₀' {x₀ x₁ : FundamentalGroupoid X} (p : Edge x₀ x₁) :
+    p.map.app (Opposite.op ⦋0⦌) (stdSimplex.obj₀Equiv.symm 0) = x₀.pt := by
+  convert congr_arg yonedaEquiv p.comm₀ using 1
+  · rw [yonedaEquiv_map_comp, stdSimplex.map_yonedaEquiv]
+    apply congr_arg
+    ext i
+    fin_cases i
+    rfl
+  · simp
+
 @[reassoc]
 lemma Edge.comm₁ {x₀ x₁ : FundamentalGroupoid X} (p : Edge x₀ x₁) :
     stdSimplex.map (SimplexCategory.δ 0) ≫ p.map = const x₁.pt := by
@@ -186,6 +196,16 @@ lemma Edge.comm₁ {x₀ x₁ : FundamentalGroupoid X} (p : Edge x₀ x₁) :
     yonedaEquiv_symm_zero, const_comp, FunctorToTypes.comp, Subpresheaf.ι_app,
     Subcomplex.topIso_inv_app_coe] at this
   exact this
+
+lemma Edge.comm₁' {x₀ x₁ : FundamentalGroupoid X} (p : Edge x₀ x₁) :
+    p.map.app (Opposite.op ⦋0⦌) (stdSimplex.obj₀Equiv.symm 1) = x₁.pt := by
+  convert congr_arg yonedaEquiv p.comm₁ using 1
+  · rw [yonedaEquiv_map_comp, stdSimplex.map_yonedaEquiv]
+    apply congr_arg
+    ext i
+    fin_cases i
+    rfl
+  · simp
 
 @[simps! map]
 def Edge.id (x : FundamentalGroupoid X) : Edge x x :=

@@ -8,6 +8,62 @@ open CategoryTheory HomotopicalAlgebra Simplicial SSet.modelCategoryQuillen
 
 namespace SSet
 
+namespace stdSimplex
+
+@[reassoc (attr := simp)]
+lemma δ_one_ι₀ :
+    stdSimplex.map (SimplexCategory.δ (1 : Fin 2)) ≫ ι₀ =
+      SSet.const (prodStdSimplex.obj₀Equiv.symm ⟨0, 0⟩) :=
+  yonedaEquiv.injective (Prod.ext (by ext i; fin_cases i; rfl) (by rfl))
+
+@[reassoc (attr := simp)]
+lemma δ_zero_ι₀ :
+    stdSimplex.map (SimplexCategory.δ (0 : Fin 2)) ≫ ι₀ =
+      SSet.const (prodStdSimplex.obj₀Equiv.symm ⟨1, 0⟩) :=
+  yonedaEquiv.injective (Prod.ext (by ext i; fin_cases i; rfl) (by rfl))
+
+@[reassoc (attr := simp)]
+lemma δ_one_ι₁ :
+    stdSimplex.map (SimplexCategory.δ (1 : Fin 2)) ≫ ι₁ =
+      SSet.const (prodStdSimplex.obj₀Equiv.symm ⟨0, 1⟩) :=
+  yonedaEquiv.injective (Prod.ext (by ext i; fin_cases i; rfl) (by rfl))
+
+@[reassoc (attr := simp)]
+lemma δ_zero_ι₁ :
+    stdSimplex.map (SimplexCategory.δ (0 : Fin 2)) ≫ ι₁ =
+      SSet.const (prodStdSimplex.obj₀Equiv.symm ⟨1, 1⟩) :=
+  yonedaEquiv.injective (Prod.ext (by ext i; fin_cases i; rfl) (by rfl))
+
+end stdSimplex
+
+namespace KanComplex
+
+namespace FundamentalGroupoid
+
+lemma commSq {X : SSet.{u}} [IsFibrant X] (f : Δ[1] ⊗ Δ[1] ⟶ X)
+    (x₀₀ x₀₁ x₁₀ x₁₁ : FundamentalGroupoid X)
+    (h₀₀ : f.app _ (prodStdSimplex.obj₀Equiv.symm ⟨0, 0⟩) = x₀₀.pt)
+    (h₀₁ : f.app _ (prodStdSimplex.obj₀Equiv.symm ⟨0, 1⟩) = x₀₁.pt)
+    (h₁₀ : f.app _ (prodStdSimplex.obj₀Equiv.symm ⟨1, 0⟩) = x₁₀.pt)
+    (h₁₁ : f.app _ (prodStdSimplex.obj₀Equiv.symm ⟨1, 1⟩) = x₁₁.pt) :
+    CommSq (homMk (Edge.mk (x₀ := x₀₀) (x₁ := x₁₀) (ι₀ ≫ f)
+      (by simp [← h₀₀]) (by simp [← h₁₀])))
+        (homMk (Edge.mk (ι₀ ≫ (β_ _ _).hom ≫ f)
+          (by simp [← h₀₀]; rfl) (by simp [← h₀₁]; rfl)))
+        (homMk (Edge.mk (ι₁ ≫ (β_ _ _).hom ≫ f)
+          (by simp [← h₁₀]; rfl) (by simp [← h₁₁]; rfl)))
+        (homMk (Edge.mk (x₀ := x₀₁) (x₁ := x₁₁) (ι₁ ≫ f)
+          (by simp [← h₀₁]) (by simp [← h₁₁]))) where
+  w := by
+    trans homMk (Edge.mk (square.diagonal ≫ f)
+        (by simp [← h₀₀]) (by simp [← h₁₁]))
+    · exact Edge.CompStruct.fac { map := square.ιTriangle₀ ≫ f }
+    · exact (Edge.CompStruct.fac { map := square.ιTriangle₁ ≫ f }).symm
+
+end FundamentalGroupoid
+
+end KanComplex
+
 variable {X Y : SSet.{u}}
 
 variable (X Y) in
@@ -35,11 +91,12 @@ def HomotopyEquiv.symm (e : HomotopyEquiv X Y) : HomotopyEquiv Y X where
 namespace KanComplex
 
 variable [IsFibrant Y]
-  {f₀ f₁ : X ⟶ Y} (h : Homotopy f₀ f₁) (n : ℕ)
-  (x : X _⦋0⦌) {y₀ y₁ : Y _⦋0⦌} (hy₀ : f₀.app _ x = y₀) (hy₁ : f₁.app _ x = y₁)
+  {f₀ f₁ : X ⟶ Y} (h : Homotopy f₀ f₁)
 
 @[simps! map]
-noncomputable def edgeOfHomotopy : FundamentalGroupoid.Edge { pt := y₀ } { pt := y₁ } :=
+noncomputable def edgeOfHomotopy
+  (x : X _⦋0⦌) {y₀ y₁ : Y _⦋0⦌} (hy₀ : f₀.app _ x = y₀) (hy₁ : f₁.app _ x = y₁) :
+      FundamentalGroupoid.Edge { pt := y₀ } { pt := y₁ } :=
   FundamentalGroupoid.Edge.mk (lift (const x) (𝟙 _) ≫ h.h) (by
     convert yonedaEquiv.symm x ≫= h.h₀ using 1
     · rw [← ι₀_comp_assoc, ι₀_stdSimplex_zero]
@@ -56,8 +113,55 @@ noncomputable def mapFundamentalGroupoidIsoOfHomotopy [IsFibrant X] :
     (fun x ↦ asIso (FundamentalGroupoid.homMk (edgeOfHomotopy h x.pt rfl rfl)))
     (fun {x₀ x₁} p ↦ by
       obtain ⟨p, rfl⟩ := FundamentalGroupoid.homMk_surjective p
+      let f := p.map ▷ _ ≫ h.h
       dsimp
-      sorry)
+      have := (FundamentalGroupoid.commSq f
+        ((mapFundamentalGroupoid f₀).obj x₀)
+        ((mapFundamentalGroupoid f₁).obj x₀)
+        ((mapFundamentalGroupoid f₀).obj x₁)
+        ((mapFundamentalGroupoid f₁).obj x₁)
+        (by
+          rw [← h.h₀]
+          dsimp [f]
+          exact congr_arg _ (Prod.ext p.comm₀' rfl))
+        (by
+          rw [← h.h₁]
+          dsimp [f]
+          exact congr_arg _ (Prod.ext p.comm₀' rfl))
+        (by
+          rw [← h.h₀]
+          dsimp [f]
+          exact congr_arg _ (Prod.ext p.comm₁' rfl))
+        (by
+          rw [← h.h₁]
+          dsimp [f]
+          exact congr_arg _ (Prod.ext p.comm₁' rfl))).w
+      convert this
+      · ext : 1
+        dsimp
+        rw [← h.h₀]
+        rfl
+      · ext : 1
+        dsimp [f]
+        rw [← Category.assoc, ← Category.assoc]
+        congr 1
+        ext : 1
+        · simp [← p.comm₁']
+        · rfl
+      · ext : 1
+        dsimp [f]
+        rw [← Category.assoc, ← Category.assoc]
+        congr 1
+        ext : 1
+        · simp [← p.comm₀']
+        · rfl
+      · ext : 1
+        dsimp
+        rw [← h.h₁]
+        rfl)
+
+variable (n : ℕ) (x : X _⦋0⦌) {y₀ y₁ : Y _⦋0⦌}
+  (hy₀ : f₀.app _ x = y₀) (hy₁ : f₁.app _ x = y₁)
 
 lemma congr_mapπ_of_homotopy :
     (FundamentalGroupoid.action.map (FundamentalGroupoid.homMk

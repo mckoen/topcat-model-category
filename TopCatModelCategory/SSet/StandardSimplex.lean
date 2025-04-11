@@ -18,10 +18,6 @@ lemma yonedaEquiv₀ {X : SSet.{u}} (x : X _⦋0⦌) :
     yonedaEquiv (const x) = x :=
   yonedaEquiv.symm.injective (by simp)
 
-/-lemma yonedaEquiv_comp {X Y : SSet.{u}} {n : SimplexCategory}
-    (g : stdSimplex.obj n ⟶ X) (f : X ⟶ Y) :
-    yonedaEquiv _ _ (g ≫ f) = f.app _ (yonedaEquiv _ _ g) := rfl-/
-
 lemma yonedaEquiv_map_comp {n m : SimplexCategory} (f : n ⟶ m) {X : SSet.{u}}
     (g : stdSimplex.obj m ⟶ X) :
     yonedaEquiv (stdSimplex.map f ≫ g) =
@@ -60,6 +56,7 @@ lemma yonedaEquiv_symm_app_id {X : SSet.{u}} {n : ℕ} (x : X _⦋n⦌) :
   apply yonedaEquiv.symm.injective
   rw [← yonedaEquiv_symm_comp]
   simp only [Equiv.symm_apply_apply, Category.id_comp]
+
 
 namespace stdSimplex
 
@@ -132,6 +129,13 @@ lemma map_objEquiv_symm {n : ℕ} {m : SimplexCategory} (f : m ⟶ .mk n)
 lemma objEquiv_symm_σ_apply {n : ℕ} (i : Fin (n + 1)) (j : Fin (n + 1 + 1)) :
     ((objEquiv.{u}).symm (SimplexCategory.σ i) : Δ[n] _⦋n + 1⦌) j =
       i.predAbove j :=
+  rfl
+
+lemma map_yonedaEquiv {X : SSet.{u}} {n m : SimplexCategory} (f : n ⟶ m)
+    (g : stdSimplex.obj m ⟶ X) :
+    X.map f.op (yonedaEquiv g) = g.app _ (yonedaEquiv (stdSimplex.map f)) := by
+  dsimp [yonedaEquiv, yonedaCompUliftFunctorEquiv]
+  rw [← FunctorToTypes.naturality]
   rfl
 
 instance (n : SimplexCategory) : (stdSimplex.{u}.obj n).StrictSegal where
