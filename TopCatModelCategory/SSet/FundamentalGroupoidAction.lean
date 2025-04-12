@@ -95,6 +95,11 @@ noncomputable def uniqueActionStruct₁ {p : Edge x₀ x₁}
   obtain ⟨φ, hφ₁, hφ₂⟩ :=
     (horn₂₀.isPushout.{u}.map (tensorLeft Δ[n])).exists_desc ht.map ht'.map
       (by simp)
+  dsimp at φ
+  obtain ⟨l, hl⟩ := anodyneExtensions.exists_lift_of_isFibrant (by
+    sorry : _ ⟶ X)
+    (anodyneExtensions.subcomplex_unionProd_mem_of_right.{u} ∂Δ[n] _
+    (anodyneExtensions.horn_ι_mem 1 0))
   sorry
 
 def uniqueActionStruct {p p' : Edge x₀ x₁} (hp : p.Homotopy p')
