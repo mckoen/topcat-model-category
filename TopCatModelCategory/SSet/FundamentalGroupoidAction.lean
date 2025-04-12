@@ -20,9 +20,22 @@ structure ActionStruct {X : SSet.{u}} {x₀ x₁ : FundamentalGroupoid X} {n : �
     (t : Subcomplex.RelativeMorphism (boundary n) _
         (const ⟨x₁.pt, Subcomplex.mem_ofSimplex_obj x₁.pt⟩)) where
   map : Δ[n] ⊗ Δ[1] ⟶ X
-  whiskerRight_ι_comp_map : (boundary n).ι ▷ Δ[1] ≫ map = snd _ _ ≫ p.map
+  whiskerRight_ι_comp_map : (boundary n).ι ▷ Δ[1] ≫ map = snd _ _ ≫ p.map := by aesop_cat
   ι₀_map : ι₀ ≫ map = s.map := by aesop_cat
   ι₁_map : ι₁ ≫ map = t.map := by aesop_cat
+
+namespace ActionStruct
+
+attribute [reassoc (attr := simp)] ι₀_map ι₁_map whiskerRight_ι_comp_map
+
+noncomputable def pushforward {X Y : SSet.{u}} [IsFibrant X] {x₀ x₁ : FundamentalGroupoid X}
+    {n : ℕ} {p : Edge x₀ x₁} {s : PtSimplex X n x₀.pt} {t : PtSimplex X n x₁.pt}
+    (h : ActionStruct p s t) (f : X ⟶ Y) :
+    ActionStruct (p.pushforward f) (s.pushforward f _ rfl)
+      (t.pushforward f _ rfl) where
+  map := h.map ≫ f
+
+end ActionStruct
 
 namespace action
 
@@ -58,7 +71,7 @@ lemma exists_actionStruct (p : Edge x₀ x₁)
       whiskerRight_ι_comp_map := by rw [← hφ₂, ← hl]; rfl
   }⟩⟩
 
-def unique_actionStruct {p p' : Edge x₀ x₁} (hp : p.Homotopy p')
+def uniqueActionStruct {p p' : Edge x₀ x₁} (hp : p.Homotopy p')
     {s s' : Subcomplex.RelativeMorphism (boundary n) _
       (const ⟨x₀.pt, Subcomplex.mem_ofSimplex_obj x₀.pt⟩)} (hs : s.Homotopy s')
     {t t' : Subcomplex.RelativeMorphism (boundary n) _
@@ -80,15 +93,15 @@ noncomputable def actionStruct (p : Edge x₀ x₁)
     ActionStruct p s (map' p s) :=
   (exists_actionStruct p s).choose_spec.some
 
-noncomputable def map : ∀ (_p : x₀ ⟶ x₁), π n X x₀.pt ⟶ π n X x₁.pt :=
+noncomputable def map : ∀ (_p : x₀ ⟶ x₁), π n X x₀.pt → π n X x₁.pt :=
   Quot.lift₂ (fun p s ↦ (map' p s).homotopyClass) (by
     rintro (p : Edge _ _) s s' ⟨hs⟩
     apply Subcomplex.RelativeMorphism.Homotopy.eq
-    exact unique_actionStruct (.refl p) hs
+    exact uniqueActionStruct (.refl p) hs
       (actionStruct p s) (actionStruct p s')) (by
     rintro (p p' : Edge _ _) s ⟨hp⟩
     apply Subcomplex.RelativeMorphism.Homotopy.eq
-    exact unique_actionStruct hp (.refl s)
+    exact uniqueActionStruct hp (.refl s)
       (actionStruct p s) (actionStruct p' s))
 
 lemma map_eq {p : Edge x₀ x₁}
@@ -99,16 +112,23 @@ lemma map_eq {p : Edge x₀ x₁}
     (h : ActionStruct p s t) :
     map (FundamentalGroupoid.homMk p) s.homotopyClass = t.homotopyClass := by
   apply Subcomplex.RelativeMorphism.Homotopy.eq
-  exact unique_actionStruct (.refl p) (.refl s) (actionStruct p s) h
+  exact uniqueActionStruct (.refl p) (.refl s) (actionStruct p s) h
+
+variable (n) in
+@[simp]
+lemma map_id (x : FundamentalGroupoid X) :
+    action.map (n := n) (𝟙 x) = id := by
+  ext s
+  obtain ⟨s, rfl⟩ := s.mk_surjective
+  exact map_eq { map := fst _ _ ≫ s.map }
 
 end action
 
-@[simps obj]
+@[simps]
 noncomputable def action (X : SSet.{u}) [IsFibrant X] (n : ℕ) :
     FundamentalGroupoid X ⥤ Type u where
   obj x := π n X x.pt
   map {x y} p := action.map p
-  map_id := sorry
   map_comp := sorry
 
 lemma action.bijective_map (n : ℕ) {X : SSet.{u}} {x y : FundamentalGroupoid X} [IsFibrant X]
@@ -121,7 +141,14 @@ lemma action.bijective_map (n : ℕ) {X : SSet.{u}} {x y : FundamentalGroupoid X
 def actionMap {X Y : SSet.{u}} [IsFibrant X] [IsFibrant Y] (f : X ⟶ Y) (n : ℕ) :
     action X n ⟶ mapFundamentalGroupoid f ⋙ action Y n where
   app x := mapπ f n x.pt _ rfl
-  naturality := sorry
+  naturality x y p := by
+    ext s
+    obtain ⟨s, rfl⟩ := s.mk_surjective
+    obtain ⟨p, rfl⟩ := FundamentalGroupoid.homMk_surjective p
+    have h := action.actionStruct p s
+    dsimp
+    erw [action.map_eq h, mapπ_mk, action.map_eq (h.pushforward f)]
+    rfl
 
 end FundamentalGroupoid
 
