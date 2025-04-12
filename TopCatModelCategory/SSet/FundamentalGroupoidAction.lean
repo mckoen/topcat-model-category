@@ -95,7 +95,7 @@ noncomputable def uniqueActionStruct₁ {p : Edge x₀ x₁}
   obtain ⟨φ, hφ₁, hφ₂⟩ :=
     (horn₂₀.isPushout.{u}.map (tensorLeft Δ[n])).exists_desc ht.map ht'.map
       (by simp)
-  dsimp at φ
+  dsimp at φ hφ₁ hφ₂
   obtain ⟨ψ, hψ₁, hψ₂⟩ :=
     (Subcomplex.unionProd.isPushout ∂Δ[n] (horn 2 0)).exists_desc φ
       (snd _ _ ≫ stdSimplex.σ 1 ≫ p.map) (by
@@ -115,18 +115,36 @@ noncomputable def uniqueActionStruct₁ {p : Edge x₀ x₁}
     (anodyneExtensions.horn_ι_mem 1 0))
   refine ⟨{
       h := _ ◁ stdSimplex.δ 0 ≫ l
-      h₀ := sorry
-      h₁ := sorry
+      h₀ := by
+        have eq₁ := (_ ◁ horn₂₀.ι₀₁ ≫ Subcomplex.unionProd.ι₁ _ _) ≫= hl
+        rw [Category.assoc, Category.assoc, Subcomplex.unionProd.ι₁_ι_assoc,
+          ← MonoidalCategory.whiskerLeft_comp_assoc, horn.ι_ι] at eq₁
+        have eq₂ := stdSimplex.{u}.δ_comp_δ (n := 0) (i := 0) (j := 1) (by simp)
+        dsimp at eq₂
+        rw [← cancel_epi (stdSimplex.rightUnitor _).hom,
+          stdSimplex.rightUnitor_hom_ι₀_assoc,
+          ← MonoidalCategory.whiskerLeft_comp_assoc, ← eq₂,
+          MonoidalCategory.whiskerLeft_comp_assoc, eq₁,
+          hψ₁, hφ₁, ht.δ_zero_map]
+      h₁ := by
+        have eq₁ := (_ ◁ horn₂₀.ι₀₂ ≫ Subcomplex.unionProd.ι₁ _ _) ≫= hl
+        rw [Category.assoc, Category.assoc, Subcomplex.unionProd.ι₁_ι_assoc,
+          ← MonoidalCategory.whiskerLeft_comp_assoc, horn.ι_ι] at eq₁
+        have eq₂ := stdSimplex.{u}.δ_comp_δ (n := 0) (i := 0) (j := 0) (by simp)
+        dsimp at eq₂
+        rw [← cancel_epi (stdSimplex.rightUnitor _).hom,
+          stdSimplex.rightUnitor_hom_ι₁_assoc,
+          ← MonoidalCategory.whiskerLeft_comp_assoc, ← eq₂,
+          MonoidalCategory.whiskerLeft_comp_assoc, eq₁,
+          hψ₁, hφ₂, ht'.δ_zero_map]
       rel := by
-        have := (_ ◁ stdSimplex.δ 0 ≫ Subcomplex.unionProd.ι₂ _ _) ≫= hl
+        have h₁ := (_ ◁ stdSimplex.δ 0 ≫ Subcomplex.unionProd.ι₂ _ _) ≫= hl
         rw [Category.assoc, Category.assoc, Subcomplex.unionProd.ι₂_ι_assoc,
-          whisker_exchange_assoc, hψ₂] at this
-        rw [Subcomplex.ofSimplex_ι, comp_const, comp_const, this,
-          whiskerLeft_snd_assoc]
-        have := stdSimplex.{u}.δ_comp_σ_of_le (n := 0) (i := 0) (j := 0) (by rfl)
-        dsimp at this
-        rw [reassoc_of% this]
-        sorry
+          whisker_exchange_assoc, hψ₂] at h₁
+        have h₂ := stdSimplex.{u}.δ_comp_σ_of_le (n := 0) (i := 0) (j := 0) (by rfl)
+        dsimp at h₂
+        rw [Subcomplex.ofSimplex_ι, comp_const, comp_const, h₁,
+          whiskerLeft_snd_assoc, reassoc_of% h₂, p.comm₁, comp_const, comp_const]
   }⟩
 
 def uniqueActionStruct {p p' : Edge x₀ x₁} (hp : p.Homotopy p')

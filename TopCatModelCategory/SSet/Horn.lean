@@ -151,6 +151,12 @@ abbrev ι₀₁ : Δ[1] ⟶ horn.{u} 2 0 := horn.ι 0 2 (by simp)
 
 abbrev ι₀₂ : Δ[1] ⟶ horn.{u} 2 0 := horn.ι 0 1 (by simp)
 
+@[reassoc (attr := simp)]
+lemma ι₀₁_ι : ι₀₁ ≫ (horn.{u} 2 0).ι = stdSimplex.δ 2 := rfl
+
+@[reassoc (attr := simp)]
+lemma ι₀₂_ι : ι₀₂ ≫ (horn.{u} 2 0).ι = stdSimplex.δ 1 := rfl
+
 lemma isPushout :
     IsPushout (stdSimplex.{u}.δ (1 : Fin 2))
       (stdSimplex.{u}.δ (1 : Fin 2)) ι₀₁ ι₀₂ := by
