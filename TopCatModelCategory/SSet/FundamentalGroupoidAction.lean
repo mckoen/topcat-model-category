@@ -86,7 +86,7 @@ lemma exists_actionStruct (p : Edge x₀ x₁)
       whiskerRight_ι_comp_map := by rw [← hφ₂, ← hl]; rfl
   }⟩⟩
 
-def uniqueActionStruct₁ {p : Edge x₀ x₁}
+noncomputable def uniqueActionStruct₁ {p : Edge x₀ x₁}
     {s : Subcomplex.RelativeMorphism (boundary n) _
       (const ⟨x₀.pt, Subcomplex.mem_ofSimplex_obj x₀.pt⟩)}
     {t t' : Subcomplex.RelativeMorphism (boundary n) _
