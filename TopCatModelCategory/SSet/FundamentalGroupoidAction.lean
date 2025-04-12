@@ -36,14 +36,12 @@ lemma δ_one_map :
     _ ◁ stdSimplex.δ 1 ≫ h.map = (stdSimplex.rightUnitor _).hom ≫ s.map := by
   rw [← h.ι₀_map, ← stdSimplex.rightUnitor_inv_map_δ_one_assoc,
     Iso.hom_inv_id_assoc]
-  rfl
 
 @[reassoc (attr := simp)]
 lemma δ_zero_map :
     _ ◁ stdSimplex.δ 0 ≫ h.map = (stdSimplex.rightUnitor _).hom ≫ t.map := by
   rw [← h.ι₁_map, ← stdSimplex.rightUnitor_inv_map_δ_zero_assoc,
     Iso.hom_inv_id_assoc]
-  rfl
 
 noncomputable def pushforward {Y : SSet.{u}} (f : X ⟶ Y) :
     ActionStruct (p.pushforward f) (s.pushforward f _ rfl)
@@ -95,8 +93,8 @@ noncomputable def uniqueActionStruct₁ {p : Edge x₀ x₁}
     t.Homotopy t' := by
   apply Nonempty.some
   obtain ⟨φ, hφ₁, hφ₂⟩ :=
-    (horn₂₀.isPushout.{u}.map (tensorLeft Δ[n])).exists_desc ht.map ht'.map (by
-      erw [ht.δ_one_map, ht'.δ_one_map])
+    (horn₂₀.isPushout.{u}.map (tensorLeft Δ[n])).exists_desc ht.map ht'.map
+      (by simp)
   sorry
 
 def uniqueActionStruct {p p' : Edge x₀ x₁} (hp : p.Homotopy p')

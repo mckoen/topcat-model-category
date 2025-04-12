@@ -29,10 +29,9 @@ structure DeltaStruct {n : ℕ} (s : B.PtSimplex (n + 1) b)
     (t : PtSimplex _ n (basePoint p he)) (i : Fin (n + 2)) where
   map : Δ[n + 1] ⟶ E
   map_p : map ≫ p = s.map := by aesop_cat
-  δ_map : stdSimplex.map (SimplexCategory.δ i) ≫ map =
-    t.map ≫ (Subcomplex.fiber p b).ι := by aesop_cat
+  δ_map : stdSimplex.δ i ≫ map = t.map ≫ (Subcomplex.fiber p b).ι := by aesop_cat
   δ_map_eq_const (j : Fin (n + 2)) (hi : j ≠ i) :
-    stdSimplex.map (SimplexCategory.δ j) ≫ map = const e := by aesop_cat
+    stdSimplex.δ j ≫ map = const e := by aesop_cat
 
 namespace DeltaStruct
 
@@ -85,7 +84,7 @@ lemma exists_deltaStruct [Fibration p] (s : B.PtSimplex (n + 1) b) (i : Fin (n +
     simp only [Subcomplex.homOfLE_ι_assoc, Subcomplex.ofSimplex_ι] at this
     rw [this, const_comp, comp_const, comp_const, he]⟩
   refine ⟨⟨Subcomplex.lift
-      (stdSimplex.map (SimplexCategory.δ i) ≫ sq.lift) ?_, ?_⟩, ⟨{
+      (stdSimplex.δ i ≫ sq.lift) ?_, ?_⟩, ⟨{
     map := sq.lift
     map_p := by simp
     δ_map := rfl
@@ -103,25 +102,24 @@ lemma exists_deltaStruct [Fibration p] (s : B.PtSimplex (n + 1) b) (i : Fin (n +
       exact ((Set.mem_empty_iff_false _).1 hx.2).elim
     · apply boundary.hom_ext
       intro j
-      rw [boundary.ι_ι_assoc, ← Functor.map_comp_assoc, comp_const]
+      rw [boundary.ι_ι_assoc, comp_const]
       have fac (k : Fin (n + 3)) (hk : k ≠ i) := horn.ι i k hk ≫= sq.fac_left
       simp only [comp_const, horn.ι_ι_assoc] at fac
       obtain rfl | ⟨i, rfl⟩ := i.eq_zero_or_eq_succ
-      · have := SimplexCategory.δ_comp_δ (n := n) (i := 0) (j := j) (by simp)
+      · have := stdSimplex.{u}.δ_comp_δ (n := n) (i := 0) (j := j) (by simp)
         dsimp at this
-        rw [← this, Functor.map_comp_assoc, fac _ (fun h ↦ by
+        rw [← reassoc_of% this, fac _ (fun h ↦ by
           rw [Fin.ext_iff] at h
           simp at h), comp_const]
       · by_cases hj : j ≤ i
-        · rw [SimplexCategory.δ_comp_δ hj, Functor.map_comp_assoc,
-            fac, comp_const]
+        · rw [stdSimplex.δ_comp_δ_assoc hj, fac, comp_const]
           rintro h
           rw [← Fin.succ_le_succ_iff, ← h] at hj
           simp at hj
         · simp only [not_le] at hj
           obtain ⟨i, rfl⟩ := Fin.eq_castSucc_of_ne_last (Fin.ne_last_of_lt hj)
           simp only [Fin.succ_castSucc]
-          rw [← SimplexCategory.δ_comp_δ hj, Functor.map_comp_assoc, fac, comp_const]
+          rw [← stdSimplex.δ_comp_δ_assoc hj, fac, comp_const]
           simp only [ne_eq, Fin.succ_inj]
           rintro rfl
           simp at hj

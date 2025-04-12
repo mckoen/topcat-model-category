@@ -76,23 +76,23 @@ lemma leftUnitor_hom_naturality (f : X ⟶ Y) :
 
 @[reassoc (attr := simp)]
 lemma leftUnitor_inv_map_δ_zero :
-    (stdSimplex.leftUnitor X).inv ≫ stdSimplex.map (SimplexCategory.δ 0) ▷ X =
+    (stdSimplex.leftUnitor X).inv ≫ stdSimplex.δ 0 ▷ X =
       ι₁ ≫ (β_ _ _).hom := rfl
 
 @[reassoc (attr := simp)]
 lemma leftUnitor_inv_map_δ_one :
-    (stdSimplex.leftUnitor X).inv ≫ stdSimplex.map (SimplexCategory.δ 1) ▷ X =
+    (stdSimplex.leftUnitor X).inv ≫ stdSimplex.δ 1 ▷ X =
       ι₀ ≫ (β_ _ _).hom := rfl
 
 @[reassoc]
 lemma _root_.SSet.ι₀_stdSimplex_zero :
-    ι₀ = stdSimplex.map (SimplexCategory.δ 1) ≫ (stdSimplex.leftUnitor Δ[1]).inv := by
+    ι₀ = stdSimplex.δ 1 ≫ (stdSimplex.leftUnitor Δ[1]).inv := by
   ext : 1
   all_goals exact yonedaEquiv.injective (by ext i; fin_cases i; rfl)
 
 @[reassoc]
 lemma _root_.SSet.ι₁_stdSimplex_zero :
-    ι₁ = stdSimplex.map (SimplexCategory.δ 0) ≫ (stdSimplex.leftUnitor Δ[1]).inv := by
+    ι₁ = stdSimplex.δ 0 ≫ (stdSimplex.leftUnitor Δ[1]).inv := by
   ext : 1
   all_goals exact yonedaEquiv.injective (by ext i; fin_cases i; rfl)
 
@@ -115,22 +115,22 @@ lemma rightUnitor_hom_naturality (f : X ⟶ Y) :
 
 @[reassoc (attr := simp)]
 lemma rightUnitor_inv_map_δ_zero :
-    (stdSimplex.rightUnitor X).inv ≫ X ◁ stdSimplex.map (SimplexCategory.δ 0) =
+    (stdSimplex.rightUnitor X).inv ≫ X ◁ stdSimplex.δ 0 =
       ι₁ := rfl
 
 @[reassoc (attr := simp)]
 lemma rightUnitor_inv_map_δ_one :
-    (stdSimplex.rightUnitor X).inv ≫ X ◁ stdSimplex.map (SimplexCategory.δ 1) =
+    (stdSimplex.rightUnitor X).inv ≫ X ◁ stdSimplex.δ 1 =
       ι₀ := rfl
 
 @[reassoc (attr := simp)]
 lemma rightUnitor_hom_ι₀ :
-    (stdSimplex.rightUnitor X).hom ≫ ι₀ = X ◁ stdSimplex.map (SimplexCategory.δ 1) := by
+    (stdSimplex.rightUnitor X).hom ≫ ι₀ = X ◁ stdSimplex.δ 1 := by
   rw [← rightUnitor_inv_map_δ_one, Iso.hom_inv_id_assoc]
 
 @[reassoc (attr := simp)]
 lemma rightUnitor_hom_ι₁ :
-    (stdSimplex.rightUnitor X).hom ≫ ι₁ = X ◁ stdSimplex.map (SimplexCategory.δ 0) := by
+    (stdSimplex.rightUnitor X).hom ≫ ι₁ = X ◁ stdSimplex.δ 0 := by
   rw [← rightUnitor_inv_map_δ_zero, Iso.hom_inv_id_assoc]
 
 end stdSimplex

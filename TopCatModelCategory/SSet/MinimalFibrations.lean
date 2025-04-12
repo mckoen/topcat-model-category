@@ -237,8 +237,9 @@ lemma eq_of_degenerate (hx : x ∈ E.degenerate n) (hy : y ∈ E.degenerate n) :
   erw [← ι₁_comp_assoc, rel.hd, ι₁_fst_assoc] at h₁
   refine eq_of_degenerate_of_δ_eq hx hy (fun i ↦ ?_)
   have := boundary.ι i ≫= (h₀.symm.trans h₁)
-  rw [boundary.ι_ι_assoc, boundary.ι_ι_assoc,
-    ← yonedaEquiv_symm_map, ← yonedaEquiv_symm_map] at this
+  rw [boundary.ι_ι_assoc, boundary.ι_ι_assoc] at this
+  dsimp [CosimplicialObject.δ] at this
+  rw [← yonedaEquiv_symm_map, ← yonedaEquiv_symm_map] at this
   exact yonedaEquiv.symm.injective this
 
 noncomputable def map

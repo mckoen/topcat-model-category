@@ -42,12 +42,12 @@ lemma yonedaEquiv_symm_map {X : SSet.{u}} {n m : SimplexCategory} (f : n ⟶ m)
 
 lemma yonedaEquiv_symm_δ {X : SSet.{u}} {n : ℕ} (i : Fin (n + 2)) (x : X _⦋n + 1⦌) :
     yonedaEquiv.symm (X.δ i x) =
-      stdSimplex.map (SimplexCategory.δ i) ≫ yonedaEquiv.symm x := by
+      stdSimplex.δ i ≫ yonedaEquiv.symm x := by
   apply yonedaEquiv_symm_map
 
 lemma yonedaEquiv_symm_σ {X : SSet.{u}} {n : ℕ} (i : Fin (n + 1)) (x : X _⦋n⦌) :
     yonedaEquiv.symm (X.σ i x) =
-      stdSimplex.map (SimplexCategory.σ i) ≫ yonedaEquiv.symm x := by
+      stdSimplex.σ i ≫ yonedaEquiv.symm x := by
   apply yonedaEquiv_symm_map
 
 @[simp]
@@ -330,7 +330,7 @@ def faceSingletonComplIso (i : Fin (n + 2)) :
 @[reassoc (attr := simp)]
 lemma faceSingletonComplIso_hom_ι (i : Fin (n + 2)) :
     (faceSingletonComplIso.{u} i).hom ≫ (face {i}ᶜ).ι =
-      stdSimplex.map (SimplexCategory.δ i) := rfl
+      stdSimplex.δ i := rfl
 
 @[simps! apply]
 noncomputable def _root_.Finset.orderIsoOfOrderEmbedding
@@ -388,21 +388,19 @@ noncomputable def facePairComplIso (i j : Fin (n + 3)) (h : i < j) :
 @[reassoc]
 lemma facePairComplIso_hom_ι (i j : Fin (n + 3)) (h : i < j) :
     (facePairComplIso.{u} i j h).hom ≫ (face {i, j}ᶜ).ι =
-      stdSimplex.map (SimplexCategory.δ (i.castPred (Fin.ne_last_of_lt h))) ≫
-        stdSimplex.map (SimplexCategory.δ j) :=
+      stdSimplex.δ (i.castPred (Fin.ne_last_of_lt h)) ≫ stdSimplex.δ j :=
   rfl
 
 @[reassoc]
 lemma facePairComplIso_hom_ι' (i j : Fin (n + 3)) (h : i < j) :
     (facePairComplIso.{u} i j h).hom ≫ (face {i, j}ᶜ).ι =
-      stdSimplex.map (SimplexCategory.δ (j.pred (Fin.ne_zero_of_lt h))) ≫
-        stdSimplex.map (SimplexCategory.δ i) := by
+      stdSimplex.δ (j.pred (Fin.ne_zero_of_lt h)) ≫ stdSimplex.δ i := by
   obtain ⟨j, rfl⟩ := j.eq_succ_of_ne_zero (Fin.ne_zero_of_lt h)
   obtain rfl | ⟨i, rfl⟩ := i.eq_last_or_eq_castSucc
   · have := j.succ.le_last
     omega
-  · rw [facePairComplIso_hom_ι, ← Functor.map_comp, ← Functor.map_comp,
-      Fin.pred_succ, Fin.castPred_castSucc, SimplexCategory.δ_comp_δ]
+  · rw [facePairComplIso_hom_ι,
+      Fin.pred_succ, Fin.castPred_castSucc, CosimplicialObject.δ_comp_δ]
     rw [← Fin.succ_le_succ_iff, ← Fin.castSucc_lt_iff_succ_le]
     exact h
 
@@ -417,8 +415,7 @@ lemma homOfLE_faceSingletonComplIso_inv_eq_facePairComplIso_δ_pred
     (i j : Fin (n + 3)) (h : i < j) :
     Subcomplex.homOfLE (face_pair_compl_le₁ i j) ≫
       (faceSingletonComplIso.{u} i).inv =
-        (facePairComplIso i j h).inv ≫ stdSimplex.map (SimplexCategory.δ
-          (j.pred (Fin.ne_zero_of_lt h))) := by
+        (facePairComplIso i j h).inv ≫ stdSimplex.δ (j.pred (Fin.ne_zero_of_lt h)) := by
   rw [← cancel_mono (faceSingletonComplIso.{u} i).hom,
     Category.assoc, Iso.inv_hom_id, Category.comp_id, Category.assoc,
     ← cancel_mono (Subpresheaf.ι _), Category.assoc, Category.assoc,
@@ -432,7 +429,7 @@ lemma homOfLE_faceSingletonComplIso_inv_eq_facePairComplIso_δ_castPred
     Subcomplex.homOfLE (face_pair_compl_le₂ i j) ≫
       (faceSingletonComplIso.{u} j).inv =
         (facePairComplIso i j h).inv ≫
-          stdSimplex.map (SimplexCategory.δ (i.castPred (Fin.ne_last_of_lt h))) := by
+          stdSimplex.δ (i.castPred (Fin.ne_last_of_lt h)) := by
   rw [← cancel_mono (faceSingletonComplIso.{u} j).hom,
     Category.assoc, Iso.inv_hom_id, Category.comp_id, Category.assoc,
     ← cancel_mono (Subpresheaf.ι _), Category.assoc, Category.assoc,

@@ -395,64 +395,54 @@ end
 -- to compose path above if we provide a composition below
 lemma exists_path_composition_above_of_fibration
     (p : X ⟶ Y) [Fibration p] (x₀₁ x₁₂ : Δ[1] ⟶ X)
-    (h : stdSimplex.map (SimplexCategory.δ 0) ≫ x₀₁ =
-      stdSimplex.map (SimplexCategory.δ 1) ≫ x₁₂)
+    (h : stdSimplex.δ 0 ≫ x₀₁ = stdSimplex.δ 1 ≫ x₁₂)
     (s : Δ[2] ⟶ Y)
-    (hs₀₁ : stdSimplex.map (SimplexCategory.δ 2) ≫ s = x₀₁ ≫ p)
-    (hs₁₂ : stdSimplex.map (SimplexCategory.δ 0) ≫ s = x₁₂ ≫ p) :
+    (hs₀₁ : stdSimplex.δ 2 ≫ s = x₀₁ ≫ p)
+    (hs₁₂ : stdSimplex.δ 0 ≫ s = x₁₂ ≫ p) :
     ∃ (x₀₂ : Δ[1] ⟶ X),
-      stdSimplex.map (SimplexCategory.δ 1) ≫ x₀₂ =
-        stdSimplex.map (SimplexCategory.δ 1) ≫ x₀₁ ∧
-      stdSimplex.map (SimplexCategory.δ 0) ≫ x₀₂ =
-        stdSimplex.map (SimplexCategory.δ 0) ≫ x₁₂ ∧
-        x₀₂ ≫ p = stdSimplex.map (SimplexCategory.δ 1) ≫ s := by
+      stdSimplex.δ 1 ≫ x₀₂ =
+        stdSimplex.δ 1 ≫ x₀₁ ∧
+      stdSimplex.δ 0 ≫ x₀₂ =
+        stdSimplex.δ 0 ≫ x₁₂ ∧
+        x₀₂ ≫ p = stdSimplex.δ 1 ≫ s := by
   obtain ⟨t, ht₁, ht₂⟩ := horn₂₁.isPushout.exists_desc x₀₁ x₁₂ h
   have sq : CommSq t (horn 2 1).ι p s := ⟨by
     apply horn₂₁.isPushout.hom_ext
     · simp [reassoc_of% ht₁, ← hs₀₁]
     · simp [reassoc_of% ht₂, ← hs₁₂]⟩
-  refine ⟨stdSimplex.map (SimplexCategory.δ 1) ≫ sq.lift, ?_, ?_, ?_⟩
+  refine ⟨stdSimplex.δ 1 ≫ sq.lift, ?_, ?_, ?_⟩
   · rw [← ht₁]
     conv_rhs => rw [← sq.fac_left]
-    rw [horn.ι_ι_assoc,
-      ← Functor.map_comp_assoc, ← Functor.map_comp_assoc]
-    congr 2
-    exact (SimplexCategory.δ_comp_δ (i := 1) (j := 1) (by rfl)).symm
+    rw [horn.ι_ι_assoc]
+    symm
+    apply stdSimplex.δ_comp_δ_assoc (n := 0) (i := 1) (j := 1) (by rfl)
   · rw [← ht₂]
     conv_rhs => rw [← sq.fac_left]
-    rw [horn.ι_ι_assoc,
-      ← Functor.map_comp_assoc, ← Functor.map_comp_assoc]
-    have := SimplexCategory.δ_comp_δ_self (n := 0) (i := 0)
-    dsimp at this
-    rw [this]
+    rw [horn.ι_ι_assoc]
+    symm
+    apply stdSimplex.δ_comp_δ_self_assoc (n := 0) (i := 0)
   · rw [Category.assoc, sq.fac_right]
 
 lemma exists_path_composition_above_of_fibration'
     (p : X ⟶ Y) [Fibration p] (x₀₁ x₁₂ : Δ[1] ⟶ X) (b : Y _⦋0⦌)
-    (h : stdSimplex.map (SimplexCategory.δ 0) ≫ x₀₁ =
-      stdSimplex.map (SimplexCategory.δ 1) ≫ x₁₂)
+    (h : stdSimplex.δ 0 ≫ x₀₁ = stdSimplex.δ 1 ≫ x₁₂)
     (hx : x₀₁ ≫ p = const b) :
     ∃ (x₀₂ : Δ[1] ⟶ X),
-      stdSimplex.map (SimplexCategory.δ 1) ≫ x₀₂ =
-        stdSimplex.map (SimplexCategory.δ 1) ≫ x₀₁ ∧
-      stdSimplex.map (SimplexCategory.δ 0) ≫ x₀₂ =
-        stdSimplex.map (SimplexCategory.δ 0) ≫ x₁₂ ∧
+      stdSimplex.δ 1 ≫ x₀₂ = stdSimplex.δ 1 ≫ x₀₁ ∧
+      stdSimplex.δ 0 ≫ x₀₂ = stdSimplex.δ 0 ≫ x₁₂ ∧
         x₀₂ ≫ p = x₁₂ ≫ p := by
   obtain ⟨x₀₂, eq₁, eq₂, eq₃⟩ := exists_path_composition_above_of_fibration p x₀₁ x₁₂ h
-    (stdSimplex.map (SimplexCategory.σ 0) ≫ x₁₂ ≫ p) (by
-      have := h =≫ p
-      simp only [Category.assoc] at this
-      rw [← Functor.map_comp_assoc]
-      have := SimplexCategory.δ_comp_σ_of_gt (n := 0) (i := 1) (j := 0) (by simp)
-      dsimp at this
-      rw [this, Functor.map_comp_assoc, ← reassoc_of% h, hx, comp_const, comp_const]) (by
-      have := SimplexCategory.δ_comp_σ_self (n := 1) (i := 0)
-      dsimp at this
-      rw [← Functor.map_comp_assoc, this, CategoryTheory.Functor.map_id, Category.id_comp])
+    (stdSimplex.σ 0 ≫ x₁₂ ≫ p) (by
+      have h₁ := h =≫ p
+      simp only [Category.assoc] at h₁
+      have h₂ := stdSimplex.{u}.δ_comp_σ_of_gt (n := 0) (i := 1) (j := 0) (by simp)
+      dsimp at h₂
+      rw [reassoc_of% h₂, ← h₁, hx, comp_const, comp_const])
+    (stdSimplex.{u}.δ_comp_σ_self_assoc (n := 1) (i := 0) _)
   refine ⟨x₀₂, eq₁, eq₂, ?_⟩
-  have := SimplexCategory.δ_comp_σ_succ (n := 1) (i := 0)
+  have := stdSimplex.{u}.δ_comp_σ_succ (n := 1) (i := 0)
   dsimp at this
-  rw [eq₃, ← Functor.map_comp_assoc, this, CategoryTheory.Functor.map_id, Category.id_comp]
+  rw [eq₃, reassoc_of% this]
 
 lemma homotopy_extension_property₁ {E K L : SSet.{u}} (i : K ⟶ L) (p : E ⟶ B) [Fibration p]
     [Mono i]

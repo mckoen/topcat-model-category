@@ -12,25 +12,25 @@ namespace stdSimplex
 
 @[reassoc (attr := simp)]
 lemma δ_one_ι₀ :
-    stdSimplex.map (SimplexCategory.δ (1 : Fin 2)) ≫ ι₀ =
+    stdSimplex.δ (1 : Fin 2) ≫ ι₀ =
       SSet.const (prodStdSimplex.obj₀Equiv.symm ⟨0, 0⟩) :=
   yonedaEquiv.injective (Prod.ext (by ext i; fin_cases i; rfl) (by rfl))
 
 @[reassoc (attr := simp)]
 lemma δ_zero_ι₀ :
-    stdSimplex.map (SimplexCategory.δ (0 : Fin 2)) ≫ ι₀ =
+    stdSimplex.δ (0 : Fin 2) ≫ ι₀ =
       SSet.const (prodStdSimplex.obj₀Equiv.symm ⟨1, 0⟩) :=
   yonedaEquiv.injective (Prod.ext (by ext i; fin_cases i; rfl) (by rfl))
 
 @[reassoc (attr := simp)]
 lemma δ_one_ι₁ :
-    stdSimplex.map (SimplexCategory.δ (1 : Fin 2)) ≫ ι₁ =
+    stdSimplex.δ (1 : Fin 2) ≫ ι₁ =
       SSet.const (prodStdSimplex.obj₀Equiv.symm ⟨0, 1⟩) :=
   yonedaEquiv.injective (Prod.ext (by ext i; fin_cases i; rfl) (by rfl))
 
 @[reassoc (attr := simp)]
 lemma δ_zero_ι₁ :
-    stdSimplex.map (SimplexCategory.δ (0 : Fin 2)) ≫ ι₁ =
+    stdSimplex.δ (0 : Fin 2) ≫ ι₁ =
       SSet.const (prodStdSimplex.obj₀Equiv.symm ⟨1, 1⟩) :=
   yonedaEquiv.injective (Prod.ext (by ext i; fin_cases i; rfl) (by rfl))
 

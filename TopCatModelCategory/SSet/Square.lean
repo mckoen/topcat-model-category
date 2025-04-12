@@ -48,23 +48,23 @@ lemma diagonal_snd : diagonal.{u} ≫ snd _ _ = 𝟙 _ := by simp [diagonal]
 
 @[reassoc (attr := simp)]
 lemma δ₀_diagonal :
-    stdSimplex.map (SimplexCategory.δ 0) ≫ diagonal =
+    stdSimplex.δ 0 ≫ diagonal =
       const (prodStdSimplex.obj₀Equiv.symm ⟨1, 1⟩) := by
   apply yonedaEquiv.injective
   apply Prod.ext <;> exact stdSimplex.obj₀Equiv.injective (by rfl)
 
 @[reassoc (attr := simp)]
 lemma δ₁_diagonal :
-    stdSimplex.map (SimplexCategory.δ 1) ≫ diagonal =
+    stdSimplex.δ 1 ≫ diagonal =
       const (prodStdSimplex.obj₀Equiv.symm ⟨0, 0⟩) := by
   apply yonedaEquiv.injective
   apply Prod.ext <;> exact stdSimplex.obj₀Equiv.injective (by rfl)
 
 @[reassoc (attr := simp)]
 lemma δ₀_ιTriangle₀ :
-    stdSimplex.map (SimplexCategory.δ 0) ≫ square.ιTriangle₀ = ι₁ ≫ (β_ _ _).hom := by
+    stdSimplex.δ 0 ≫ square.ιTriangle₀ = ι₁ ≫ (β_ _ _).hom := by
   dsimp [ιTriangle₀]
-  rw [stdSimplex.map_comp_yonedaEquiv_symm]
+  rw [stdSimplex.δ_comp_yonedaEquiv_symm]
   apply SSet.yonedaEquiv.injective
   apply prodStdSimplex.objEquiv.injective
   rw [Equiv.apply_symm_apply]
@@ -72,27 +72,27 @@ lemma δ₀_ιTriangle₀ :
 
 @[reassoc (attr := simp)]
 lemma δ₁_ιTriangle₀ :
-    stdSimplex.map (SimplexCategory.δ 1) ≫ square.ιTriangle₀ = diagonal := by
+    stdSimplex.δ 1 ≫ square.ιTriangle₀ = diagonal := by
   dsimp [ιTriangle₀]
-  rw [stdSimplex.map_comp_yonedaEquiv_symm]
+  rw [stdSimplex.δ_comp_yonedaEquiv_symm]
   apply SSet.yonedaEquiv.injective
   apply prodStdSimplex.objEquiv.injective
   rw [Equiv.apply_symm_apply]
   ext x : 3 <;> fin_cases x <;> rfl
 
 @[reassoc (attr := simp)]
-lemma δ₂_ιTriangle₀ : stdSimplex.map (SimplexCategory.δ 2) ≫ square.ιTriangle₀ = ι₀ := by
+lemma δ₂_ιTriangle₀ : stdSimplex.δ 2 ≫ square.ιTriangle₀ = ι₀ := by
   dsimp [ιTriangle₀]
-  rw [stdSimplex.map_comp_yonedaEquiv_symm]
+  rw [stdSimplex.δ_comp_yonedaEquiv_symm]
   apply SSet.yonedaEquiv.injective
   apply prodStdSimplex.objEquiv.injective
   rw [Equiv.apply_symm_apply]
   ext x : 3 <;> fin_cases x <;> rfl
 
 @[reassoc (attr := simp)]
-lemma δ₀_ιTriangle₁ : stdSimplex.map (SimplexCategory.δ 0) ≫ square.ιTriangle₁ = ι₁ := by
+lemma δ₀_ιTriangle₁ : stdSimplex.δ 0 ≫ square.ιTriangle₁ = ι₁ := by
   dsimp [ιTriangle₁]
-  rw [stdSimplex.map_comp_yonedaEquiv_symm]
+  rw [stdSimplex.δ_comp_yonedaEquiv_symm]
   apply SSet.yonedaEquiv.injective
   apply prodStdSimplex.objEquiv.injective
   rw [Equiv.apply_symm_apply]
@@ -100,9 +100,9 @@ lemma δ₀_ιTriangle₁ : stdSimplex.map (SimplexCategory.δ 0) ≫ square.ιT
 
 @[reassoc (attr := simp)]
 lemma δ₁_ιTriangle₁ :
-    stdSimplex.map (SimplexCategory.δ 1) ≫ square.ιTriangle₁ = diagonal := by
+    stdSimplex.δ 1 ≫ square.ιTriangle₁ = diagonal := by
   dsimp [ιTriangle₁]
-  rw [stdSimplex.map_comp_yonedaEquiv_symm]
+  rw [stdSimplex.δ_comp_yonedaEquiv_symm]
   apply SSet.yonedaEquiv.injective
   apply prodStdSimplex.objEquiv.injective
   rw [Equiv.apply_symm_apply]
@@ -110,9 +110,9 @@ lemma δ₁_ιTriangle₁ :
 
 @[reassoc (attr := simp)]
 lemma δ₂_ιTriangle₁ :
-    stdSimplex.map (SimplexCategory.δ 2) ≫ square.ιTriangle₁ = ι₀ ≫ (β_ _ _).hom := by
+    stdSimplex.δ 2 ≫ square.ιTriangle₁ = ι₀ ≫ (β_ _ _).hom := by
   dsimp [ιTriangle₁]
-  rw [stdSimplex.map_comp_yonedaEquiv_symm]
+  rw [stdSimplex.δ_comp_yonedaEquiv_symm]
   apply SSet.yonedaEquiv.injective
   apply prodStdSimplex.objEquiv.injective
   rw [Equiv.apply_symm_apply]
@@ -120,16 +120,16 @@ lemma δ₂_ιTriangle₁ :
 
 @[reassoc]
 lemma δ₁_whiskerRight :
-    stdSimplex.{u}.map (SimplexCategory.δ (1 : Fin 2)) ▷ Δ[1] =
-      snd _ _ ≫ stdSimplex.map (SimplexCategory.δ 2) ≫ ιTriangle₁ := by
+    stdSimplex.{u}.δ (1 : Fin 2) ▷ Δ[1] =
+      snd _ _ ≫ stdSimplex.δ 2 ≫ ιTriangle₁ := by
   rw [← cancel_epi (stdSimplex.leftUnitor _).inv]
   apply yonedaEquiv.injective
   apply Prod.ext <;> ext i <;> fin_cases i <;> rfl
 
 @[reassoc]
 lemma δ₀_whiskerRight :
-    stdSimplex.{u}.map (SimplexCategory.δ (0 : Fin 2)) ▷ Δ[1] =
-      snd _ _ ≫ stdSimplex.map (SimplexCategory.δ 0) ≫ ιTriangle₀ := by
+    stdSimplex.{u}.δ (0 : Fin 2) ▷ Δ[1] =
+      snd _ _ ≫ stdSimplex.δ 0 ≫ ιTriangle₀ := by
   rw [← cancel_epi (stdSimplex.leftUnitor _).inv]
   apply yonedaEquiv.injective
   apply Prod.ext <;> ext i <;> fin_cases i <;> rfl
@@ -196,8 +196,8 @@ lemma sq : Sq (ofSimplex.{u} (yonedaEquiv diagonal))
     rw [range_objEquiv_diagonalSimplex_eq_inter, Set.subset_inter_iff]
 
 lemma isPushout :
-    IsPushout (stdSimplex.{u}.map (SimplexCategory.δ 1))
-      (stdSimplex.map (SimplexCategory.δ 1)) square.ιTriangle₀
+    IsPushout (stdSimplex.{u}.δ 1)
+      (stdSimplex.δ 1) square.ιTriangle₀
       square.ιTriangle₁ := by
   fapply sq.{u}.isPushout.of_iso'
     (prodStdSimplex.isoOfNonDegenerate.{u} diagonalSimplex)

@@ -109,7 +109,7 @@ lemma faceι_ι (i : Fin (n + 1)) (j : Fin (n + 1)) (hij : j ≠ i) :
 
 def ι (i : Fin (n + 2)) (j : Fin (n + 2)) (hij : j ≠ i) :
     Δ[n] ⟶ horn.{u} (n + 1) i :=
-  Subcomplex.lift ((stdSimplex.{u}.map (SimplexCategory.δ j)))
+  Subcomplex.lift ((stdSimplex.{u}.δ j))
     (le_antisymm (by simp) (by
       rw [← Subcomplex.image_le_iff, Subcomplex.image_top]
       simp only [Subcomplex.range_eq_ofSimplex]
@@ -120,7 +120,7 @@ def ι (i : Fin (n + 2)) (j : Fin (n + 2)) (hij : j ≠ i) :
 @[reassoc (attr := simp)]
 lemma ι_ι (i : Fin (n + 2)) (j : Fin (n + 2)) (hij : j ≠ i) :
     ι i j hij ≫ (horn.{u} (n + 1) i).ι =
-      stdSimplex.{u}.map (SimplexCategory.δ j) := by simp [ι]
+      stdSimplex.{u}.δ j := by simp [ι]
 
 @[reassoc (attr := simp)]
 lemma faceSingletonComplIso_inv_ι (i : Fin (n + 2)) (j : Fin (n + 2)) (hij : j ≠ i) :
@@ -152,8 +152,8 @@ abbrev ι₀₁ : Δ[1] ⟶ horn.{u} 2 0 := horn.ι 0 2 (by simp)
 abbrev ι₀₂ : Δ[1] ⟶ horn.{u} 2 0 := horn.ι 0 1 (by simp)
 
 lemma isPushout :
-    IsPushout (stdSimplex.{u}.map (SimplexCategory.δ (1 : Fin 2)))
-      (stdSimplex.{u}.map (SimplexCategory.δ (1 : Fin 2))) ι₀₁ ι₀₂ := by
+    IsPushout (stdSimplex.{u}.δ (1 : Fin 2))
+      (stdSimplex.{u}.δ (1 : Fin 2)) ι₀₁ ι₀₂ := by
   fapply sq.{u}.isPushout.of_iso'
     (stdSimplex.faceSingletonIso _ )
     (stdSimplex.facePairIso _ _ (by simp))
@@ -189,8 +189,8 @@ abbrev ι₀₁ : Δ[1] ⟶ horn.{u} 2 1 := horn.ι 1 2 (by simp)
 abbrev ι₁₂ : Δ[1] ⟶ horn.{u} 2 1 := horn.ι 1 0 (by simp)
 
 lemma isPushout :
-    IsPushout (stdSimplex.{u}.map (SimplexCategory.δ (0 : Fin 2)))
-      (stdSimplex.{u}.map (SimplexCategory.δ (1 : Fin 2))) ι₀₁ ι₁₂ := by
+    IsPushout (stdSimplex.{u}.δ (0 : Fin 2))
+      (stdSimplex.{u}.δ (1 : Fin 2)) ι₀₁ ι₁₂ := by
   fapply sq.{u}.isPushout.of_iso'
     (stdSimplex.faceSingletonIso _ )
     (stdSimplex.facePairIso _ _ (by simp))
@@ -226,8 +226,8 @@ abbrev ι₀₂ : Δ[1] ⟶ horn.{u} 2 2 := horn.ι 2 1 (by simp)
 abbrev ι₁₂ : Δ[1] ⟶ horn.{u} 2 2 := horn.ι 2 0 (by simp)
 
 lemma isPushout :
-    IsPushout (stdSimplex.{u}.map (SimplexCategory.δ (0 : Fin 2)))
-      (stdSimplex.{u}.map (SimplexCategory.δ (0 : Fin 2))) ι₀₂ ι₁₂ := by
+    IsPushout (stdSimplex.{u}.δ (0 : Fin 2))
+      (stdSimplex.{u}.δ (0 : Fin 2)) ι₀₂ ι₁₂ := by
   fapply sq.{u}.isPushout.of_iso'
     (stdSimplex.faceSingletonIso _ )
     (stdSimplex.facePairIso _ _ (by simp))
@@ -279,8 +279,8 @@ end
 open stdSimplex in
 lemma exists_desc {i : Fin (n + 3)} {X : SSet.{u}} (f : ({i}ᶜ : Set _) → ((Δ[n + 1] : SSet) ⟶ X))
     (hf : ∀ (j k : ({i}ᶜ : Set _)) (hjk : j.1 < k.1),
-      stdSimplex.map (SimplexCategory.δ (k.1.pred (Fin.ne_zero_of_lt hjk))) ≫ f j =
-        stdSimplex.map (SimplexCategory.δ (j.1.castPred (Fin.ne_last_of_lt hjk))) ≫ f k) :
+      stdSimplex.δ (k.1.pred (Fin.ne_zero_of_lt hjk)) ≫ f j =
+        stdSimplex.δ (j.1.castPred (Fin.ne_last_of_lt hjk)) ≫ f k) :
     ∃ (φ : (Λ[n + 2, i] : SSet) ⟶ X), ∀ j, ι i j.1 j.2 ≫ φ = f j := by
   obtain ⟨φ, hφ⟩ := exists_desc' (i := i)
     (f := fun j ↦
@@ -302,12 +302,9 @@ abbrev ι₂ : Δ[2] ⟶ horn.{u} 3 1 := horn.ι 1 2 (by simp)
 abbrev ι₃ : Δ[2] ⟶ horn.{u} 3 1 := horn.ι 1 3 (by simp)
 
 variable {X : SSet.{u}} (f₀ f₂ f₃ : Δ[2] ⟶ X)
-  (h₁₂ : stdSimplex.map (SimplexCategory.δ 2) ≫ f₀ =
-    stdSimplex.map (SimplexCategory.δ 0) ≫ f₃)
-  (h₁₃ : stdSimplex.map (SimplexCategory.δ 1) ≫ f₀ =
-    stdSimplex.map (SimplexCategory.δ 0) ≫ f₂)
-  (h₂₃ : stdSimplex.map (SimplexCategory.δ 2) ≫ f₂ =
-    stdSimplex.map (SimplexCategory.δ 2) ≫ f₃)
+  (h₁₂ : stdSimplex.δ 2 ≫ f₀ = stdSimplex.δ 0 ≫ f₃)
+  (h₁₃ : stdSimplex.δ 1 ≫ f₀ = stdSimplex.δ 0 ≫ f₂)
+  (h₂₃ : stdSimplex.δ 2 ≫ f₂ = stdSimplex.δ 2 ≫ f₃)
 
 namespace desc
 
@@ -376,12 +373,9 @@ abbrev ι₁ : Δ[2] ⟶ horn.{u} 3 2 := horn.ι 2 1 (by simp)
 abbrev ι₃ : Δ[2] ⟶ horn.{u} 3 2 := horn.ι 2 3 (by simp)
 
 variable {X : SSet.{u}} (f₀ f₁ f₃ : Δ[2] ⟶ X)
-  (h₀₂ : stdSimplex.map (SimplexCategory.δ 2) ≫ f₁ =
-    stdSimplex.map (SimplexCategory.δ 1) ≫ f₃)
-  (h₁₂ : stdSimplex.map (SimplexCategory.δ 2) ≫ f₀ =
-    stdSimplex.map (SimplexCategory.δ 0) ≫ f₃)
-  (h₂₃ : stdSimplex.map (SimplexCategory.δ 0) ≫ f₀ =
-    stdSimplex.map (SimplexCategory.δ 0) ≫ f₁)
+  (h₀₂ : stdSimplex.δ 2 ≫ f₁ = stdSimplex.δ 1 ≫ f₃)
+  (h₁₂ : stdSimplex.δ 2 ≫ f₀ = stdSimplex.δ 0 ≫ f₃)
+  (h₂₃ : stdSimplex.δ 0 ≫ f₀ = stdSimplex.δ 0 ≫ f₁)
 
 namespace desc
 

@@ -124,7 +124,7 @@ def ι (i : Fin (n + 2)) :
 @[reassoc (attr := simp)]
 lemma ι_ι (i : Fin (n + 2)) :
     ι.{u} i ≫ (boundary.{u} (n + 1)).ι =
-      stdSimplex.{u}.map (SimplexCategory.δ i) := rfl
+      stdSimplex.{u}.δ i := rfl
 
 @[reassoc (attr := simp)]
 lemma faceSingletonComplIso_inv_ι (i : Fin (n + 2)) :
