@@ -339,6 +339,10 @@ lemma pushout_desc_ι₁_whiskerRight_mono {X Y : SSet.{u}} (i : X ⟶ Y) [Mono 
   rw [← PushoutTensor.ι_horn₁₁]
   exact pushoutTensorι₂ (PushoutTensor.horn₁₁ i) (horn_ι_mem 0 1)
 
+lemma face (i : Fin 2) : anodyneExtensions.{u} (stdSimplex.face ({i})).ι := by
+  rw [← horn₁.eq_face i]
+  exact horn_ι_mem 0 i
+
 end anodyneExtensions
 
 end SSet

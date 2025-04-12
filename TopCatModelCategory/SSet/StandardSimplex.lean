@@ -445,6 +445,22 @@ noncomputable def faceSingletonIso (i : Fin (n + 1)) :
   stdSimplex.isoOfRepresentableBy
       (stdSimplex.faceRepresentableBy.{u} _ _ (Fin.orderIsoSingleton i))
 
+@[reassoc]
+lemma faceSingletonIso_zero_hom_comp_ι_eq_δ :
+    (faceSingletonIso.{u} (0 : Fin 2)).hom ≫ (face {0}).ι = stdSimplex.δ 1 := by
+  apply yonedaEquiv.injective
+  ext i
+  fin_cases i
+  rfl
+
+@[reassoc]
+lemma faceSingletonIso_one_hom_comp_ι_eq_δ :
+    (faceSingletonIso.{u} (1 : Fin 2)).hom ≫ (face {1}).ι = stdSimplex.δ 0 := by
+  apply yonedaEquiv.injective
+  ext i
+  fin_cases i
+  rfl
+
 noncomputable def facePairIso (i j : Fin (n + 1)) (hij : i < j) :
     Δ[1] ≅ (face {i, j} : SSet.{u}) :=
   stdSimplex.isoOfRepresentableBy

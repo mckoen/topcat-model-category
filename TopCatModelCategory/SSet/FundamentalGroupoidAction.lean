@@ -1,3 +1,4 @@
+import TopCatModelCategory.SSet.AnodyneExtensionsAdjunctions
 import TopCatModelCategory.SSet.FundamentalGroupoid
 import TopCatModelCategory.SSet.HomotopyGroup
 
@@ -27,11 +28,35 @@ namespace action
 
 variable {X : SSet.{u}} [IsFibrant X] {x₀ x₁ : FundamentalGroupoid X} {n : ℕ}
 
-lemma exists_actionStruct [IsFibrant X] (p : Edge x₀ x₁)
+lemma exists_actionStruct (p : Edge x₀ x₁)
     (s : Subcomplex.RelativeMorphism (boundary n) _
       (const ⟨x₀.pt, Subcomplex.mem_ofSimplex_obj x₀.pt⟩)) :
-    ∃ t, Nonempty (ActionStruct p s t) :=
-  sorry
+    ∃ t, Nonempty (ActionStruct p s t) := by
+  obtain ⟨φ, hφ₁, hφ₂⟩ :=
+    (Subcomplex.unionProd.isPushout ∂Δ[n] (stdSimplex.face {(0 : Fin 2)})).exists_desc
+      (fst _ _ ≫ s.map) (snd _ _ ≫ p.map) (by
+        rw [whiskerRight_fst_assoc, s.comm, Subcomplex.ofSimplex_ι, comp_const, comp_const,
+          whiskerLeft_snd_assoc, p.comm₀'', comp_const])
+  obtain ⟨l, hl⟩ := anodyneExtensions.exists_lift_of_isFibrant φ
+    (anodyneExtensions.subcomplex_unionProd_mem_of_right.{u} ∂Δ[n] _
+    (anodyneExtensions.face 0))
+  refine ⟨{
+    map := ι₁ ≫ l
+    comm := by
+      have := Subcomplex.unionProd.ι₂ _ _ ≫= hl
+      rw [Subcomplex.unionProd.ι₂_ι_assoc, hφ₂] at this
+      rw [Subcomplex.ofSimplex_ι, comp_const, ← ι₁_comp_assoc, this,
+        ι₁_snd_assoc, const_comp, p.comm₁']
+  }, ⟨{
+      map := l
+      ι₀_map := by
+        have := Subcomplex.unionProd.ι₁ _ _ ≫= hl
+        rw [hφ₁, ← cancel_epi (Δ[n] ◁ (stdSimplex.faceSingletonIso.{u} (0 : Fin 2)).hom),
+          ← cancel_epi (stdSimplex.rightUnitor _).inv] at this
+        exact this
+      ι₁_map := rfl
+      whiskerRight_ι_comp_map := by rw [← hφ₂, ← hl]; rfl
+  }⟩⟩
 
 def unique_actionStruct {p p' : Edge x₀ x₁} (hp : p.Homotopy p')
     {s s' : Subcomplex.RelativeMorphism (boundary n) _

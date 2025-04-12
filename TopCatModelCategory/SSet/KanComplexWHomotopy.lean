@@ -113,43 +113,42 @@ noncomputable def mapFundamentalGroupoidIsoOfHomotopy [IsFibrant X] :
     (fun x ↦ asIso (FundamentalGroupoid.homMk (edgeOfHomotopy h x.pt rfl rfl)))
     (fun {x₀ x₁} p ↦ by
       obtain ⟨p, rfl⟩ := FundamentalGroupoid.homMk_surjective p
-      let f := p.map ▷ _ ≫ h.h
       dsimp
-      have := (FundamentalGroupoid.commSq f
+      have := (FundamentalGroupoid.commSq (p.map ▷ _ ≫ h.h)
         ((mapFundamentalGroupoid f₀).obj x₀)
         ((mapFundamentalGroupoid f₁).obj x₀)
         ((mapFundamentalGroupoid f₀).obj x₁)
         ((mapFundamentalGroupoid f₁).obj x₁)
         (by
-          rw [← h.h₀]
-          dsimp [f]
+          simp only [← h.h₀]
+          dsimp
           exact congr_arg _ (Prod.ext p.comm₀' rfl))
         (by
-          rw [← h.h₁]
-          dsimp [f]
+          simp only [← h.h₁]
+          dsimp
           exact congr_arg _ (Prod.ext p.comm₀' rfl))
         (by
-          rw [← h.h₀]
-          dsimp [f]
+          simp only [← h.h₀]
+          dsimp
           exact congr_arg _ (Prod.ext p.comm₁' rfl))
         (by
-          rw [← h.h₁]
-          dsimp [f]
+          simp only [← h.h₁]
+          dsimp
           exact congr_arg _ (Prod.ext p.comm₁' rfl))).w
       convert this
       · ext : 1
         dsimp
-        rw [← h.h₀]
+        simp only [← h.h₀]
         rfl
       · ext : 1
-        dsimp [f]
+        dsimp
         rw [← Category.assoc, ← Category.assoc]
         congr 1
         ext : 1
         · simp [← p.comm₁']
         · rfl
       · ext : 1
-        dsimp [f]
+        dsimp
         rw [← Category.assoc, ← Category.assoc]
         congr 1
         ext : 1
@@ -157,7 +156,7 @@ noncomputable def mapFundamentalGroupoidIsoOfHomotopy [IsFibrant X] :
         · rfl
       · ext : 1
         dsimp
-        rw [← h.h₁]
+        simp only [← h.h₁]
         rfl)
 
 variable (n : ℕ) (x : X _⦋0⦌) {y₀ y₁ : Y _⦋0⦌}

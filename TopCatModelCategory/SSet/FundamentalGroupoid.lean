@@ -189,6 +189,13 @@ lemma Edge.comm₀' {x₀ x₁ : FundamentalGroupoid X} (p : Edge x₀ x₁) :
   · simp
 
 @[reassoc]
+lemma Edge.comm₀'' {x₀ x₁ : FundamentalGroupoid X} (p : Edge x₀ x₁) :
+    (stdSimplex.face {(0 : Fin 2)}).ι ≫ p.map = const x₀.pt := by
+  rw [← cancel_epi (stdSimplex.faceSingletonIso (0 : Fin 2)).hom, comp_const]
+  rw [stdSimplex.faceSingletonIso_zero_hom_comp_ι_eq_δ_assoc]
+  exact p.comm₀
+
+@[reassoc]
 lemma Edge.comm₁ {x₀ x₁ : FundamentalGroupoid X} (p : Edge x₀ x₁) :
     stdSimplex.map (SimplexCategory.δ 0) ≫ p.map = const x₁.pt := by
   have := boundary₁.ι₁ ≫= p.comm
@@ -206,6 +213,13 @@ lemma Edge.comm₁' {x₀ x₁ : FundamentalGroupoid X} (p : Edge x₀ x₁) :
     fin_cases i
     rfl
   · simp
+
+@[reassoc]
+lemma Edge.comm₁'' {x₀ x₁ : FundamentalGroupoid X} (p : Edge x₀ x₁) :
+    (stdSimplex.face {(1 : Fin 2)}).ι ≫ p.map = const x₁.pt := by
+  rw [← cancel_epi (stdSimplex.faceSingletonIso (1 : Fin 2)).hom, comp_const]
+  rw [stdSimplex.faceSingletonIso_one_hom_comp_ι_eq_δ_assoc]
+  exact p.comm₁
 
 @[simps! map]
 def Edge.id (x : FundamentalGroupoid X) : Edge x x :=
