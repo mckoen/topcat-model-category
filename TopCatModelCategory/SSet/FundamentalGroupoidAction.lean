@@ -96,11 +96,38 @@ noncomputable def uniqueActionStruct₁ {p : Edge x₀ x₁}
     (horn₂₀.isPushout.{u}.map (tensorLeft Δ[n])).exists_desc ht.map ht'.map
       (by simp)
   dsimp at φ
-  obtain ⟨l, hl⟩ := anodyneExtensions.exists_lift_of_isFibrant (by
-    sorry : _ ⟶ X)
-    (anodyneExtensions.subcomplex_unionProd_mem_of_right.{u} ∂Δ[n] _
+  obtain ⟨ψ, hψ₁, hψ₂⟩ :=
+    (Subcomplex.unionProd.isPushout ∂Δ[n] (horn 2 0)).exists_desc φ
+      (snd _ _ ≫ stdSimplex.σ 1 ≫ p.map) (by
+        apply (horn₂₀.isPushout.{u}.map (tensorLeft (∂Δ[n] : SSet))).hom_ext
+        · apply ((∂Δ[n].ι ▷ Δ[1]) ≫= hφ₁).trans
+          have := stdSimplex.{u}.δ_comp_σ_succ (n := 1) (i := 1)
+          dsimp at this ⊢
+          rw [ht.whiskerRight_ι_comp_map, whiskerLeft_snd_assoc,
+            whiskerLeft_snd_assoc, horn.ι_ι_assoc, reassoc_of% this]
+        · apply ((∂Δ[n].ι ▷ Δ[1]) ≫= hφ₂).trans
+          have := stdSimplex.{u}.δ_comp_σ_self (n := 1) (i := 1)
+          dsimp at this ⊢
+          rw [ht'.whiskerRight_ι_comp_map, whiskerLeft_snd_assoc,
+            whiskerLeft_snd_assoc, horn.ι_ι_assoc, reassoc_of% this])
+  obtain ⟨l, hl⟩ := anodyneExtensions.exists_lift_of_isFibrant ψ
+    (anodyneExtensions.subcomplex_unionProd_mem_of_right.{u} _ _
     (anodyneExtensions.horn_ι_mem 1 0))
-  sorry
+  refine ⟨{
+      h := _ ◁ stdSimplex.δ 0 ≫ l
+      h₀ := sorry
+      h₁ := sorry
+      rel := by
+        have := (_ ◁ stdSimplex.δ 0 ≫ Subcomplex.unionProd.ι₂ _ _) ≫= hl
+        rw [Category.assoc, Category.assoc, Subcomplex.unionProd.ι₂_ι_assoc,
+          whisker_exchange_assoc, hψ₂] at this
+        rw [Subcomplex.ofSimplex_ι, comp_const, comp_const, this,
+          whiskerLeft_snd_assoc]
+        have := stdSimplex.{u}.δ_comp_σ_of_le (n := 0) (i := 0) (j := 0) (by rfl)
+        dsimp at this
+        rw [reassoc_of% this]
+        sorry
+  }⟩
 
 def uniqueActionStruct {p p' : Edge x₀ x₁} (hp : p.Homotopy p')
     {s s' : Subcomplex.RelativeMorphism (boundary n) _
