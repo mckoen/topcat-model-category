@@ -195,13 +195,42 @@ noncomputable def uniqueActionStruct₁ {p : Edge x₀ x₁}
           whiskerLeft_snd_assoc, reassoc_of% h₂, p.comm₁, comp_const, comp_const]
   }⟩
 
-def compActionStruct {x₂ : FundamentalGroupoid X} {p₀₁ : Edge x₀ x₁}
+noncomputable def compActionStruct {x₂ : FundamentalGroupoid X} {p₀₁ : Edge x₀ x₁}
     {p₁₂ : Edge x₁ x₂} {p₀₂ : Edge x₀ x₂} (hp : Edge.CompStruct p₀₁ p₁₂ p₀₂)
     {s₀ : X.PtSimplex n x₀.pt} {s₁ : X.PtSimplex n x₁.pt} {s₂ : X.PtSimplex n x₂.pt}
-    (h₀₁ : ActionStruct p₀₁ s₀ s₁)
-    (h₁₂ : ActionStruct p₁₂ s₁ s₂) :
+    (h₀₁ : ActionStruct p₀₁ s₀ s₁) (h₁₂ : ActionStruct p₁₂ s₁ s₂) :
     ActionStruct p₀₂ s₀ s₂ := by
-  sorry
+  apply Nonempty.some
+  obtain ⟨φ, hφ₁, hφ₂⟩ := (horn₂₁.isPushout.{u}.map (tensorLeft Δ[n])).exists_desc
+    h₀₁.map h₁₂.map (by simp)
+  dsimp at φ hφ₁ hφ₂
+  obtain ⟨ψ, hψ₁, hψ₂⟩ := (Subcomplex.unionProd.isPushout ∂Δ[n] (horn 2 1)).exists_desc φ
+    (snd _ _ ≫ hp.map) (by
+      apply (horn₂₁.isPushout.{u}.map (tensorLeft (∂Δ[n] : SSet))).hom_ext
+      · simp [whisker_exchange_assoc, hφ₁]
+      · simp [whisker_exchange_assoc, hφ₂])
+  obtain ⟨l, hl⟩ := anodyneExtensions.exists_lift_of_isFibrant ψ
+    (anodyneExtensions.subcomplex_unionProd_mem_of_right.{u} _ _
+    (anodyneExtensions.horn_ι_mem 1 1))
+  exact ⟨{
+    map := _ ◁ stdSimplex.δ 1 ≫ l
+    ι₀_map := by
+      have := (_ ◁ horn₂₁.ι₀₁ ≫ Subcomplex.unionProd.ι₁ _ _) ≫= hl
+      rw [Category.assoc, Category.assoc, Subcomplex.unionProd.ι₁_ι_assoc,
+        hψ₁, hφ₁] at this
+      rw [← h₀₁.ι₀_map, ← this]
+      rfl
+    ι₁_map := by
+      have := (_ ◁ horn₂₁.ι₁₂ ≫ Subcomplex.unionProd.ι₁ _ _) ≫= hl
+      rw [Category.assoc, Category.assoc, Subcomplex.unionProd.ι₁_ι_assoc,
+        hψ₁, hφ₂] at this
+      rw [← h₁₂.ι₁_map, ← this]
+      rfl
+    whiskerRight_ι_comp_map := by
+      have := Subcomplex.unionProd.ι₂ _ _ ≫= hl
+      rw [Subcomplex.unionProd.ι₂_ι_assoc, hψ₂] at this
+      rw [← whisker_exchange_assoc, this, whiskerLeft_snd_assoc, hp.h₀₂]
+  }⟩
 
 def mulActionStruct {s₁ s₂ s₁₂ : X.PtSimplex n x₀.pt} {i : Fin n}
     (h : PtSimplex.MulStruct s₁ s₂ s₁₂ i) {p : Edge x₀ x₁}
