@@ -64,6 +64,11 @@ noncomputable def leftUnitor : Δ[0] ⊗ X ≅ X where
 @[reassoc (attr := simp)]
 lemma leftUnitor_inv_snd : (leftUnitor X).inv ≫ snd _ _ = 𝟙 _ := rfl
 
+@[reassoc (attr := simp)]
+lemma snd_leftUnitor_inv : snd _ _ ≫ (leftUnitor X).inv = 𝟙 _ := by
+  rw [← cancel_epi (leftUnitor X).inv,
+    leftUnitor_inv_snd_assoc, Category.comp_id]
+
 variable {X} in
 @[reassoc (attr := simp)]
 lemma leftUnitor_inv_naturality (f : X ⟶ Y) :
@@ -102,6 +107,11 @@ noncomputable def rightUnitor : X ⊗ Δ[0] ≅ X where
 
 @[reassoc (attr := simp)]
 lemma rightUnitor_inv_fst : (rightUnitor X).inv ≫ fst _ _ = 𝟙 _ := rfl
+
+@[reassoc (attr := simp)]
+lemma fst_rightUnitor_inv : fst _ _ ≫ (rightUnitor X).inv = 𝟙 _ := by
+  rw [← cancel_epi (rightUnitor X).inv,
+    rightUnitor_inv_fst_assoc, Category.comp_id]
 
 variable {X} in
 @[reassoc (attr := simp)]

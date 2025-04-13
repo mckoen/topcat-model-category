@@ -39,19 +39,17 @@ def mk (f : Δ[n + 1] ⟶ X)
     ext i : 1
     rw [Subcomplex.ofSimplex_ι, boundary.ι_ι_assoc, hf _, comp_const, comp_const]
 
+variable (x) in
+@[simps -isSimp]
 def equiv₀ : X.PtSimplex 0 x ≃ X _⦋0⦌ where
   toFun f := yonedaEquiv f.map
-  invFun y :=
-    { map := yonedaEquiv.symm y
-      comm := by
-        ext _ ⟨x, hx⟩
-        simp at hx }
+  invFun y := { map := yonedaEquiv.symm y }
   left_inv f := by simp
   right_inv y := by simp only [Equiv.apply_symm_apply]
 
 lemma map_eq_const_equiv₀ (s : X.PtSimplex 0 x) :
-    s.map = const (equiv₀ s) := by
-  obtain ⟨y, rfl⟩ := equiv₀.symm.surjective s
+    s.map = const (equiv₀ _ s) := by
+  obtain ⟨y, rfl⟩ := (equiv₀ _).symm.surjective s
   simp [equiv₀]
 
 section
@@ -97,7 +95,7 @@ namespace RelStruct₀
 
 def equiv₀ {f g : X.PtSimplex 0 x} :
     RelStruct₀ f g ≃
-      KanComplex.FundamentalGroupoid.Edge (X := X) ⟨equiv₀ g⟩ ⟨equiv₀ f⟩ where
+      KanComplex.FundamentalGroupoid.Edge (X := X) ⟨equiv₀ _ g⟩ ⟨equiv₀ _ f⟩ where
   toFun h := KanComplex.FundamentalGroupoid.Edge.mk h.map (by
     have := h.δ_succ_map
     dsimp at this
@@ -728,12 +726,7 @@ noncomputable def RelStruct₀.homotopy (h : RelStruct₀ p q) : p.Homotopy q :=
         apply congr_arg
         ext i : 1
         fin_cases i
-        rfl
-      rel := by
-        rw [← cancel_epi (β_ _ _).hom]
-        apply MonoidalClosed.curry_injective
-        ext m ⟨x, hx⟩
-        simp at hx }⟩
+        rfl }⟩
   have h' := h.symm.relStruct (Fin.last (n + 1))
   let α : Fin (n + 2) → (Δ[n + 2] ⟶ X) :=
     Fin.lastCases h'.map (fun i ↦

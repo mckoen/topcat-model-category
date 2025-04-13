@@ -66,6 +66,7 @@ lemma image_le : A.image f.map ≤ B := by
 lemma le_preimage : A ≤ B.preimage f.map := by
   simpa only [← image_le_iff] using f.image_le
 
+@[ext]
 structure Homotopy where
   h : X ⊗ Δ[1] ⟶ Y
   h₀ : ι₀ ≫ h = f.map := by aesop_cat

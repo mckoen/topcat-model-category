@@ -142,7 +142,24 @@ lemma hom_ext {n : ℕ} {X : SSet.{u}} {f g : (boundary (n + 1) : SSet) ⟶ X}
   obtain ⟨i, ⟨y, rfl⟩⟩ := hx
   exact congr_fun ((congr_app (h i)) _) _
 
+@[ext]
+lemma hom_ext₀ {X : SSet.{u}} {f g : (boundary 0 : SSet) ⟶ X} : f = g := by
+  ext _ ⟨x, hx⟩
+  simp at hx
+
 open MonoidalClosed
+
+@[ext]
+lemma hom_ext_tensorLeft₀ {X Y : SSet.{u}}
+    {f g : Y ⊗ (boundary 0 : SSet) ⟶ X} : f = g := by
+  apply curry_injective
+  apply hom_ext₀
+
+@[ext]
+lemma hom_ext_tensorRight₀ {X Y : SSet.{u}}
+    {f g : (boundary 0 : SSet) ⊗ Y ⟶ X} : f = g := by
+  rw [← cancel_epi (β_ _ _).hom]
+  ext
 
 @[ext]
 lemma hom_ext_tensorLeft {n : ℕ} {X Y : SSet.{u}}
