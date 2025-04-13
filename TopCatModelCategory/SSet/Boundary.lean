@@ -253,6 +253,55 @@ lemma exists_isPushout_of_ne_top {X : SSet.{u}} (A : X.Subcomplex) (hA : A ≠ �
     obtain rfl := X.unique_nonDegenerate₃ _ φ ⟨x, hx'⟩ rfl ψ ⟨x, hx'⟩ h
     rfl
 
+section
+
+variable (n)
+
+lemma multicoequalizerDiagram :
+  CompleteLattice.MulticoequalizerDiagram (boundary n)
+    (ι := Fin (n + 1)) (fun j ↦ stdSimplex.face {j}ᶜ)
+    (fun j k ↦ stdSimplex.face {j, k}ᶜ) where
+  iSup_eq := by rw [boundary_eq_iSup]
+  min_eq j k := by
+    rw [stdSimplex.face_inter_face]
+    congr
+    aesop
+
+noncomputable def isColimit :
+    IsColimit ((multicoequalizerDiagram n).multicofork.toLinearOrder.map Subcomplex.toPresheafFunctor) :=
+  Subcomplex.multicoforkIsColimit' (multicoequalizerDiagram n)
+
+def exists_desc' {X : SSet.{u}}
+    (f : ∀ (j : Fin (n + 1)), (stdSimplex.face {j}ᶜ : SSet) ⟶ X)
+    (hf : ∀ (j k : Fin (n + 1)) (_ : j < k),
+      Subcomplex.homOfLE (show stdSimplex.face {j, k}ᶜ ≤ _ by
+        simp [stdSimplex.face_le_face_iff]) ≫ f j =
+      Subcomplex.homOfLE (show stdSimplex.face {j, k}ᶜ ≤ _ by
+        simp [stdSimplex.face_le_face_iff]) ≫ f k) :
+    ∃ (φ : (∂Δ[n] : SSet) ⟶ X),
+      ∀ j, faceι j ≫ φ = f j :=
+  ⟨(isColimit n).desc
+    (Multicofork.ofπ _ _ f (fun s ↦ hf _ _ s.2)), fun j ↦ by
+      exact (isColimit n).fac _ (.right j)⟩
+
+end
+
+open stdSimplex in
+lemma exists_desc {X : SSet.{u}} (f : Fin (n + 3) → ((Δ[n + 1] : SSet) ⟶ X))
+    (hf : ∀ (j k : Fin (n + 3)) (hjk : j < k),
+      stdSimplex.δ (k.pred (Fin.ne_zero_of_lt hjk)) ≫ f j =
+        stdSimplex.δ (j.castPred (Fin.ne_last_of_lt hjk)) ≫ f k) :
+    ∃ (φ : (∂Δ[n + 2] : SSet) ⟶ X), ∀ j, ι j ≫ φ = f j := by
+  obtain ⟨φ, hφ⟩ := exists_desc' (n := n + 2)
+    (f := fun j ↦ (faceSingletonComplIso j).inv ≫ f j) (fun j k hjk ↦ by
+      dsimp
+      rw [homOfLE_faceSingletonComplIso_inv_eq_facePairComplIso_δ_pred_assoc _ _ hjk,
+        homOfLE_faceSingletonComplIso_inv_eq_facePairComplIso_δ_castPred_assoc _ _ hjk,
+        hf _ _ hjk])
+  exact ⟨φ, fun j ↦ by
+    rw [← cancel_epi (faceSingletonComplIso j).inv, ← hφ,
+      faceSingletonComplIso_inv_ι_assoc]⟩
+
 end boundary
 
 end SSet

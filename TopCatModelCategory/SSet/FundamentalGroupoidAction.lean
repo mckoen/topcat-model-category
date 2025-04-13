@@ -232,13 +232,108 @@ noncomputable def compActionStruct {x₂ : FundamentalGroupoid X} {p₀₁ : Edg
       rw [← whisker_exchange_assoc, this, whiskerLeft_snd_assoc, hp.h₀₂]
   }⟩
 
-def mulActionStruct {s₁ s₂ s₁₂ : X.PtSimplex n x₀.pt} {i : Fin n}
+noncomputable def uniqueActionStruct₂ {p : Edge x₀ x₁}
+    {s : X.PtSimplex n x₀.pt} {t t' : X.PtSimplex n x₁.pt}
+    (ht : ActionStruct p s t) (h : t.Homotopy t') :
+    ActionStruct p s t' :=
+  compActionStruct.{u} (Edge.CompStruct.compId p) ht { map := h.h }
+
+noncomputable def mulActionStruct'
+    {s₁ s₂ s₁₂ : X.PtSimplex n x₀.pt} {i : Fin n}
+    (h : PtSimplex.MulStruct s₁ s₂ s₁₂ i) {p : Edge x₀ x₁}
+    {t₁ t₂ t₁₂ : X.PtSimplex n x₁.pt}
+    (h₁ : ActionStruct p s₁ t₁) (h₂ : ActionStruct p s₂ t₂)
+    (h₁₂ : ActionStruct p s₁₂ t₁₂) :
+    PtSimplex.MulStruct t₁ t₂ t₁₂ i := by
+  apply Nonempty.some
+  obtain _ | n := n
+  · fin_cases i
+  let α (j : Fin (n + 3)) : Δ[n + 1] ⊗ Δ[1] ⟶ X :=
+    if j = i.castSucc.castSucc then h₂.map
+    else if j = i.succ.castSucc then h₁₂.map
+      else if j = i.succ.succ then h₁.map
+        else snd _ _ ≫ p.map
+  have hα₂ : α i.castSucc.castSucc = h₂.map := if_pos rfl
+  have hα₁₂ : α i.succ.castSucc = h₁₂.map := by
+    dsimp only [α]
+    rw [if_neg (fun h ↦ by simp [Fin.ext_iff] at h), if_pos rfl]
+  have hα₁ : α i.succ.succ = h₁.map := by
+    dsimp only [α]
+    rw [if_neg (fun h ↦ by simp [Fin.ext_iff] at h; omega),
+      if_neg (fun h ↦ by simp [Fin.ext_iff] at h), if_pos rfl]
+  have hα_lt (j : Fin (n + 3)) (hj : j < i.castSucc.castSucc) :
+      α j = snd _ _ ≫ p.map := by
+    dsimp only [α]
+    simp only [Fin.lt_iff_val_lt_val, Fin.coe_castSucc] at hj
+    rw [if_neg (fun h ↦ by simp [Fin.ext_iff] at h; omega),
+      if_neg (fun h ↦ by simp [Fin.ext_iff] at h; omega),
+      if_neg (fun h ↦ by simp [Fin.ext_iff] at h; omega)]
+  have hα_gt (j : Fin (n + 3)) (hj : i.succ.succ < j) :
+      α j = snd _ _ ≫ p.map := by
+    dsimp only [α]
+    simp only [Fin.lt_iff_val_lt_val, Fin.val_succ] at hj
+    rw [if_neg (fun h ↦ by simp [Fin.ext_iff] at h; omega),
+      if_neg (fun h ↦ by simp [Fin.ext_iff] at h; omega),
+      if_neg (fun h ↦ by simp [Fin.ext_iff] at h; omega)]
+  have hα (j : Fin (n + 3)) : ∂Δ[n + 1].ι ▷ _ ≫ α j = snd _ _ ≫ p.map := by
+    dsimp only [α]; split_ifs <;> simp
+  have φ : (∂Δ[n + 2] : SSet) ⊗ Δ[1] ⟶ X := by
+    sorry
+  have hφ (j : Fin (n + 3)) : boundary.ι j ▷ _ ≫ φ = α j :=
+    sorry
+  obtain ⟨ψ, hψ₁, hψ₂⟩ := (Subcomplex.unionProd.isPushout ∂Δ[n + 2]
+    (stdSimplex.face {(0 : Fin 2)})).exists_desc (fst _ _ ≫ h.map) φ (by
+    ext j : 1
+    rw [whiskerRight_fst_assoc, whiskerRight_fst_assoc, boundary.ι_ι_assoc,
+      ← cancel_epi (_ ◁ (stdSimplex.faceSingletonIso (0 : Fin 2)).hom),
+      ← cancel_epi (stdSimplex.rightUnitor _).inv, whiskerLeft_fst_assoc,
+      stdSimplex.rightUnitor_inv_fst_assoc,
+      ← whisker_exchange_assoc, hφ, ← MonoidalCategory.whiskerLeft_comp_assoc,
+      stdSimplex.faceSingletonIso_zero_hom_comp_ι_eq_δ,
+      stdSimplex.rightUnitor_inv_map_δ_one_assoc]
+    by_cases hj : j < i.castSucc.castSucc
+    · rw [hα_lt j hj, h.δ_map_of_lt j hj, ι₀_snd_assoc, const_comp, p.comm₀']
+    · simp only [not_lt] at hj
+      obtain hj | rfl := hj.lt_or_eq; swap
+      · rw [h.δ_castSucc_castSucc_map, hα₂, h₂.ι₀_map]
+      · rw [Fin.castSucc_lt_iff_succ_le] at hj
+        obtain hj | rfl := hj.lt_or_eq; swap
+        · rw [h.δ_succ_castSucc_map, Fin.succ_castSucc, hα₁₂, h₁₂.ι₀_map]
+        · rw [Fin.succ_castSucc, Fin.castSucc_lt_iff_succ_le] at hj
+          obtain hj | rfl := hj.lt_or_eq; swap
+          · rw [h.δ_succ_succ_map, hα₁, h₁.ι₀_map]
+          · rw [hα_gt j hj, h.δ_map_of_gt j hj, ι₀_snd_assoc, const_comp, p.comm₀']
+    )
+  obtain ⟨l, hl⟩ := anodyneExtensions.exists_lift_of_isFibrant ψ
+    (anodyneExtensions.subcomplex_unionProd_mem_of_right.{u} ∂Δ[n + 2] _
+      (anodyneExtensions.face 0))
+  have δ_l (j : Fin (n + 3)) : stdSimplex.δ j ≫ ι₁ ≫ l = ι₁ ≫ α j := by
+    have := (ι₁ ≫ boundary.ι j ▷ _ ≫ Subcomplex.unionProd.ι₂ _ _) ≫= hl
+    rw [Category.assoc, Category.assoc, Category.assoc, Category.assoc, hψ₂, hφ,
+      Subcomplex.unionProd.ι₂_ι_assoc, ι₁_comp_assoc, ι₁_comp_assoc, boundary.ι_ι_assoc] at this
+    exact this
+  refine ⟨{
+    map := ι₁ ≫ l
+    δ_castSucc_castSucc_map := by rw [δ_l, hα₂, h₂.ι₁_map]
+    δ_castSucc_succ_map := by rw [δ_l, hα₁₂, h₁₂.ι₁_map]
+    δ_succ_succ_map := by rw [δ_l, hα₁, h₁.ι₁_map]
+    δ_map_of_lt j hj := by rw [δ_l, hα_lt j hj, ι₁_snd_assoc, const_comp, p.comm₁']
+    δ_map_of_gt j hj := by rw [δ_l, hα_gt j hj, ι₁_snd_assoc, const_comp, p.comm₁']
+  }⟩
+
+noncomputable def mulActionStruct {s₁ s₂ s₁₂ : X.PtSimplex n x₀.pt} {i : Fin n}
     (h : PtSimplex.MulStruct s₁ s₂ s₁₂ i) {p : Edge x₀ x₁}
     {t₁ t₂ t₁₂ : X.PtSimplex n x₁.pt}
     (h₁ : ActionStruct p s₁ t₁) (h₂ : ActionStruct p s₂ t₂)
     (ht : PtSimplex.MulStruct t₁ t₂ t₁₂ i) :
     ActionStruct p s₁₂ t₁₂ := by
-  sorry
+  apply Nonempty.some
+  obtain _ | n := n
+  · fin_cases i
+  obtain ⟨t₁₂', ⟨h₁₂'⟩⟩ := exists_actionStruct p s₁₂
+  exact ⟨uniqueActionStruct₂ h₁₂'
+    ((PtSimplex.MulStruct.unique (mulActionStruct' h h₁ h₂ h₁₂') ht
+      (.refl _) (.refl _)).homotopy)⟩
 
 noncomputable def uniqueActionStruct {p p' : Edge x₀ x₁} (hp : p.Homotopy p')
     {s s' : X.PtSimplex n x₀.pt} (hs : s.Homotopy s')
