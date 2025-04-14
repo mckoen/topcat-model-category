@@ -91,7 +91,10 @@ def HomotopyEquiv.symm (e : HomotopyEquiv X Y) : HomotopyEquiv Y X where
 namespace KanComplex
 
 variable [IsFibrant Y]
-  {f₀ f₁ : X ⟶ Y} (h : Homotopy f₀ f₁)
+
+section
+
+variable {f₀ f₁ : X ⟶ Y} (h : Homotopy f₀ f₁)
 
 @[simps! map]
 noncomputable def edgeOfHomotopy
@@ -184,6 +187,8 @@ lemma bijective_mapπ_iff_of_homotopy [IsFibrant X] :
   apply Function.Bijective.of_comp_iff'
   apply FundamentalGroupoid.action.bijective_map
 
+end
+
 variable [IsFibrant X]
 
 lemma isEquivalence_mapFundamentalGroupoid_homotopyEquivHom (e : HomotopyEquiv X Y) :
@@ -225,6 +230,21 @@ lemma W.homotopyEquivHom (e : HomotopyEquiv X Y) :
 
 lemma W.homotopyEquivInv (e : HomotopyEquiv X Y) :
     W e.inv := W.homotopyEquivHom e.symm
+
+variable {f₀ f₁ : X ⟶ Y}
+
+lemma W.of_homotopy (h₀ : W f₀) (h : Homotopy f₀ f₁) : W f₁ :=
+  W.mk _ (by
+    have := h₀.isEquivalence
+    exact Functor.isEquivalence_of_iso (mapFundamentalGroupoidIsoOfHomotopy h)) (by
+      intro n x y hxy
+      rw [← congr_mapπ_of_homotopy h n x rfl hxy]
+      exact (FundamentalGroupoid.action.bijective_map _ _).comp (h₀.bijective _ _ _ _))
+
+lemma W.iff_homotopy (h : Homotopy f₀ f₁) :
+    W f₀ ↔ W f₁ :=
+  ⟨fun hf₀ ↦ hf₀.of_homotopy h,
+    fun hf₁ ↦ hf₁.of_homotopy h.symm⟩
 
 end KanComplex
 

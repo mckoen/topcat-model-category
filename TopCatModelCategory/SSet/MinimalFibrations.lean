@@ -630,8 +630,8 @@ noncomputable def extension [Fibration p] : selection.Extension :=
 lemma extension_A [Fibration p] : selection.extension.A = ⊤ :=
   selection.exists_extension.choose_spec
 
-noncomputable def relativeDeformationRetract [Fibration p] :
-    selection.subcomplex.RelativeDeformationRetract p where
+noncomputable def fiberwiseDeformationRetract [Fibration p] :
+    selection.subcomplex.FiberwiseDeformationRetract p where
   i := selection.subcomplex.ι
   i_eq_ι := rfl
   r := (Subcomplex.topIso E).inv ≫ (Subcomplex.isoOfEq (by simp)).inv ≫ selection.extension.r
@@ -658,7 +658,7 @@ noncomputable def relativeDeformationRetract [Fibration p] :
 instance [Fibration p] :
     Fibration (selection.subcomplex.ι ≫ p) := by
   rw [fibration_iff]
-  apply MorphismProperty.of_retract selection.relativeDeformationRetract.retractArrow
+  apply MorphismProperty.of_retract selection.fiberwiseDeformationRetract.retractArrow
   rwa [← fibration_iff]
 
 instance minimalFibration_ι_comp [Fibration p] :
@@ -666,15 +666,15 @@ instance minimalFibration_ι_comp [Fibration p] :
   minimal {n x y} h := by
     simpa [← Subtype.ext_iff] using selection.unique
       (selection.subcomplex_obj_le _ x.2) (selection.subcomplex_obj_le _ y.2)
-      (h.map selection.relativeDeformationRetract.retractArrow.i rfl rfl)
+      (h.map selection.fiberwiseDeformationRetract.retractArrow.i rfl rfl)
 
 end Selection
 
 lemma existence [Fibration p] :
-    ∃ (A : E.Subcomplex) (_ : A.RelativeDeformationRetract p),
+    ∃ (A : E.Subcomplex) (_ : A.FiberwiseDeformationRetract p),
       MinimalFibration (A.ι ≫ p) := by
   let selection : Selection p := Classical.arbitrary _
-  exact ⟨selection.subcomplex, selection.relativeDeformationRetract, inferInstance⟩
+  exact ⟨selection.subcomplex, selection.fiberwiseDeformationRetract, inferInstance⟩
 
 end MinimalFibration
 

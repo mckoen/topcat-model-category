@@ -30,13 +30,13 @@ end DeformationRetract
 
 variable {X Y} {B : SSet.{u}} (p : X ⟶ B) (q : Y ⟶ B)
 
-structure RelativeDeformationRetract extends DeformationRetract X Y where
+structure FiberwiseDeformationRetract extends DeformationRetract X Y where
   wr : r ≫ p = q
   wh : h ≫ q = fst _ _ ≫ q
 
-namespace RelativeDeformationRetract
+namespace FiberwiseDeformationRetract
 
-variable {p q} (d : RelativeDeformationRetract p q)
+variable {p q} (d : FiberwiseDeformationRetract p q)
 
 attribute [reassoc (attr := simp)] wr wh
 
@@ -49,7 +49,7 @@ def retractArrow : RetractArrow p q where
   i := Arrow.homMk d.i (𝟙 B)
   r := Arrow.homMk d.r (𝟙 B)
 
-end RelativeDeformationRetract
+end FiberwiseDeformationRetract
 
 namespace Subcomplex
 
@@ -58,8 +58,8 @@ variable (A : X.Subcomplex)
 structure DeformationRetract extends SSet.DeformationRetract A X where
   i_eq_ι : i = A.ι
 
-structure RelativeDeformationRetract (p : X ⟶ B)
-    extends SSet.RelativeDeformationRetract (A.ι ≫ p) p where
+structure FiberwiseDeformationRetract (p : X ⟶ B)
+    extends SSet.FiberwiseDeformationRetract (A.ι ≫ p) p where
   i_eq_ι : i = A.ι
 
 end Subcomplex
