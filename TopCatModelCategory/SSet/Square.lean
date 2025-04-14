@@ -10,7 +10,7 @@ lemma Fin.range₁ {α : Type*} (f : Fin 1 → α) :
 
 lemma Fin.range_eq_insert {α : Type*} (f : Fin (n + 1) → α) :
     Set.range f =
-      Insert.insert (f 0) (Set.range (fun (i : Fin n) ↦ f i.succ))  := by
+      Insert.insert (f 0) (Set.range (fun (i : Fin n) ↦ f i.succ)) := by
   ext x
   simp only [Set.mem_range, Set.mem_insert_iff]
   constructor
