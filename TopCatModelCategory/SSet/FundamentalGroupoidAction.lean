@@ -277,10 +277,10 @@ noncomputable def mulActionStruct'
       if_neg (fun h ↦ by simp [Fin.ext_iff] at h; omega)]
   have hα (j : Fin (n + 3)) : ∂Δ[n + 1].ι ▷ _ ≫ α j = snd _ _ ≫ p.map := by
     dsimp only [α]; split_ifs <;> simp
-  have φ : (∂Δ[n + 2] : SSet) ⊗ Δ[1] ⟶ X := by
-    sorry
-  have hφ (j : Fin (n + 3)) : boundary.ι j ▷ _ ≫ φ = α j :=
-    sorry
+  have hα' (j : Fin (n + 3)) (k : Fin (n + 2)) :
+      stdSimplex.δ k ▷ _ ≫ α j = snd _ _ ≫ p.map := by
+    simpa using boundary.ι k ▷ _ ≫= hα j
+  obtain ⟨φ, hφ⟩ := boundary.exists_tensorRight_desc α (fun j k hjk ↦ by simp [hα'])
   obtain ⟨ψ, hψ₁, hψ₂⟩ := (Subcomplex.unionProd.isPushout ∂Δ[n + 2]
     (stdSimplex.face {(0 : Fin 2)})).exists_desc (fst _ _ ≫ h.map) φ (by
     ext j : 1
@@ -302,8 +302,7 @@ noncomputable def mulActionStruct'
         · rw [Fin.succ_castSucc, Fin.castSucc_lt_iff_succ_le] at hj
           obtain hj | rfl := hj.lt_or_eq; swap
           · rw [h.δ_succ_succ_map, hα₁, h₁.ι₀_map]
-          · rw [hα_gt j hj, h.δ_map_of_gt j hj, ι₀_snd_assoc, const_comp, p.comm₀']
-    )
+          · rw [hα_gt j hj, h.δ_map_of_gt j hj, ι₀_snd_assoc, const_comp, p.comm₀'])
   obtain ⟨l, hl⟩ := anodyneExtensions.exists_lift_of_isFibrant ψ
     (anodyneExtensions.subcomplex_unionProd_mem_of_right.{u} ∂Δ[n + 2] _
       (anodyneExtensions.face 0))

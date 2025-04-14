@@ -599,7 +599,44 @@ lemma nonempty (i : Fin (n + 1)) :
 variable (p) in
 lemma exists_left_inverse (i : Fin (n + 1)) :
     ∃ (q : X.PtSimplex (n + 1) x), Nonempty (MulStruct q p .const i) := by
-  sorry
+  let α (j : ({i.succ.succ}ᶜ : Set (Fin (n + 3)))) : X.PtSimplex (n + 1) x :=
+    if j = i.castSucc.castSucc then p else .const
+  have hα₀ : α ⟨i.castSucc.castSucc, by simp [Fin.ext_iff]; omega⟩ = p := by simp [α]
+  have hα₁ (j) (hj : j.1 ≠ i.castSucc.castSucc) : α j = .const := by aesop
+  obtain ⟨β, hβ⟩ := horn.exists_desc (fun j ↦ (α j).map) (by simp)
+  obtain ⟨γ, hγ⟩ := anodyneExtensions.exists_lift_of_isFibrant β
+    (anodyneExtensions.horn_ι_mem _ _)
+  replace hγ (j : Fin (n + 3)) (hj : j ≠ i.succ.succ) :
+      stdSimplex.δ j ≫ γ = (α ⟨j, hj⟩).map := by
+    rw [← hβ, ← hγ, horn.ι_ι_assoc]
+  refine ⟨.mk (stdSimplex.δ i.succ.succ ≫ γ) ?_, ⟨?_⟩⟩
+  · intro j
+    by_cases hj : j ≤ i.succ
+    · rw [stdSimplex.δ_comp_δ_assoc hj]
+      simp only [Fin.le_iff_val_le_val, Fin.val_succ] at hj
+      rw [hγ _ (by simp [Fin.ext_iff]; omega), δ_map]
+    · simp only [not_le, α] at hj
+      obtain ⟨i, rfl⟩ := Fin.eq_castSucc_of_ne_last (x := i)
+        (fun h ↦ Fin.ne_last_of_lt hj (by simp [h]))
+      rw [Fin.succ_castSucc, Fin.succ_castSucc]
+      rw [← stdSimplex.δ_comp_δ_assoc hj]
+      rw [hγ _ (by
+        simp only [ne_eq, Fin.succ_inj]
+        rintro rfl
+        simp at hj), δ_map]
+  · exact {
+      map := γ
+      δ_castSucc_castSucc_map := by rw [hγ, hα₀]
+      δ_castSucc_succ_map := by rw [hγ, hα₁] <;> simp [Fin.ext_iff]
+      δ_map_of_lt j hj := by
+        simp [Fin.lt_iff_val_lt_val] at hj
+        rw [hγ, hα₁, Subcomplex.RelativeMorphism.const_map]
+        all_goals simp [Fin.ext_iff]; omega
+      δ_map_of_gt j hj := by
+        simp [Fin.lt_iff_val_lt_val] at hj
+        rw [hγ, hα₁, Subcomplex.RelativeMorphism.const_map]
+        all_goals simp [Fin.ext_iff]; omega
+    }
 
 end MulStruct
 

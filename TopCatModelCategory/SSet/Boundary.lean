@@ -302,6 +302,26 @@ lemma exists_desc {X : SSet.{u}} (f : Fin (n + 3) → ((Δ[n + 1] : SSet) ⟶ X)
     rw [← cancel_epi (faceSingletonComplIso j).inv, ← hφ,
       faceSingletonComplIso_inv_ι_assoc]⟩
 
+lemma exists_tensorLeft_desc {X Y : SSet.{u}} (f : Fin (n + 3) → (Y ⊗ Δ[n + 1] ⟶ X))
+    (hf : ∀ (j k : Fin (n + 3)) (hjk : j < k),
+      _ ◁ stdSimplex.δ (k.pred (Fin.ne_zero_of_lt hjk)) ≫ f j =
+        _ ◁ stdSimplex.δ (j.castPred (Fin.ne_last_of_lt hjk)) ≫ f k) :
+    ∃ (φ : Y ⊗ ∂Δ[n + 2] ⟶ X), ∀ j, _ ◁ ι j ≫ φ = f j := by
+  obtain ⟨ψ, hψ⟩ := exists_desc (fun j ↦ curry (f j)) (fun j k hjk ↦ uncurry_injective (by
+    dsimp
+    rw [uncurry_natural_left, uncurry_curry, uncurry_natural_left, uncurry_curry, hf j k hjk]))
+  exact ⟨uncurry ψ, fun j ↦ curry_injective (by
+    rw [curry_natural_left, curry_uncurry, hψ])⟩
+
+lemma exists_tensorRight_desc {X Y : SSet.{u}} (f : Fin (n + 3) → ((Δ[n + 1] : SSet) ⊗ Y ⟶ X))
+    (hf : ∀ (j k : Fin (n + 3)) (hjk : j < k),
+      stdSimplex.δ (k.pred (Fin.ne_zero_of_lt hjk)) ▷ _ ≫ f j =
+        stdSimplex.δ (j.castPred (Fin.ne_last_of_lt hjk)) ▷ _ ≫ f k) :
+    ∃ (φ : (∂Δ[n + 2] : SSet) ⊗ Y ⟶ X), ∀ j, ι j ▷ _ ≫ φ = f j := by
+  obtain ⟨ψ, hψ⟩ := exists_tensorLeft_desc (fun j ↦ (β_ _ _).hom ≫ f j) (fun j k hjk ↦ by
+    simpa using (β_ _ _).hom ≫= hf j k hjk)
+  exact ⟨(β_ _ _).hom ≫ ψ, fun j ↦ by simpa using (β_ _ _).hom ≫= hψ j⟩
+
 end boundary
 
 end SSet
