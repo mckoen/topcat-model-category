@@ -399,9 +399,141 @@ noncomputable def assoc'
     {f₀₁ f₁₂ f₂₃ f₀₂ f₁₃ f₀₃ : X.PtSimplex n x} {i : Fin n}
     (h₀₂ : MulStruct f₀₁ f₁₂ f₀₂ i) (h₁₃ : MulStruct f₁₂ f₂₃ f₁₃ i)
     (h : MulStruct f₀₂ f₂₃ f₀₃ i) :
-    MulStruct f₀₁ f₁₃ f₀₃ i :=
-  -- this should be very similar to `assoc` above
-  sorry
+    MulStruct f₀₁ f₁₃ f₀₃ i := by
+  apply Nonempty.some
+  let α (j : ({i.succ.succ.castSucc}ᶜ : Set (Fin (n + 3)))) : Δ[n + 1] ⟶ X :=
+    if j.1 = i.castSucc.castSucc.castSucc then h₁₃.map else
+      if j.1 = i.succ.castSucc.castSucc then h.map else
+        if j.1 = i.succ.succ.succ then h₀₂.map else
+          const x
+  have hα₀ (j : ({i.succ.succ.castSucc}ᶜ : Set (Fin (n + 3))))
+      (hα : j.1 < i.castSucc.castSucc.castSucc) : α j = const x := by
+    dsimp [α]
+    rw [if_neg, if_neg, if_neg]
+    all_goals
+      simp [Fin.lt_iff_val_lt_val, Fin.ext_iff] at hα ⊢
+      omega
+  have hα₁ : α ⟨i.castSucc.castSucc.castSucc, by simp [Fin.ext_iff]; omega⟩ = h₁₃.map := if_pos rfl
+  have hα₂ : α ⟨i.succ.castSucc.castSucc, by simp [Fin.ext_iff]⟩ = h.map := by
+    dsimp [α]
+    rw [if_neg, if_pos rfl]
+    simp [Fin.ext_iff]
+  have hα₃ : α ⟨i.succ.succ.succ, by simp [Fin.ext_iff]⟩ = h₀₂.map := by
+    dsimp [α]
+    rw [if_neg, if_neg, if_pos rfl] <;> simp [Fin.ext_iff] <;> omega
+  have hα₄ (j : ({i.succ.succ.castSucc}ᶜ : Set (Fin (n + 3))))
+      (hα : i.succ.succ.succ < j) : α j = const x := by
+    dsimp [α]
+    rw [if_neg, if_neg, if_neg]
+    simp [Fin.ext_iff]
+    all_goals
+      simp [Fin.lt_iff_val_lt_val, Fin.ext_iff] at hα ⊢
+      omega
+  obtain ⟨β, hβ⟩ := horn.exists_desc α (by
+    rintro ⟨j, hj⟩ ⟨k, hk⟩ hjk
+    dsimp at hjk ⊢
+    obtain ⟨j, rfl⟩ := Fin.eq_castSucc_of_ne_last (Fin.ne_last_of_lt hjk)
+    obtain ⟨k, rfl⟩ := Fin.eq_succ_of_ne_zero (Fin.ne_zero_of_lt hjk)
+    rw [Fin.pred_succ, Fin.castPred_castSucc]
+    have hj' := hj
+    have hk' := hk
+    simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hj' hk'
+    rw [Fin.castSucc_inj] at hj'
+    rw [← Fin.succ_castSucc, Fin.succ_inj] at hk'
+    rw [Fin.castSucc_lt_iff_succ_le, Fin.succ_le_succ_iff] at hjk
+    by_cases hk₁ : k.succ < i.castSucc.castSucc.castSucc
+    · rw [hα₀, hα₀ _ (by simpa), comp_const, comp_const]
+      simp only [Fin.castSucc_lt_castSucc_iff]
+      apply lt_of_le_of_lt hjk
+      rw [← Fin.succ_lt_succ_iff]
+      exact hk₁.trans (by simp)
+    · simp only [not_lt, α] at hk₁
+      obtain hk₁ | hk₁ := hk₁.lt_or_eq; swap
+      · have : j < i.castSucc.castSucc := lt_of_le_of_lt hjk (by
+          rw [← Fin.succ_lt_succ_iff, ← hk₁]
+          apply Fin.castSucc_lt_succ)
+        simp only [← hk₁, hα₁]
+        rw [hα₀ _ this, comp_const, h₁₃.δ_map_of_lt _ this]
+      · simp only [Fin.castSucc_lt_succ_iff] at hk₁
+        obtain hk₁ | rfl := hk₁.lt_or_eq; swap
+        · simp only [Fin.succ_castSucc, hα₂]
+          obtain hjk | rfl := hjk.lt_or_eq
+          · rw [h.δ_map_of_lt _ hjk, hα₀ _ (by simpa), comp_const]
+          · rw [h.δ_castSucc_castSucc_map,
+              hα₁, h₁₃.δ_castSucc_castSucc_map]
+        · rw [← Fin.succ_le_castSucc_iff, Fin.succ_castSucc,
+            Fin.castSucc_le_castSucc_iff] at hk₁
+          replace hk₁ := hk₁.lt_of_ne (fun h ↦ hk' (by rw [← Fin.succ_castSucc, h]))
+          rw [Fin.succ_castSucc, Fin.castSucc_lt_iff_succ_le] at hk₁
+          obtain hk₁ | rfl := hk₁.lt_or_eq; swap
+          · rw [hα₃]
+            replace hjk := hjk.lt_of_ne (by rintro rfl; simp at hj')
+            rw [← Fin.succ_le_castSucc_iff, ← Fin.succ_castSucc, Fin.succ_le_succ_iff] at hjk
+            obtain hjk | rfl := hjk.lt_or_eq
+            · rw [← Fin.succ_castSucc, ← Fin.succ_le_castSucc_iff, ← Fin.succ_castSucc,
+                Fin.succ_le_succ_iff] at hjk
+              obtain hjk | rfl := hjk.lt_or_eq
+              · rw [h₀₂.δ_map_of_lt _ hjk, hα₀ _ (by simpa), comp_const]
+              · rw [h₀₂.δ_castSucc_castSucc_map, hα₁, h₁₃.δ_succ_succ_map]
+            · rw [hα₂, h.δ_succ_succ_map, h₀₂.δ_castSucc_succ_map]
+          · rw [hα₄ ⟨k.succ, _⟩ (by simpa), comp_const]
+            by_cases hj₁ : i.succ.succ.succ < j.castSucc
+            · rw [hα₄ _ hj₁, comp_const]
+            · rw [not_lt] at hj₁
+              obtain hj₁ | hj₁ := hj₁.lt_or_eq; swap
+              · simp only [hj₁, hα₃, h₀₂.δ_map_of_gt _ hk₁]
+              · rw [Fin.castSucc_lt_iff_succ_le, Fin.succ_le_succ_iff] at hj₁
+                replace hj₁ := hj₁.lt_of_ne (by omega)
+                rw [← Fin.le_castSucc_iff] at hj₁
+                obtain hj₁ | rfl := hj₁.lt_or_eq; swap
+                · rw [hα₂, h.δ_map_of_gt _ hk₁]
+                · rw [← Fin.succ_castSucc, ← Fin.le_castSucc_iff] at hj₁
+                  obtain hj₁ | rfl := hj₁.lt_or_eq; swap
+                  · rw [hα₁, h₁₃.δ_map_of_gt _ hk₁]
+                  · rw [hα₀ _ (by simpa), comp_const])
+  obtain ⟨γ, hγ⟩ := anodyneExtensions.exists_lift_of_isFibrant β
+    (anodyneExtensions.horn_ι_mem _ _)
+  replace hγ (j : Fin (n + 3)) (hj : j ≠ i.succ.succ.castSucc) :
+      stdSimplex.δ j ≫ γ = α ⟨j, hj⟩ := by
+    rw [← hβ ⟨j, hj⟩, ← hγ, horn.ι_ι_assoc]
+  let μ := stdSimplex.δ i.succ.succ.castSucc ≫ γ
+  have hμ (j : Fin (n + 2)) (hj : j ≤ i.castSucc.succ) :
+      stdSimplex.δ j ≫ μ =
+        stdSimplex.δ i.castSucc.succ ≫
+          α ⟨j.castSucc, by
+            simp only [Set.mem_compl_iff, Set.mem_singleton_iff, Fin.castSucc_inj]
+            rintro rfl
+            simp [Fin.le_iff_val_le_val] at hj⟩ := by
+    dsimp [μ]
+    conv_lhs =>
+      rw [← Fin.succ_castSucc, ← Fin.succ_castSucc,
+        stdSimplex.δ_comp_δ_assoc hj,
+        hγ _ (by
+          simp only [ne_eq, Fin.castSucc_inj]
+          rintro rfl
+          simp at hj)]
+  have hμ' (j : Fin (n + 2)) (hj : i.succ.succ ≤ j) :
+      stdSimplex.δ j ≫ μ = stdSimplex.δ i.succ.succ ≫
+          α ⟨j.succ, by
+            simp [← Fin.succ_castSucc]
+            rintro rfl
+            simp at hj⟩ := by
+    dsimp [μ]
+    rw [← stdSimplex.δ_comp_δ_assoc hj, hγ]
+  refine ⟨{
+      map := μ
+      δ_succ_succ_map := by
+        rw [hμ' _ (by rfl), hα₃, h₀₂.δ_succ_succ_map]
+      δ_castSucc_castSucc_map := by
+        rw [hμ _ i.castSucc.castSucc_le_succ, hα₁, h₁₃.δ_succ_castSucc_map]
+      δ_castSucc_succ_map := by
+        rw [hμ _ (by rfl), hα₂, h.δ_succ_castSucc_map]
+      δ_map_of_lt j hj := by
+        rw [hμ _ (hj.le.trans i.castSucc.castSucc_le_succ),
+          hα₀ _ (by simpa using hj), comp_const]
+      δ_map_of_gt j hj := by
+        rw [hμ' _ hj.le, hα₄ _ (by simpa), comp_const]
+  }⟩
 
 section
 

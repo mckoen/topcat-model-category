@@ -203,7 +203,7 @@ lemma isEquivalence_mapFundamentalGroupoid_homotopyEquivInv (e : HomotopyEquiv X
     (mapFundamentalGroupoid e.inv).IsEquivalence :=
   isEquivalence_mapFundamentalGroupoid_homotopyEquivHom e.symm
 
-lemma W.homotopyEquiv_hom (e : HomotopyEquiv X Y) :
+lemma W.homotopyEquivHom (e : HomotopyEquiv X Y) :
     W e.hom := by
   have := isEquivalence_mapFundamentalGroupoid_homotopyEquivHom e
   refine W.mk _ inferInstance (fun n x y h ↦ ?_)
@@ -223,8 +223,8 @@ lemma W.homotopyEquiv_hom (e : HomotopyEquiv X Y) :
     rw [← mapπ_comp_mapπ _ _ _ _ rfl _ _ (by aesop)] at this
     exact this.2.of_comp
 
-lemma W.homotopyEquiv_inv (e : HomotopyEquiv X Y) :
-    W e.inv := W.homotopyEquiv_hom e.symm
+lemma W.homotopyEquivInv (e : HomotopyEquiv X Y) :
+    W e.inv := W.homotopyEquivHom e.symm
 
 end KanComplex
 
