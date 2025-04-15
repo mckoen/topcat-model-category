@@ -57,10 +57,6 @@ instance : HasSmallObjectArgument.{u} I.{u} where
 instance : HasSmallObjectArgument.{u} J.{u} where
   exists_cardinal := ⟨Cardinal.aleph0.{u}, inferInstance, inferInstance, inferInstance⟩
 
---instance : CategoryWithWeakEquivalences TopCat.{0} := sorry
---instance : (weakEquivalences TopCat).HasTwoOutOfThreeProperty := sorry
---instance : (weakEquivalences TopCat).IsStableUnderRetracts := sorry
-
 instance : CategoryWithWeakEquivalences SSet.{0} where
   weakEquivalences :=
     (weakEquivalences TopCat).inverseImage SSet.toTop
