@@ -92,12 +92,12 @@ instance : (ofPseudofunctor F).IsStableUnderRetracts where
     ext X
     rw [← cancel_epi ((F.map ⟨f⟩).map ((F.mapComp' ⟨hf.i.left⟩ ⟨hf.r.left⟩ ⟨𝟙 _⟩
       (by rw [← hf.left.retract]; rfl)).hom.app X))]
-    have := NatTrans.congr_app (congr_arg Iso.hom (F.isoMapOfSq_horiz_comp
+    have := NatTrans.congr_app (congr_arg Iso.hom (F.isoMapOfSq'_horiz_comp
       sq sq' hf.left.retract hf.right.retract)) X
     dsimp [e₁, e₂] at this ⊢
     simp only [comp_id, id_comp] at this ⊢
     erw [← reassoc_of% this]
-    rw [F.isoMapOfSq_horiz_id f]
+    rw [F.isoMapOfSq'_horiz_id f]
     dsimp
     erw [← Functor.map_comp, Iso.hom_inv_id_app_assoc]
     simp
