@@ -40,6 +40,28 @@ section
 variable {B : Type u₁} [Category.{v₁} B]
   (F : Pseudofunctor (LocallyDiscrete B) Cat.{v₂, u₂})
 
+lemma mapComp'_comp_id {b₀ b₁ : B} (f : b₀ ⟶ b₁) :
+    F.mapComp' ⟨f⟩ ⟨𝟙 b₁⟩ ⟨f⟩ (by nth_rw 1 [← Category.comp_id f]; rfl) =
+    (ρ_ _).symm ≪≫ isoWhiskerLeft _ (F.mapId ⟨b₁⟩).symm := by
+  ext
+  dsimp [mapComp']
+  have : (ρ_ (Quiver.Hom.toLoc f)).hom = eqToHom (by simp) := rfl
+  simp only [PrelaxFunctor.map₂_eqToHom]
+  erw [mapComp_id_right_hom, this]
+  rw [PrelaxFunctor.map₂_eqToHom, eqToHom_trans_assoc, eqToHom_refl, Category.id_comp]
+  rfl
+
+lemma mapComp'_id_comp {b₀ b₁ : B} (f : b₀ ⟶ b₁) :
+    F.mapComp' ⟨𝟙 b₀⟩ ⟨f⟩ ⟨f⟩ (by nth_rw 1 [← Category.id_comp f]; rfl) =
+      (λ_ _).symm ≪≫ isoWhiskerRight (F.mapId ⟨b₀⟩).symm _ := by
+  ext
+  dsimp [mapComp']
+  have : (λ_ (Quiver.Hom.toLoc f)).hom = eqToHom (by simp) := rfl
+  simp only [PrelaxFunctor.map₂_eqToHom]
+  erw [mapComp_id_left_hom, this]
+  rw [PrelaxFunctor.map₂_eqToHom, eqToHom_trans_assoc, eqToHom_refl, Category.id_comp]
+  rfl
+
 section
 
 variable {X₁ X₂ Y₁ Y₂ : B} {t : X₁ ⟶ Y₁} {l : X₁ ⟶ X₂} {r : Y₁ ⟶ Y₂} {b : X₂ ⟶ Y₂}
@@ -56,6 +78,17 @@ def catCommSqOfSq :
     CatCommSq (F.map ⟨t⟩) (F.map ⟨l⟩) (F.map ⟨r⟩) (F.map ⟨b⟩) :=
   ⟨F.isoMapOfSq sq⟩
 
+lemma isoMapOfSrc_eq (φ : X₁ ⟶ Y₂) (hφ : t ≫ r = φ) :
+    F.isoMapOfSq sq =
+    (F.mapComp' ⟨t⟩ ⟨r⟩ ⟨φ⟩ (by subst hφ; rfl)).symm ≪≫
+      F.mapComp' ⟨l⟩ ⟨b⟩ ⟨φ⟩ (by rw [← hφ, sq.w]; rfl) := by
+  subst hφ
+  ext
+  dsimp [isoMapOfSq]
+  congr 1
+  dsimp [mapComp']
+  erw [F.map₂_id, Category.comp_id]
+
 end
 
 section
@@ -68,11 +101,12 @@ lemma isoMapOfSq_horiz_id :
         Functor.leftUnitor _ ≪≫ (Functor.rightUnitor _).symm ≪≫
         (isoWhiskerLeft (F.map ⟨f⟩) (F.mapId ⟨Y⟩)).symm := by
   ext
-  dsimp [isoMapOfSq]
-  sorry
+  rw [isoMapOfSrc_eq _ _ f (by simp), mapComp'_comp_id, mapComp'_id_comp]
+  dsimp
+  simp only [Category.assoc]
+  rfl
 
 end
-
 
 section
 
