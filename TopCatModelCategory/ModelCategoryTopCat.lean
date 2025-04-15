@@ -1,4 +1,5 @@
 import TopCatModelCategory.TopPackage
+import TopCatModelCategory.TopCat.W
 import Mathlib.Topology.Category.TopCat.Limits.Basic
 import Mathlib.AlgebraicTopology.SimplicialSet.Boundary
 import Mathlib.AlgebraicTopology.SimplicialSet.Horn
@@ -9,18 +10,15 @@ open HomotopicalAlgebra CategoryTheory MorphismProperty
 namespace HomotopicalAlgebra
 
 def packageTopCat : TopPackage.{0} TopCat.{0} where
-  W := sorry
   I' := ofHoms (fun n ↦ SSet.toTop.map (SSet.boundary.{0} n).ι)
   J' := ⨆ n, ofHoms (fun i ↦ SSet.toTop.map (SSet.horn.{0} (n + 1) i).ι)
   S' := sorry
-  fibration_is_trivial_iff' := sorry
   src_I_le_S' := sorry
   src_J_le_S' := sorry
   rlp_I'_le_rlp_J' := sorry
+  fibration_is_trivial_iff' := sorry
   preservesColimit' := sorry
   infiniteCompositions_le_W' := sorry
-  hasTwoOutOfThreeProperty := sorry
-  isStableUnderRetracts := sorry
 
 end HomotopicalAlgebra
 

@@ -14,9 +14,9 @@ namespace HomotopicalAlgebra
 
 variable (T : Type u) [Category.{v} T]
 
+variable [CategoryWithWeakEquivalences T]
+
 structure TopPackage where
-  -- data
-  W : MorphismProperty T
   /-- generation cofibrations -/
   I' : MorphismProperty T
   /-- generation trivial cofibrations -/
@@ -30,15 +30,15 @@ structure TopPackage where
   isSmall_I' : IsSmall.{w} I' := by infer_instance
   isSmall_J' : IsSmall.{w} J' := by infer_instance
   -- axioms
-  hasTwoOutOfThreeProperty : W.HasTwoOutOfThreeProperty := by infer_instance
-  isStableUnderRetracts : W.IsStableUnderRetracts := by infer_instance
+  hasTwoOutOfThreeProperty : (weakEquivalences T).HasTwoOutOfThreeProperty := by infer_instance
+  isStableUnderRetracts : (weakEquivalences T).IsStableUnderRetracts := by infer_instance
   rlp_I'_le_rlp_J' : I'.rlp ≤ J'.rlp
   fibration_is_trivial_iff' {X Y : T} (p : X ⟶ Y) (hp : J'.rlp p) :
-    I'.rlp p ↔ W p
+    I'.rlp p ↔ WeakEquivalence p
   src_I_le_S' {A B : T} (i : A ⟶ B) (hi : I' i) : A ∈ S'
   src_J_le_S' {A B : T} (i : A ⟶ B) (hj : J' i) : A ∈ S'
   infiniteCompositions_le_W' :
-    (coproducts.{w} J').pushouts.transfiniteCompositionsOfShape ℕ ≤ W
+    (coproducts.{w} J').pushouts.transfiniteCompositionsOfShape ℕ ≤ weakEquivalences T
   preservesColimit' (X : T) (hX : X ∈ S') {A B : T} (f : A ⟶ B)
     (hf : RelativeCellComplex.{w} (fun (_ : ℕ) ↦ (I' ⊔ J').homFamily) f) :
     PreservesColimit hf.F (coyoneda.obj (Opposite.op X))
@@ -67,8 +67,8 @@ instance (J : Type w) [LinearOrder J] : HasIterationOfShape J π.Cat where
 instance : HasFiniteColimits π.Cat :=
   hasFiniteColimits_of_hasColimitsOfSize π.Cat
 
-instance : CategoryWithWeakEquivalences π.Cat where
-  weakEquivalences := π.W
+instance : CategoryWithWeakEquivalences π.Cat :=
+  inferInstanceAs (CategoryWithWeakEquivalences T)
 
 instance : CategoryWithFibrations π.Cat where
   fibrations := π.J.rlp
@@ -176,7 +176,6 @@ instance : (trivialCofibrations π.Cat).HasFunctorialFactorization (fibrations �
 
 lemma I_rlp_iff_weakEquivalence_of_fibration {X Y : π.Cat} (p : X ⟶ Y) [hp : Fibration p] :
     π.I.rlp p ↔ WeakEquivalence p := by
-  rw [weakEquivalence_iff]
   rw [fibration_iff] at hp
   exact π.fibration_is_trivial_iff' p hp
 
@@ -220,12 +219,11 @@ instance {A B X Y : π.Cat} (i : A ⟶ B) (p : X ⟶ Y)
 
 instance modelCategoryCat : ModelCategory π.Cat where
 
-def modelCategory [CategoryWithWeakEquivalences T]
+def modelCategory
     [CategoryWithCofibrations T] [CategoryWithFibrations T]
     (h₁ : cofibrations T = π.I.rlp.llp)
-    (h₂ : fibrations T = π.J.rlp)
-    (h₃ : weakEquivalences T = π.W) : ModelCategory T :=
-  ModelCategory.copy π.modelCategoryCat h₁ h₂ h₃
+    (h₂ : fibrations T = π.J.rlp) : ModelCategory T :=
+  ModelCategory.copy π.modelCategoryCat h₁ h₂ rfl
 
 end TopPackage
 
