@@ -59,6 +59,7 @@ import TopCatModelCategory.SSet.Paths
 import TopCatModelCategory.SSet.Presentable
 import TopCatModelCategory.SSet.ProdSimplex
 import TopCatModelCategory.SSet.ProdSimplexOne
+import TopCatModelCategory.SSet.Pseudofunctor
 import TopCatModelCategory.SSet.PtSimplex
 import TopCatModelCategory.SSet.SimplexCategory
 import TopCatModelCategory.SSet.Skeleton

@@ -1,4 +1,5 @@
 import TopCatModelCategory.SSet.KanComplexWHomotopy
+import TopCatModelCategory.SSet.KanComplexWRetracts
 import TopCatModelCategory.MorphismProperty
 import Mathlib.AlgebraicTopology.SingularSet
 
