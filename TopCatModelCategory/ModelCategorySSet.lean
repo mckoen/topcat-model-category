@@ -3,7 +3,7 @@ import Mathlib.AlgebraicTopology.SingularSet
 import TopCatModelCategory.MorphismProperty
 import TopCatModelCategory.Factorization
 import TopCatModelCategory.SSet.Skeleton
---import TopCatModelCategory.ModelCategoryTopCat
+import TopCatModelCategory.ModelCategoryTopCat
 import TopCatModelCategory.SSet.CategoryWithFibrations
 import TopCatModelCategory.SSet.Presentable
 import TopCatModelCategory.JoyalTrickDual
@@ -57,9 +57,9 @@ instance : HasSmallObjectArgument.{u} I.{u} where
 instance : HasSmallObjectArgument.{u} J.{u} where
   exists_cardinal := ⟨Cardinal.aleph0.{u}, inferInstance, inferInstance, inferInstance⟩
 
-instance : CategoryWithWeakEquivalences TopCat.{0} := sorry
-instance : (weakEquivalences TopCat).HasTwoOutOfThreeProperty := sorry
-instance : (weakEquivalences TopCat).IsStableUnderRetracts := sorry
+--instance : CategoryWithWeakEquivalences TopCat.{0} := sorry
+--instance : (weakEquivalences TopCat).HasTwoOutOfThreeProperty := sorry
+--instance : (weakEquivalences TopCat).IsStableUnderRetracts := sorry
 
 instance : CategoryWithWeakEquivalences SSet.{0} where
   weakEquivalences :=

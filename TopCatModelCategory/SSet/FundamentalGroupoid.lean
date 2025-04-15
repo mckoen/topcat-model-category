@@ -798,7 +798,7 @@ open FundamentalGroupoid
 
 variable {X} {Y : SSet.{u}} [IsFibrant X] [IsFibrant Y] (f : X ⟶ Y)
 
-@[simps]
+@[simps! -isSimp obj_pt map]
 def mapFundamentalGroupoid :
     FundamentalGroupoid X ⥤ FundamentalGroupoid Y where
   obj x := x.map f
@@ -810,6 +810,14 @@ def mapFundamentalGroupoid :
     obtain ⟨p₀₁, rfl⟩ := homMk_surjective f₀₁
     obtain ⟨p₁₂, rfl⟩ := homMk_surjective f₁₂
     exact ((Edge.compStruct p₀₁ p₁₂).pushforward f).fac.symm
+
+attribute [simp] mapFundamentalGroupoid_obj_pt
+attribute [local simp] mapFundamentalGroupoid_map
+
+@[simp]
+lemma mapFundamentalGroupoid_map_homMk {x₀ x₁ : FundamentalGroupoid X} (p : Edge x₀ x₁)
+    {Y : SSet.{u}} [IsFibrant Y] (f : X ⟶ Y) :
+    (mapFundamentalGroupoid f).map (homMk p) = homMk (p.pushforward f) := rfl
 
 variable {f}
 noncomputable def congrMapFundamentalGroupoid {g : X ⟶ Y} (h : f = g) :
