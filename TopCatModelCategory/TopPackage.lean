@@ -173,7 +173,6 @@ instance : (trivialCofibrations π.Cat).HasFunctorialFactorization (fibrations �
   MorphismProperty.hasFunctorialFactorization_of_le (W₂ := π.J.rlp)
     (π.J_rlp_llp_le_trivialCofibrations) (by rfl)
 
-
 lemma I_rlp_iff_weakEquivalence_of_fibration {X Y : π.Cat} (p : X ⟶ Y) [hp : Fibration p] :
     π.I.rlp p ↔ WeakEquivalence p := by
   rw [fibration_iff] at hp
@@ -218,6 +217,14 @@ instance {A B X Y : π.Cat} (i : A ⟶ B) (p : X ⟶ Y)
   infer_instance
 
 instance modelCategoryCat : ModelCategory π.Cat where
+
+lemma cofibrations_eq_llp_rlp_I :
+    cofibrations π.Cat = π.I.rlp.llp := by
+  rw [I_rlp_eq_trivialFibrations, trivialFibrations_llp]
+
+lemma trivialCofibrations_eq_llp_rlp_J :
+    trivialCofibrations π.Cat = π.J.rlp.llp := by
+  rw [← fibrations_eq, fibrations_llp π.Cat]
 
 def modelCategory
     [CategoryWithCofibrations T] [CategoryWithFibrations T]
