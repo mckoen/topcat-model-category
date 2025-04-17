@@ -12,13 +12,17 @@ namespace HomotopicalAlgebra
 def packageTopCat : TopPackage.{0} TopCat.{0} where
   I' := ofHoms (fun n ↦ SSet.toTop.map (SSet.boundary.{0} n).ι)
   J' := ⨆ n, ofHoms (fun i ↦ SSet.toTop.map (SSet.horn.{0} (n + 1) i).ι)
+  -- using `S' := finite CW-complexes`, the next three sorries should be easy
   S' := sorry
   src_I_le_S' := sorry
   src_J_le_S' := sorry
+  -- use results in `SSet.Skeleton`
   rlp_I'_le_rlp_J' := sorry
-  fibration_is_trivial_iff' := sorry
+  -- the next two were formalised in Lean 3 by Reid Barton
   preservesColimit' := sorry
   infiniteCompositions_le_W' := sorry
+  -- this is the key property
+  fibration_is_trivial_iff' := sorry
 
 end HomotopicalAlgebra
 
