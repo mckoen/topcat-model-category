@@ -226,7 +226,7 @@ def Edge.id (x : FundamentalGroupoid X) : Edge x x :=
   Edge.mk (const x.pt)
 
 @[simp]
-lemma Edge.ofEq_refl (x : FundamentalGroupoid x) :
+lemma Edge.ofEq_refl (x : FundamentalGroupoid X) :
     Edge.ofEq (rfl : x = x) = Edge.id x := rfl
 
 namespace Edge
