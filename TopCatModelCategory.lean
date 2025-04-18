@@ -70,9 +70,11 @@ import TopCatModelCategory.SSet.StrictSegal
 import TopCatModelCategory.SSet.Subcomplex
 import TopCatModelCategory.Set
 import TopCatModelCategory.SimplicialPresheaves.LocalLiftingProperty
+import TopCatModelCategory.TopCat.DeformationRetract
+import TopCatModelCategory.TopCat.IsQuotientMap
+import TopCatModelCategory.TopCat.Monoidal
 import TopCatModelCategory.TopCat.W
 import TopCatModelCategory.TopCatIsColimit
 import TopCatModelCategory.TopPackage
-import TopCatModelCategory.TopologyLemmas.IsQuotientMap
 import TopCatModelCategory.ULift
 import TopCatModelCategory.WellOrderContinuous
