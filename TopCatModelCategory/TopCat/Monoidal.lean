@@ -96,45 +96,50 @@ protected theorem lift_apply {X Y Z : TopCat.{u}} {f : X ⟶ Y} {g : X ⟶ Z} {x
     ChosenFiniteProducts.lift f g x = (f x, g x) :=
   rfl
 
-def I := TopCat.of unitInterval
+def I : TopCat.{u} := TopCat.of (ULift unitInterval)
+
+def I.mk (t : unitInterval) : I := ULift.up t
+
+instance : OfNat I 0 := ⟨I.mk 0⟩
+instance : OfNat I 1 := ⟨I.mk 1⟩
 
 open ChosenFiniteProducts
 
-noncomputable def ι₀ {X : TopCat.{0}} : X ⟶ X ⊗ I :=
-  lift (𝟙 X) (ofHom ⟨_, continuous_const (y := ⟨0, by simp⟩)⟩)
+noncomputable def ι₀ {X : TopCat.{u}} : X ⟶ X ⊗ I :=
+  lift (𝟙 X) (ofHom ⟨_, continuous_const (y := 0)⟩)
 
 @[reassoc (attr := simp)]
-lemma ι₀_comp {X Y : TopCat.{0}} (f : X ⟶ Y) :
+lemma ι₀_comp {X Y : TopCat.{u}} (f : X ⟶ Y) :
     ι₀ ≫ f ▷ _ = f ≫ ι₀ := rfl
 
 @[reassoc (attr := simp)]
-lemma ι₀_fst (X : TopCat.{0}) : ι₀ ≫ fst X _ = 𝟙 X := rfl
+lemma ι₀_fst (X : TopCat.{u}) : ι₀ ≫ fst X _ = 𝟙 X := rfl
 
 @[reassoc (attr := simp)]
-lemma ι₀_snd (X : TopCat.{0}) :
-    ι₀ ≫ snd X _ = ofHom ⟨_, continuous_const (y := ⟨0, by simp⟩)⟩ :=
+lemma ι₀_snd (X : TopCat.{u}) :
+    ι₀ ≫ snd X _ = ofHom ⟨_, continuous_const (y := 0)⟩ :=
   rfl
 
 @[simp]
-lemma ι₀_apply {X : TopCat.{0}} (x : X) : ι₀ x = ⟨x, ⟨0, by simp⟩⟩ := rfl
+lemma ι₀_apply {X : TopCat.{u}} (x : X) : ι₀ x = ⟨x, 0⟩ := rfl
 
-noncomputable def ι₁ {X : TopCat.{0}} : X ⟶ X ⊗ I :=
-  lift (𝟙 X) (ofHom ⟨_, continuous_const (y := ⟨1, by simp⟩)⟩)
+noncomputable def ι₁ {X : TopCat.{u}} : X ⟶ X ⊗ I :=
+  lift (𝟙 X) (ofHom ⟨_, continuous_const (y := 1)⟩)
 
 @[reassoc (attr := simp)]
-lemma ι₁_comp {X Y : TopCat.{0}} (f : X ⟶ Y) :
+lemma ι₁_comp {X Y : TopCat.{u}} (f : X ⟶ Y) :
     ι₁ ≫ f ▷ _ = f ≫ ι₁ := rfl
 
 @[reassoc (attr := simp)]
-lemma ι₁_fst (X : TopCat.{0}) : ι₀ ≫ fst X _ = 𝟙 X := rfl
+lemma ι₁_fst (X : TopCat.{u}) : ι₁ ≫ fst X _ = 𝟙 X := rfl
 
 @[reassoc (attr := simp)]
-lemma ι₁_snd (X : TopCat.{0}) :
-    ι₁ ≫ snd X _ = ofHom ⟨_, continuous_const (y := ⟨1, by simp⟩)⟩ :=
+lemma ι₁_snd (X : TopCat.{u}) :
+    ι₁ ≫ snd X _ = ofHom ⟨_, continuous_const (y := 1)⟩ :=
   rfl
 
 @[simp]
-lemma ι₁_apply {X : TopCat.{0}} (x : X) : ι₁ x = ⟨x, ⟨1, by simp⟩⟩ :=
+lemma ι₁_apply {X : TopCat.{u}} (x : X) : ι₁ x = ⟨x, 1⟩ :=
   rfl
 
 end TopCat
