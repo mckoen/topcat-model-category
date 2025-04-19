@@ -64,4 +64,16 @@ lemma isPushout_iff :
         isColimit' := ⟨PushoutCocone.isColimitMapCoconeEquiv _ _ h⟩ },
       fun h ↦ ⟨(PushoutCocone.isColimitMapCoconeEquiv _ _).2 h.isColimit⟩⟩)
 
+variable {t l r b}
+
+lemma isOpen_iff_of_isPushout (h : IsPushout t l r b) (F : Set X₄) :
+    IsOpen F ↔ IsOpen (r ⁻¹' F) ∧ IsOpen (b ⁻¹' F) := by
+  rw [isPushout_iff] at h
+  rw [h.2]
+  rfl
+
+lemma isClosed_iff_of_isPushout (h : IsPushout t l r b) (F : Set X₄) :
+    IsClosed F ↔ IsClosed (r ⁻¹' F) ∧ IsClosed (b ⁻¹' F) := by
+  simp only [← isOpen_compl_iff, isOpen_iff_of_isPushout h, Set.preimage_compl]
+
 end TopCat
