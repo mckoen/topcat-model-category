@@ -75,6 +75,7 @@ import TopCatModelCategory.TopCat.Glueing
 import TopCatModelCategory.TopCat.IsQuotientMap
 import TopCatModelCategory.TopCat.Monoidal
 import TopCatModelCategory.TopCat.W
+import TopCatModelCategory.TopCat.t1Inclusion
 import TopCatModelCategory.TopCatIsColimit
 import TopCatModelCategory.TopPackage
 import TopCatModelCategory.ULift
