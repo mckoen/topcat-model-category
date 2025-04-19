@@ -70,6 +70,7 @@ import TopCatModelCategory.SSet.StrictSegal
 import TopCatModelCategory.SSet.Subcomplex
 import TopCatModelCategory.Set
 import TopCatModelCategory.SimplicialPresheaves.LocalLiftingProperty
+import TopCatModelCategory.TopCat.Colimits
 import TopCatModelCategory.TopCat.DeformationRetract
 import TopCatModelCategory.TopCat.Glueing
 import TopCatModelCategory.TopCat.IsQuotientMap
