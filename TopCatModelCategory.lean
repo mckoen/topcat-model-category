@@ -71,6 +71,7 @@ import TopCatModelCategory.Set
 import TopCatModelCategory.SimplicialPresheaves.LocalLiftingProperty
 import TopCatModelCategory.TopCat.ClosedEmbeddings
 import TopCatModelCategory.TopCat.Colimits
+import TopCatModelCategory.TopCat.CompactOpen
 import TopCatModelCategory.TopCat.DeformationRetract
 import TopCatModelCategory.TopCat.Glueing
 import TopCatModelCategory.TopCat.IsQuotientMap
