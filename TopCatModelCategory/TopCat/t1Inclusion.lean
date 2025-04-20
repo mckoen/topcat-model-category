@@ -7,7 +7,7 @@ import Mathlib.Topology.Category.TopCat.Limits.Basic
 
 universe u
 
-open CategoryTheory Topology Limits
+open CategoryTheory Topology Limits MorphismProperty
 
 namespace Topology
 
@@ -87,8 +87,49 @@ lemma isT₁Inclusion_of_isPushout (sq : IsPushout t l r b)
 
 end
 
+section
+
+variable {J : Type u'} {X₁ : J → TopCat.{u}} {X₂ : J → TopCat.{u}}
+  (f : ∀ j, X₁ j ⟶ X₂ j) {c₁ : Cofan X₁} (h₁ : IsColimit c₁) {c₂ : Cofan X₂}
+  (h₂ : IsColimit c₂) (φ : c₁.pt ⟶ c₂.pt) (hφ : ∀ j, c₁.inj j ≫ φ = f j ≫ c₂.inj j)
+
+include h₁ h₂ hφ in
+lemma isT₁Inclusion_of_isColimit (hf : ∀ j, IsT₁Inclusion (f j)) :
+    IsT₁Inclusion φ where
+  toIsClosedEmbedding := isClosedEmbedding_of_isColimit f h₁ h₂ φ hφ
+    (fun j ↦ (hf j).toIsClosedEmbedding)
+  isClosed_singleton y hy := by
+    obtain ⟨⟨i⟩, (y : X₂ i), rfl⟩ := Types.jointly_surjective_of_isColimit
+      (isColimitOfPreserves (forget _) h₂) y
+    rw [isClosed_iff_of_isColimit _ h₂]
+    rintro ⟨j⟩
+    by_cases hj : i = j
+    · subst hj
+      convert (hf i).isClosed_singleton y (by
+        rintro ⟨x, rfl⟩
+        exact hy ⟨c₁.inj i x, congr_fun ((forget _).congr_map (hφ i)) x⟩)
+      convert (cofanInj_injective_of_isColimit h₂ i).preimage_image {y}
+      dsimp
+      simp only [Set.image_singleton, Set.singleton_eq_singleton_iff]
+      rfl
+    · convert isClosed_empty
+      ext (x : X₂ j)
+      dsimp
+      simp only [Set.mem_preimage, Set.mem_singleton_iff, Set.mem_empty_iff_false, iff_false]
+      intro h
+      exact hj (eq_cofanInj_apply_eq_of_isColimit h₂ _ _ h.symm)
+
+end
+
 instance : t₁Inclusions.{u}.IsStableUnderCobaseChange where
   of_isPushout sq hl := isT₁Inclusion_of_isPushout sq.flip hl
+
+instance : IsStableUnderCoproducts.{u'} t₁Inclusions.{u} where
+  isStableUnderCoproductsOfShape J := by
+    apply IsStableUnderCoproductsOfShape.mk
+    intro X₁ X₂ _ _ f hf
+    exact isT₁Inclusion_of_isColimit f (colimit.isColimit _)
+      (colimit.isColimit _) _ (fun j ↦ colimit.ι_desc _ _) hf
 
 end t₁Inclusions
 

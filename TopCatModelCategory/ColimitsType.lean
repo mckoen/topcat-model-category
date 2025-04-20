@@ -464,6 +464,24 @@ lemma eq_cofanInj_apply_eq_of_isColimit {i j : ι} (x : X i) (y : X j)
   rw [cofanInj_apply_eq_iff_of_isColimit hc] at h
   exact h.choose
 
+lemma preimage_image_eq_of_coproducts
+    {X' : ι → Type u} {c' : Cofan X'} (hc' : IsColimit c') (f : ∀ i, X i ⟶ X' i)
+    (φ : c.pt ⟶ c'.pt) (hφ : ∀ i, c.inj i ≫ φ = f i ≫ c'.inj i)
+    (i : ι) (F : Set (X' i)) :
+    φ ⁻¹' (c'.inj i '' F) = c.inj i '' ((f i) ⁻¹' F) := by
+  replace hφ {i : ι} (x : X i) : φ (c.inj i x) = c'.inj i (f i x) := congr_fun (hφ i) x
+  ext y
+  simp only [Set.mem_preimage, Set.mem_image]
+  constructor
+  · rintro ⟨x, hx, eq⟩
+    obtain ⟨j, z, rfl⟩ := jointly_surjective_of_isColimit_cofan hc y
+    rw [hφ] at eq
+    obtain rfl := eq_cofanInj_apply_eq_of_isColimit hc' _ _ eq
+    obtain rfl := cofanInj_injective_of_isColimit hc' i eq
+    refine ⟨z, hx, rfl⟩
+  · rintro ⟨x, hx, rfl⟩
+    exact ⟨_, hx, (hφ x).symm⟩
+
 end
 
 section
