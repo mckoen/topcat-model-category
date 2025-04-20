@@ -3,7 +3,6 @@ import TopCatModelCategory.AttachCells
 import TopCatModelCategory.CWComplex
 import TopCatModelCategory.CatCommSq
 import TopCatModelCategory.CellComplex
-import TopCatModelCategory.ClosedEmbeddings
 import TopCatModelCategory.ColimitsType
 import TopCatModelCategory.CommSq
 import TopCatModelCategory.Factorization
@@ -70,6 +69,7 @@ import TopCatModelCategory.SSet.StrictSegal
 import TopCatModelCategory.SSet.Subcomplex
 import TopCatModelCategory.Set
 import TopCatModelCategory.SimplicialPresheaves.LocalLiftingProperty
+import TopCatModelCategory.TopCat.ClosedEmbeddings
 import TopCatModelCategory.TopCat.Colimits
 import TopCatModelCategory.TopCat.DeformationRetract
 import TopCatModelCategory.TopCat.Glueing

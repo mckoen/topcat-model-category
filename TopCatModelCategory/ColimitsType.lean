@@ -502,6 +502,31 @@ lemma pushoutCocone_inl_eq_inl_iff_of_isColimit {c : PushoutCocone f g} (hc : Is
 
 end
 
+
+section
+
+variable {X₁ X₂ X₃ X₄ : Type u} {t : X₁ ⟶ X₂} {l : X₁ ⟶ X₃}
+  {r : X₂ ⟶ X₄} {b : X₃ ⟶ X₄}
+
+lemma preimage_image_eq_of_isPushout (sq : IsPushout t l r b) (ht : Function.Injective t)
+    (F : Set X₃) :
+    r ⁻¹' (b '' F) = t '' (l ⁻¹' F) := by
+  ext x₂
+  simp only [Set.mem_preimage, Set.mem_image]
+  constructor
+  · rintro ⟨x₃, hx₃, hx₃'⟩
+    obtain ⟨x₁, rfl, rfl⟩ := (Types.pushoutCocone_inl_eq_inr_iff_of_isColimit
+      sq.isColimit ht x₂ x₃).1 hx₃'.symm
+    exact ⟨x₁, hx₃, rfl⟩
+  · rintro ⟨x₁, hx₁, rfl⟩
+    exact ⟨l x₁, hx₁, congr_fun sq.w.symm x₁⟩
+
+lemma injective_of_isPushout (sq : IsPushout t l r b) (ht : Function.Injective t) :
+    Function.Injective b :=
+  Types.pushoutCocone_injective_inr_of_isColimit sq.isColimit ht
+
+end
+
 end Types
 
 end CategoryTheory.Limits
