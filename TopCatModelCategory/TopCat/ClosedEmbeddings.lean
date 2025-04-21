@@ -20,11 +20,14 @@ instance : closedEmbeddings.{u}.IsMultiplicative where
   id_mem _ := IsClosedEmbedding.id
   comp_mem _ _ hf hg := hg.comp hf
 
+lemma isClosedEmbedding_of_isIso {X Y : TopCat.{u}} (f : X ⟶ Y) [IsIso f] :
+    IsClosedEmbedding f := (homeoOfIso (asIso f)).isClosedEmbedding
+
 instance : closedEmbeddings.{u}.RespectsIso :=
   MorphismProperty.respectsIso_of_isStableUnderComposition (by
     intro X Y f hf
     have : IsIso f := by assumption
-    exact (homeoOfIso (asIso f)).isClosedEmbedding)
+    apply isClosedEmbedding_of_isIso)
 
 section
 
@@ -187,6 +190,45 @@ lemma isClosedEmbedding_of_isColimit (hf : ∀ j, IsClosedEmbedding (f j)) :
 
 end
 
+section
+
+variable {J : Type u'} [LinearOrder J] [OrderBot J]
+
+/-lemma isClosedEmbedding_of_isColimit_of_bot_le
+    {X : J ⥤ TopCat.{u}} {c : Cocone X} (hc : IsColimit c)
+    (hX : ∀ (j : J), IsClosedEmbedding (X.map (homOfLE bot_le : ⊥ ⟶ j))) :
+    IsClosedEmbedding (c.ι.app ⊥) := by
+  have := hc
+  have inj : Function.Injective (c.ι.app ⊥) := sorry
+  exact {
+    eq_induced := sorry
+    injective := inj
+    isClosed_range := sorry }
+
+lemma isClosedEmbedding_of_transfiniteCompositionOfShape
+    [WellFoundedLT J] [SuccOrder J] {X Y : TopCat.{u}} {f : X ⟶ Y}
+    (hf : closedEmbeddings.{u}.TransfiniteCompositionOfShape J f) :
+    IsClosedEmbedding f := by
+  simp only [← hf.fac, Functor.const_obj_obj, hom_comp, ContinuousMap.coe_comp]
+  refine IsClosedEmbedding.comp
+    (isClosedEmbedding_of_isColimit_of_bot_le hf.isColimit (fun j ↦ ?_))
+    (isClosedEmbedding_of_isIso _)
+  induction j using SuccOrder.limitRecOn with
+  | hm j hj =>
+    obtain rfl := hj.eq_bot
+    simpa using IsClosedEmbedding.id
+  | hs j hj hj' =>
+    rw [← homOfLE_comp bot_le (Order.le_succ j), Functor.map_comp]
+    exact (hf.map_mem j hj).comp hj'
+  | hl j hj hj' =>
+    letI : OrderBot (Set.Iio j) :=
+      { bot := ⟨⊥, hj.bot_lt⟩
+        bot_le j := bot_le }
+    exact isClosedEmbedding_of_isColimit_of_bot_le
+      (hf.F.isColimitOfIsWellOrderContinuous j hj) (fun ⟨i, hi⟩ ↦ hj' i hi)-/
+
+end
+
 instance : closedEmbeddings.{u}.IsStableUnderCobaseChange where
   of_isPushout sq hl := isClosedEmbedding_of_isPushout sq.flip hl
 
@@ -196,5 +238,9 @@ instance : IsStableUnderCoproducts.{u'} closedEmbeddings.{u} where
     intro X₁ X₂ _ _ f hf
     exact isClosedEmbedding_of_isColimit f (colimit.isColimit _)
       (colimit.isColimit _) _ (fun j ↦ colimit.ι_desc _ _) hf
+
+/-instance : IsStableUnderTransfiniteComposition.{u'} closedEmbeddings.{u} where
+  isStableUnderTransfiniteCompositionOfShape _ _ _ _ _ :=
+    ⟨fun _ _ _ ⟨hf⟩ ↦ isClosedEmbedding_of_transfiniteCompositionOfShape hf⟩-/
 
 end TopCat
