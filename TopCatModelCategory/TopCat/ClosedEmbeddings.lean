@@ -1,4 +1,5 @@
 import Mathlib.Topology.Category.TopCat.Basic
+import Mathlib.CategoryTheory.Limits.TypesFiltered
 import Mathlib.CategoryTheory.MorphismProperty.Composition
 import TopCatModelCategory.SSet.Monomorphisms
 import TopCatModelCategory.ColimitsType
@@ -15,6 +16,10 @@ def closedEmbeddings : MorphismProperty TopCat.{u} :=
 
 lemma closedEmbeddings_iff {X Y : TopCat.{u}} (f : X ⟶ Y) :
     closedEmbeddings f ↔ IsClosedEmbedding f := Iff.rfl
+
+lemma closedEmbedding_le_inverseImage_monomorphisms :
+    closedEmbeddings.{u} ≤ (monomorphisms (Type u)).inverseImage (forget _) :=
+  fun _ _ _ hf ↦ by simpa [CategoryTheory.mono_iff_injective] using hf.injective
 
 instance : closedEmbeddings.{u}.IsMultiplicative where
   id_mem _ := IsClosedEmbedding.id
@@ -194,24 +199,57 @@ section
 
 variable {J : Type u'} [LinearOrder J] [OrderBot J]
 
-/-lemma isClosedEmbedding_of_isColimit_of_bot_le
+lemma isClosedEmbedding_of_transfiniteCompositionOfShape_aux
     {X : J ⥤ TopCat.{u}} {c : Cocone X} (hc : IsColimit c)
-    (hX : ∀ (j : J), IsClosedEmbedding (X.map (homOfLE bot_le : ⊥ ⟶ j))) :
+    (hX : ∀ (j : J), IsClosedEmbedding (X.map (homOfLE bot_le : ⊥ ⟶ j)))
+    (h' : ∀ ⦃j j' : J⦄ (f : j ⟶ j'), Function.Injective (X.map f)) :
     IsClosedEmbedding (c.ι.app ⊥) := by
-  have := hc
-  have inj : Function.Injective (c.ι.app ⊥) := sorry
+  have inj (j : J) : Function.Injective (c.ι.app j) := fun x₁ x₂ h ↦ by
+    obtain ⟨k, g, hk⟩ := (Types.FilteredColimit.isColimit_eq_iff'
+      (isColimitOfPreserves (forget _) hc) _ _).1 h
+    exact h' _ hk
+  have closed {F : Set (X.obj ⊥)} (hF : IsClosed F) :
+      IsClosed (c.ι.app ⊥ '' F) := by
+    rw [isClosed_iff_of_isColimit c hc]
+    intro j
+    convert (hX j).isClosedMap _ hF
+    ext x
+    simp only [Set.mem_preimage, Set.mem_image, homOfLE_leOfHom]
+    constructor
+    · rintro ⟨y, hy, h⟩
+      refine ⟨y, hy, inj _ ?_⟩
+      rw [← h]
+      exact congr_fun ((forget _).congr_map (c.w (homOfLE bot_le : ⊥ ⟶ j))) y
+    · rintro ⟨y, hy, rfl⟩
+      exact ⟨y, hy, congr_fun ((forget _).congr_map (c.w (homOfLE bot_le : ⊥ ⟶ j)).symm) y⟩
   exact {
-    eq_induced := sorry
-    injective := inj
-    isClosed_range := sorry }
+    eq_induced := by
+      rw [TopologicalSpace.ext_iff_isClosed]
+      intro F
+      simp only [isClosed_induced_iff]
+      constructor
+      · intro hF
+        exact ⟨c.ι.app ⊥ '' F, closed hF, (inj ⊥).preimage_image F⟩
+      · rintro ⟨V, hV, rfl⟩
+        exact IsClosed.preimage (by continuity) hV
+    injective := inj ⊥
+    isClosed_range := by simpa using closed isClosed_univ }
+
+instance (J : Type*) [LinearOrder J] :
+  PreservesWellOrderContinuousOfShape J (forget TopCat.{u}) where
 
 lemma isClosedEmbedding_of_transfiniteCompositionOfShape
     [WellFoundedLT J] [SuccOrder J] {X Y : TopCat.{u}} {f : X ⟶ Y}
     (hf : closedEmbeddings.{u}.TransfiniteCompositionOfShape J f) :
     IsClosedEmbedding f := by
+  have inj ⦃j j' : J⦄ (g : j ⟶ j') : Function.Injective (hf.F.map g) := by
+    rw [← CategoryTheory.mono_iff_injective]
+    exact MorphismProperty.transfiniteCompositionsOfShape_le _ _ _
+      ((((hf.ici j).iic ⟨j', leOfHom g⟩).ofLE
+        closedEmbedding_le_inverseImage_monomorphisms)).map.mem
   simp only [← hf.fac, Functor.const_obj_obj, hom_comp, ContinuousMap.coe_comp]
   refine IsClosedEmbedding.comp
-    (isClosedEmbedding_of_isColimit_of_bot_le hf.isColimit (fun j ↦ ?_))
+    (isClosedEmbedding_of_transfiniteCompositionOfShape_aux hf.isColimit (fun j ↦ ?_) inj)
     (isClosedEmbedding_of_isIso _)
   induction j using SuccOrder.limitRecOn with
   | hm j hj =>
@@ -224,8 +262,8 @@ lemma isClosedEmbedding_of_transfiniteCompositionOfShape
     letI : OrderBot (Set.Iio j) :=
       { bot := ⟨⊥, hj.bot_lt⟩
         bot_le j := bot_le }
-    exact isClosedEmbedding_of_isColimit_of_bot_le
-      (hf.F.isColimitOfIsWellOrderContinuous j hj) (fun ⟨i, hi⟩ ↦ hj' i hi)-/
+    exact isClosedEmbedding_of_transfiniteCompositionOfShape_aux
+      (hf.F.isColimitOfIsWellOrderContinuous j hj) (fun ⟨i, hi⟩ ↦ hj' i hi) (fun _ _ _ ↦ inj _)
 
 end
 
@@ -239,8 +277,8 @@ instance : IsStableUnderCoproducts.{u'} closedEmbeddings.{u} where
     exact isClosedEmbedding_of_isColimit f (colimit.isColimit _)
       (colimit.isColimit _) _ (fun j ↦ colimit.ι_desc _ _) hf
 
-/-instance : IsStableUnderTransfiniteComposition.{u'} closedEmbeddings.{u} where
+instance : IsStableUnderTransfiniteComposition.{u'} closedEmbeddings.{u} where
   isStableUnderTransfiniteCompositionOfShape _ _ _ _ _ :=
-    ⟨fun _ _ _ ⟨hf⟩ ↦ isClosedEmbedding_of_transfiniteCompositionOfShape hf⟩-/
+    ⟨fun _ _ _ ⟨hf⟩ ↦ isClosedEmbedding_of_transfiniteCompositionOfShape hf⟩
 
 end TopCat
