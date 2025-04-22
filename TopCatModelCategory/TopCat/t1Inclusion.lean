@@ -9,6 +9,12 @@ universe u
 
 open CategoryTheory Topology Limits MorphismProperty
 
+lemma Set.Nonempty.exists_min_of_wellFoundedLT
+    {J : Type*} [LinearOrder J] [WellFoundedLT J] {S : Set J} (hS : S.Nonempty) :
+    ∃ (m : J), m ∈ S ∧ ∀ i, i ∈ S → m ≤ i :=
+  ⟨WellFounded.min (r := (· < ·)) wellFounded_lt _ hS, WellFounded.min_mem _ _ _,
+    fun _ hi ↦ WellFounded.min_le wellFounded_lt hi _⟩
+
 namespace Topology
 
 -- This was also formalized by Reid Barton
@@ -49,6 +55,9 @@ namespace TopCat
 def t₁Inclusions : MorphismProperty TopCat.{u} :=
   fun _ _ f ↦ IsT₁Inclusion f
 
+lemma t₁Inclusions_le_closedEmbeddings :
+    t₁Inclusions.{u} ≤ closedEmbeddings := fun _ _ _ h ↦ h.toIsClosedEmbedding
+
 namespace t₁Inclusions
 
 variable {X Y : TopCat.{u}} {f : X ⟶ Y} (hf : t₁Inclusions f)
@@ -61,12 +70,9 @@ instance : t₁Inclusions.{u}.RespectsIso :=
   MorphismProperty.respectsIso_of_isStableUnderComposition (fun _ _ f (_ : IsIso f) ↦
     IsT₁Inclusion.of_homeo (TopCat.homeoOfIso (asIso f)))
 
-section
-
-variable {X₁ X₂ X₃ X₄ : TopCat.{u}} {t : X₁ ⟶ X₂} {l : X₁ ⟶ X₃}
-  {r : X₂ ⟶ X₄} {b : X₃ ⟶ X₄}
-
-lemma isT₁Inclusion_of_isPushout (sq : IsPushout t l r b)
+lemma isT₁Inclusion_of_isPushout
+    {X₁ X₂ X₃ X₄ : TopCat.{u}} {t : X₁ ⟶ X₂} {l : X₁ ⟶ X₃} {r : X₂ ⟶ X₄} {b : X₃ ⟶ X₄}
+    (sq : IsPushout t l r b)
     (ht : IsT₁Inclusion t) :
     IsT₁Inclusion b where
   toIsClosedEmbedding := isClosedEmbedding_of_isPushout sq ht.toIsClosedEmbedding
@@ -85,16 +91,11 @@ lemma isT₁Inclusion_of_isPushout (sq : IsPushout t l r b)
         · exact (hx₂ ⟨_, rfl⟩).elim
     · simpa only [show b ⁻¹' {y} = ∅ by aesop] using isClosed_empty
 
-end
-
-section
-
-variable {J : Type u'} {X₁ : J → TopCat.{u}} {X₂ : J → TopCat.{u}}
-  (f : ∀ j, X₁ j ⟶ X₂ j) {c₁ : Cofan X₁} (h₁ : IsColimit c₁) {c₂ : Cofan X₂}
-  (h₂ : IsColimit c₂) (φ : c₁.pt ⟶ c₂.pt) (hφ : ∀ j, c₁.inj j ≫ φ = f j ≫ c₂.inj j)
-
-include h₁ h₂ hφ in
-lemma isT₁Inclusion_of_isColimit (hf : ∀ j, IsT₁Inclusion (f j)) :
+lemma isT₁Inclusion_of_isColimit_cofan
+    {J : Type u'} {X₁ : J → TopCat.{u}} {X₂ : J → TopCat.{u}}
+    (f : ∀ j, X₁ j ⟶ X₂ j) {c₁ : Cofan X₁} (h₁ : IsColimit c₁) {c₂ : Cofan X₂}
+    (h₂ : IsColimit c₂) (φ : c₁.pt ⟶ c₂.pt) (hφ : ∀ j, c₁.inj j ≫ φ = f j ≫ c₂.inj j)
+    (hf : ∀ j, IsT₁Inclusion (f j)) :
     IsT₁Inclusion φ where
   toIsClosedEmbedding := isClosedEmbedding_of_isColimit f h₁ h₂ φ hφ
     (fun j ↦ (hf j).toIsClosedEmbedding)
@@ -119,7 +120,41 @@ lemma isT₁Inclusion_of_isColimit (hf : ∀ j, IsT₁Inclusion (f j)) :
       intro h
       exact hj (eq_cofanInj_apply_eq_of_isColimit h₂ _ _ h.symm)
 
-end
+lemma isT₁Inclusion_of_transfiniteCompositionOfShape {J : Type u'} [LinearOrder J]
+    [SuccOrder J] [OrderBot J] [WellFoundedLT J]
+    {X Y : TopCat.{u}} {f : X ⟶ Y}
+    (hf : t₁Inclusions.TransfiniteCompositionOfShape J f) :
+    IsT₁Inclusion f where
+  toIsClosedEmbedding :=
+    isClosedEmbedding_of_transfiniteCompositionOfShape (hf.ofLE t₁Inclusions_le_closedEmbeddings)
+  isClosed_singleton y hy := by
+    let S := setOf (fun j ↦ y ∈ Set.range (hf.incl.app j))
+    have hS : S.Nonempty := Types.jointly_surjective_of_isColimit
+      (isColimitOfPreserves (forget _) hf.isColimit) y
+    obtain ⟨i, ⟨x, rfl⟩, hi⟩ := hS.exists_min_of_wellFoundedLT
+    simp only [Functor.const_obj_obj, Set.mem_range,
+      Set.mem_setOf_eq, forall_exists_index, S] at hi
+    obtain ⟨j, hj, rfl⟩ : ∃ j, ¬IsMax j ∧ i = Order.succ j := by
+      induction i using SuccOrder.limitRecOn with
+      | hm j hj =>
+        obtain rfl := hj.eq_bot
+        refine (hy ?_).elim
+        simp only [← hf.fac]
+        obtain ⟨z, rfl⟩ := ((forget _).mapIso hf.isoBot.symm).toEquiv.surjective x
+        exact ⟨z, rfl⟩
+      | hs j hj hj' => exact ⟨j, hj, rfl⟩
+      | hl j hj hj' =>
+        obtain ⟨⟨k, hk⟩, y, rfl⟩ := Types.jointly_surjective_of_isColimit
+          (isColimitOfPreserves (forget _) (hf.F.isColimitOfIsWellOrderContinuous j hj)) x
+        exact (lt_irrefl _ (lt_of_lt_of_le hk (hi k y
+          (congr_fun ((forget _).congr_map (hf.incl.naturality (homOfLE hk.le)).symm) y)))).elim
+    simpa using (isClosedEmbedding_of_transfiniteCompositionOfShape
+      ((hf.ici (Order.succ j)).ofLE t₁Inclusions_le_closedEmbeddings)).isClosedMap _
+        ((hf.map_mem j hj).isClosed_singleton x (fun ⟨y, hy⟩ ↦
+          not_le.2 (Order.lt_succ_of_not_isMax hj) (hi j y (by
+            rw [← hy]
+            exact congr_fun ((forget _).congr_map
+              (hf.incl.naturality (homOfLE (Order.le_succ j))).symm) y))))
 
 instance : t₁Inclusions.{u}.IsStableUnderCobaseChange where
   of_isPushout sq hl := isT₁Inclusion_of_isPushout sq.flip hl
@@ -128,8 +163,12 @@ instance : IsStableUnderCoproducts.{u'} t₁Inclusions.{u} where
   isStableUnderCoproductsOfShape J := by
     apply IsStableUnderCoproductsOfShape.mk
     intro X₁ X₂ _ _ f hf
-    exact isT₁Inclusion_of_isColimit f (colimit.isColimit _)
+    exact isT₁Inclusion_of_isColimit_cofan f (colimit.isColimit _)
       (colimit.isColimit _) _ (fun j ↦ colimit.ι_desc _ _) hf
+
+instance : IsStableUnderTransfiniteComposition.{u'} t₁Inclusions.{u} where
+  isStableUnderTransfiniteCompositionOfShape _ _ _ _ _ :=
+    ⟨fun _ _ _ ⟨hf⟩ ↦ isT₁Inclusion_of_transfiniteCompositionOfShape hf⟩
 
 end t₁Inclusions
 
