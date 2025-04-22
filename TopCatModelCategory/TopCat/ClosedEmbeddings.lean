@@ -197,7 +197,11 @@ end
 
 section
 
-variable {J : Type u'} [LinearOrder J] [OrderBot J]
+variable {J : Type u'} [LinearOrder J]
+
+instance : PreservesWellOrderContinuousOfShape J (forget TopCat.{u}) where
+
+variable [OrderBot J]
 
 lemma isClosedEmbedding_of_transfiniteCompositionOfShape_aux
     {X : J ⥤ TopCat.{u}} {c : Cocone X} (hc : IsColimit c)
@@ -234,9 +238,6 @@ lemma isClosedEmbedding_of_transfiniteCompositionOfShape_aux
         exact IsClosed.preimage (by continuity) hV
     injective := inj ⊥
     isClosed_range := by simpa using closed isClosed_univ }
-
-instance (J : Type*) [LinearOrder J] :
-  PreservesWellOrderContinuousOfShape J (forget TopCat.{u}) where
 
 lemma isClosedEmbedding_of_transfiniteCompositionOfShape
     [WellFoundedLT J] [SuccOrder J] {X Y : TopCat.{u}} {f : X ⟶ Y}
