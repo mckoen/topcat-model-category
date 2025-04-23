@@ -11,6 +11,7 @@ import TopCatModelCategory.Homotopy.Basic
 import TopCatModelCategory.IsFibrant
 import TopCatModelCategory.Iso
 import TopCatModelCategory.JoyalTrickDual
+import TopCatModelCategory.ModelCategory
 import TopCatModelCategory.ModelCategoryCopy
 import TopCatModelCategory.ModelCategorySSet
 import TopCatModelCategory.ModelCategoryTopCat

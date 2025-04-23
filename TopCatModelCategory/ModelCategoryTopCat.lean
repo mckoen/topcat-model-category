@@ -45,6 +45,11 @@ instance (n : ℕ) : Cofibration (toTop.map (boundary n).ι) := by
   apply MorphismProperty.le_llp_rlp
   constructor
 
+lemma trivialCofibrations_eq_llp_rlp :
+    trivialCofibrations TopCat =
+      (⨆ n, ofHoms (fun i ↦ SSet.toTop.map (SSet.horn.{0} (n + 1) i).ι)).rlp.llp :=
+  packageTopCat.trivialCofibrations_eq_llp_rlp_J
+
 end ModelCategory
 
 end TopCat

@@ -1,6 +1,7 @@
 import Mathlib.CategoryTheory.SmallObject.Basic
 import Mathlib.AlgebraicTopology.SingularSet
 import TopCatModelCategory.MorphismProperty
+import TopCatModelCategory.ModelCategory
 import TopCatModelCategory.Factorization
 import TopCatModelCategory.SSet.Skeleton
 import TopCatModelCategory.ModelCategoryTopCat
@@ -91,6 +92,20 @@ lemma rlp_I_le_rlp_J : I.{u}.rlp ≤ J.{u}.rlp := by
     transfiniteCompositions_pushouts_coproducts]
   exact J_le_monomorphisms.trans (le_retracts _)
 
+instance : toTop.IsLeftAdjoint := ⟨_, ⟨sSetTopAdj⟩⟩
+
+instance (K : Type) [LinearOrder K] : PreservesWellOrderContinuousOfShape K toTop where
+
+lemma J_inverseImage_trivialCofibrations :
+    J ≤ (trivialCofibrations TopCat).inverseImage toTop := by
+  intro _ _ f hf
+  simp only [J, iSup_iff] at hf
+  obtain ⟨n, ⟨i⟩⟩ := hf
+  rw [TopCat.ModelCategory.trivialCofibrations_eq_llp_rlp]
+  apply le_llp_rlp
+  simp only [iSup_iff]
+  exact ⟨n, ⟨i⟩⟩
+
 instance : HasFunctorialFactorization (trivialCofibrations SSet) (fibrations SSet) := by
   refine MorphismProperty.hasFunctorialFactorization_of_le (W₁ := J.rlp.llp)
     (W₂ := J.rlp) ?_ (by rfl)
@@ -98,7 +113,40 @@ instance : HasFunctorialFactorization (trivialCofibrations SSet) (fibrations SSe
     llp_rlp_of_isCardinalForSmallObjectArgument _ .aleph0]
   constructor
   · simpa [cofibrations_eq] using J_le_monomorphisms
-  · sorry -- J is mapped by the realization functor to trivial cofibrations in `TopCat`
+  · trans (trivialCofibrations TopCat).inverseImage SSet.toTop
+    · simp only [retracts_le_iff]
+      rintro _ _ f hf
+      rw [transfiniteCompositions_iff] at hf
+      obtain ⟨K, _, _, _, _, ⟨hf⟩⟩ := hf
+      have : (coproducts.{0} J.{0}).pushouts ≤
+          (trivialCofibrations TopCat).inverseImage toTop := by
+        rintro _ _ r ⟨_, _, l, t, b, hl, sq⟩
+        simp only [inverseImage_iff]
+        apply MorphismProperty.of_isPushout (sq.map toTop)
+        apply coproducts_le.{0}
+        rw [coproducts_iff] at hl ⊢
+        obtain ⟨K, X₁, X₂, c₁, c₂, hc₁, hc₂, g, hg⟩ := hl
+        let c₁' := toTop.mapCocone c₁
+        let c₂' := toTop.mapCocone c₂
+        let hc₁' : IsColimit c₁' := isColimitOfPreserves toTop hc₁
+        let hc₂' : IsColimit c₂' := isColimitOfPreserves toTop hc₂
+        have : hc₁'.desc { ι := whiskerRight g toTop ≫ c₂'.ι } =
+          toTop.map (hc₁.desc { ι := g ≫ c₂.ι }) := by
+            apply hc₁'.hom_ext
+            rintro ⟨j⟩
+            rw [IsColimit.fac]
+            dsimp [c₁']
+            rw [← Functor.map_comp, IsColimit.fac]
+            dsimp
+            rw [Functor.map_comp]
+            rfl
+        rw [← this]
+        exact ⟨K, _, _, _, _, hc₁', hc₂', _,
+          fun ⟨j⟩ ↦ J_inverseImage_trivialCofibrations _ (hg ⟨j⟩)⟩
+      simp only [inverseImage_iff]
+      exact transfiniteCompositionsOfShape_le _ _ _ ((hf.ofLE this).map.mem)
+    · rintro _ _ f ⟨_, hf⟩
+      exact hf
 
 -- the topological realization of a fibration of simplicial sets is a Serre fibration
 --instance {X Y : SSet.{0}} (f : X ⟶ Y) [Fibration f] :
