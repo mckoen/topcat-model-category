@@ -105,8 +105,8 @@ instance : HasFunctorialFactorization (trivialCofibrations SSet) (fibrations SSe
 --    Fibration (toTop.map f) :=
 --  sorry
 
-lemma weakEquivalence_iff_of_fibration {X Y : SSet.{0}} (f : X ⟶ Y) [Fibration f] :
-    I.rlp f ↔ WeakEquivalence f :=
+lemma weakEquivalence_iff_of_fibration {X Y : SSet.{0}} (p : X ⟶ Y) [Fibration p] :
+    I.rlp p ↔ WeakEquivalence p :=
   sorry
 
 lemma rlp_I_eq_trivialFibrations :
