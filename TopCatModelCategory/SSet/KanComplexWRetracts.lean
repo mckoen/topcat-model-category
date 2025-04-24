@@ -27,7 +27,7 @@ lemma isEquivalence_mapFundamentalGroupoid_of_retract
   let g' : KanComplexCat.mk Y ⟶ KanComplexCat.mk Y' := g
   have hg' : W g' := by assumption
   change W f'
-  refine of_retract
+  exact of_retract
     { i := Arrow.homMk (by exact r.left.i) (by exact r.right.i) r.i.w
       r := Arrow.homMk (by exact r.left.r) (by exact r.right.r) r.r.w
       retract := by
