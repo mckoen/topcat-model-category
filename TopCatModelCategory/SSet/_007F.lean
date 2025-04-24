@@ -3,14 +3,13 @@ import TopCatModelCategory.SSet.Horn
 import TopCatModelCategory.SSet.DimensionProd
 import TopCatModelCategory.SSet.NonDegenerateProdSimplex
 import Mathlib.CategoryTheory.Limits.Shapes.FunctorToTypes
+import Mathlib.Data.Sigma.Order
 
 universe u
 
 open CategoryTheory Simplicial MorphismProperty MonoidalCategory SSet
 
 variable (n : ℕ)
-
-#check n.choose 2
 
 @[simp]
 def f₂' {n} (a b : Fin (n + 1)) : Fin (n + 2) → Fin 3 :=
@@ -67,6 +66,7 @@ noncomputable
 def τ {n} (a b : Fin (n + 2)) (hab : a ≤ b) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
   range (g a b hab)
 
+/-
 namespace enumerate_nondegen
 
 open SimplexCategory prodStdSimplex
@@ -86,25 +86,51 @@ def objMk₂ (a : Fin b.succ) : Δ[2] _⦋n + 2⦌  :=
       if k ≤ (a : Fin (n + 3)) then 0
       else if k ≤ b.succ then 1
       else 2
-    monotone' := sorry }
+    monotone' := by
+      dsimp
+      intro ⟨i, hi⟩ ⟨j, hj⟩ (hij : i ≤ j)
+      rcases b with ⟨b, hb⟩
+      rcases a with ⟨a, ha⟩
+      dsimp
+      sorry }
 
 lemma objMk₂_injective : Function.Injective (objMk₂ (b := b) (n := n)) := sorry
 
 lemma objMk₂_surjective : Function.Injective (objMk₂ (b := b) (n := n)) := sorry
 
-def γ (a : Fin b.succ) : (Δ[n] ⊗ Δ[2] : SSet) _⦋n + 2⦌ :=
+def τ' (a : Fin b.succ) : (Δ[n] ⊗ Δ[2] : SSet) _⦋n + 2⦌ :=
   (stdSimplex.objEquiv.symm (σ b.succ ≫ σ a), objMk₂ b a)
 
-def nonDegenerateEquiv₂.toFun (i : Σ (b : Fin (n + 2)), Fin b.succ) :
+instance (b : Fin (n + 1)) : OrderTop (Fin b.succ) where
+  top := ⟨b, Nat.lt_add_one b⟩
+  le_top a := Nat.le_of_lt_succ a.isLt
+
+
+lemma _root_.Sigma.Fin_top_eq :
+    (⊤ : Σₗ (b : Fin (n + 1)), Fin b.succ) = ⟨Fin.last n, Fin.last n⟩ := rfl
+
+noncomputable
+def _root_.Sigma.Fin_succ {n : ℕ} (i : Σₗ (b : Fin (n + 1)), Fin b.succ) (h : i ≠ ⊤) :
+    Σₗ (b : Fin (n + 1)), Fin b.succ := by
+  rw [← lt_top_iff_ne_top, Sigma.Fin_top_eq, Sigma.Lex.lt_def] at h
+  dsimp at h
+
+  sorry
+  --⟨sorry, sorry⟩
+
+def τ'' (i : Σₗ (b : Fin (n + 2)), Fin b.succ) : (Δ[n] ⊗ Δ[2] : SSet) _⦋n + 2⦌ :=
+  (stdSimplex.objEquiv.symm (σ i.1.succ ≫ σ i.2), objMk₂ i.1 i.2)
+
+def nonDegenerateEquiv₂.toFun (i : Σₗ (b : Fin (n + 2)), Fin b.succ) :
     (Δ[n] ⊗ Δ[2] : SSet).nonDegenerate (n + 2) := by
   rcases i with ⟨b, a⟩
-  refine ⟨γ b a, ?_⟩
+  refine ⟨τ' b a, ?_⟩
   rw [objEquiv_nonDegenerate_iff, Fin.orderHom_injective_iff]
   intro j h
   have h₁ := congr_arg Prod.fst h
   have h₂ := congr_arg Prod.snd h
   clear h
-  simp [γ, objEquiv, stdSimplex.objMk₁, SimplexCategory.σ, objMk₂] at h₁ h₂
+  simp [τ', objEquiv, stdSimplex.objMk₁, SimplexCategory.σ, objMk₂] at h₁ h₂
   by_cases h₃ : j.succ ≤ (a : Fin (n + 3))
   · have h₃' : j.castSucc ≤  (a : Fin (n + 3)) := Fin.le_of_lt h₃
     simp only [h₃, h₃'] at h₂
@@ -120,14 +146,24 @@ def nonDegenerateEquiv₂.toFun (i : Σ (b : Fin (n + 2)), Fin b.succ) :
       sorry
     · aesop
 
--- not quite lexicographic order, check zulip
 noncomputable
 def nonDegenerateEquiv₂ :
-    ((b : Fin (n + 2)) × Fin b.succ) ≃ (Δ[n] ⊗ Δ[2] : SSet).nonDegenerate (n + 2) :=
-  Equiv.ofBijective nonDegenerateEquiv₂.toFun (sorry)
+    (Σₗ (b : Fin (n + 2)), Fin b.succ) ≃ (Δ[n] ⊗ Δ[2] : SSet).nonDegenerate (n + 2) := by
+  refine Equiv.ofBijective (nonDegenerateEquiv₂.toFun) ?_
+  constructor
+  · intro i j h
+    rcases i with ⟨b, a⟩
+    rcases j with ⟨b', a'⟩
+    have := (congr_arg (Prod.fst ∘ Subtype.val) h)
+    dsimp at this
+    have := objMk₂_injective.{u} (n := n)
+    dsimp [Function.Injective] at this
 
-noncomputable abbrev simplex (j : Σ (b : Fin (n + 2)), Fin b.succ) :=
-  nonDegenerateEquiv₂ j
+    sorry
+  ·
+    sorry
+
+noncomputable abbrev simplex (j : Σₗ (b : Fin (n + 2)), Fin b.succ) := nonDegenerateEquiv₂ j
 
 noncomputable abbrev ιSimplex (j : Σ (b : Fin (n + 2)), Fin b.succ) :
     (Δ[n + 2] : SSet.{u}) ⟶ Δ[n] ⊗ Δ[2] :=
@@ -137,8 +173,58 @@ instance (j : Σ (b : Fin (n + 2)), Fin b.succ) : Mono (ιSimplex.{u} j) := by
   rw [stdSimplex.mono_iff]
   exact (prodStdSimplex.nonDegenerate_iff' _).1 (nonDegenerateEquiv₂.{u} j).2
 
+open Subcomplex in
+noncomputable
+def filtration₂ (j : Σₗ (b : Fin (n + 2)), Fin b.succ) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
+  (unionProd (boundary n) (horn 2 1)) ⊔
+    (⨆ (i : Σₗ (b : Fin (n + 2)), Fin b.succ) (_ : i < j), ofSimplex (simplex i).1)
+
+lemma filtration₂_zero : filtration₂ ⟨0, ⟨0, Nat.zero_lt_succ _⟩⟩ =
+    (Subcomplex.unionProd (boundary n) (horn 2 1)) := by
+  dsimp [filtration₂]
+  refine sup_eq_left.2 (le_of_eq_of_le ?_ bot_le)
+  rw [iSup₂_eq_bot]
+  intro ⟨b, a⟩ i
+  rw [Sigma.Lex.lt_def] at i
+  exfalso
+  cases i
+  · rename_i h
+    simp only [Fin.not_lt_zero] at h
+  · rename_i h
+    simp only [Fin.not_lt_zero] at h
+    obtain ⟨_, h⟩ := h
+    exact h
+  /-
+  cases i
+  · rename_i b a h
+    exfalso
+    exact h.not_le (Fin.zero_le _)
+  · rename_i i hi
+    have := Fin.le_zero_iff.mp hi
+    subst this
+    sorry
+  -/
+
+lemma monotone_filtration₂ : Monotone (filtration₂ (n := n)) := by
+  intro x y hxy
+  dsimp [filtration₂]
+  apply sup_le (le_sup_left) (le_sup_of_le_right ?_)
+  apply iSup₂_le
+  intro i hi
+  exact le_iSup₂_of_le i (sorry) (le_refl _)
+
+lemma filtration₂_last : (filtration₂ (n := n)) ⊤ = ⊤ := by
+  rw [prodStdSimplex.subcomplex_eq_top_iff _ rfl]
+  intro x hx
+  obtain ⟨i, hi⟩ := nonDegenerateEquiv₂.surjective ⟨x, hx⟩
+  obtain rfl : simplex i = x := by simp_all only [simplex, Fin.val_succ]
+  rw [filtration₂, ← Subcomplex.ofSimplex_le_iff]
+  refine le_sup_of_le_right (le_iSup₂_of_le i ?_ (le_refl _))
+  sorry
+
 end enumerate_nondegen
-/--/
+-/
+
 open stdSimplex
 
 open SimplexCategory in
@@ -300,7 +386,7 @@ lemma filtration₂_last (b : Fin n) :
 -- `X(b,a) = X(b) ⊔ ... ⊔ σab`
 -- `X(b,a + 1) = X(b) ⊔ ... ⊔ σ(a + 1)b`
 /-- `X(b,a) ↪ X(b, a + 1)` for `a < b ≤ n` is just the union of `X(b,a)` with `σ(a + 1)b`. -/
-lemma filtration₂_succ (b : Fin n) (a : Fin b.1) :
+lemma filtration₂_succ (b : Fin (n + 1)) (a : Fin b.1) :
     filtration₂ b a.succ = (filtration₂ b a.castSucc) ⊔
       (σ a.succ b (Fin.natCast_mono b.2.le (Fin.is_le a.succ))) := by
   dsimp [filtration₂]
@@ -361,7 +447,7 @@ lemma filtration₃_last : filtration₃ (n.succ) = (⊤ : (Δ[n] ⊗ Δ[2]).Sub
   intro z hz
   --#check prodStandardSimplex.objEquiv_non_degenerate_iff
   --#check standardSimplex.mem_non_degenerate_iff_mono
-  -- show that all nondegenerate n+2 simplices are contained in X(n).obj (n + 2). (they are in all the τ's)
+  -- show that all nondegenerate n+2 simplices are contained in X(n).obj (n + 2). (they are all the τ's)
   sorry
 
 -- `Y(b,a) = Y(b) ⊔ ... ⊔ τ a b` for `0 ≤ a ≤ b ≤ n`.
@@ -898,10 +984,16 @@ lemma le_horn_condition {a b hab} (A : (Δ[n] ⊗ Δ[2]).Subcomplex) (hA : A ≤
     A ≤ hornProdSubcomplex a b hab ↔ ¬ face_image a.succ (f a b hab) ≤ A :=
   le_horn_image_iff (f a b hab) A hA _
 
--- for σ a b into σ (a + 1) b
--- could also do σ (a - 1) b into σ a b
-/- (a + 1)-th face is not contained in  -/
-def mySq {n} (b : Fin n) (a : Fin b.1) :
+/-
+for 0 ≤ a < b ≤ n, the following square
+
+Λ[n + 2, (a + 1) + 1] ---> X(b) ∪ σ0b ∪ ... ∪ σab
+        |                             |
+        |                             |
+        v                             V
+    σ(a + 1)b -------> X(b) ∪ σ0b ∪ ... ∪ σab ∪ σ(a + 1)b
+-/
+def mySq {n} (b : Fin (n + 1)) (a : Fin b.1) :
     Sq
       (hornProdSubcomplex
         ⟨a.1.succ, lt_of_le_of_lt a.succ.le_val_last (Nat.lt_add_right 1 (by simp [b.2]))⟩
@@ -944,23 +1036,14 @@ def mySq {n} (b : Fin n) (a : Fin b.1) :
         · exact Eq.symm (Nat.mod_eq_of_lt (lt_of_le_of_lt a.succ.le_val_last (by simp [Nat.lt_add_right 1 b.2])))
       · exact hornProdSubcomplex_le_filt _ _
 
--- show σ(a + 1)b ⊓ Y(b, a) = Λ[n + 1, (a + 1) + 1]
--- show σab ⊓ Y(b, a - 1) = Λ[n + 1, a + 1]
+variable (b : Fin (n + 1)) (a : Fin b.1)
 
-#check subcomplex_le_boundary_iff
+def sanity_check :
+    (hornProdSubcomplex
+      ⟨a.1.succ, lt_of_le_of_lt a.succ.le_val_last (Nat.lt_add_right 1 (by simp [b.2]))⟩
+        b.castSucc (by simpa only [Fin.natCast_eq_last] using a.succ.le_val_last)).toSSet
+          ≅ Λ[n + 2, a.1 + 2].toSSet := by
+  simp
+  sorry
 
-#check Subcomplex.unionProd.isPushout (boundary n) (horn 2 1)
-
-#check Subcomplex.Sq.commSq
-
-#check Subcomplex.toOfSimplex
-
-#check prodStdSimplex.objEquiv_nonDegenerate_iff
-
-#check Subcomplex.le_iff_contains_nonDegenerate
-
-#check Subcomplex.ofSimplex_le_iff
-
-#check prodStdSimplex.mem_ofSimplex_iff
-
-#check mem_ofSimplex_obj_iff
+#check Sq.isPushout (mySq b a)
