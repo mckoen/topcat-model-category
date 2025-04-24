@@ -63,15 +63,15 @@ lemma mapComp'_comp_id {b₀ b₁ : B} (f : b₀ ⟶ b₁) :
     F.mapComp' f (𝟙 b₁) f (by nth_rw 1 [← Category.comp_id f]) =
     (ρ_ _).symm ≪≫ whiskerLeftIso _ (F.mapId b₁).symm := by
   ext
-  have : (ρ_ f).hom = eqToHom (by simp) := Subsingleton.elim _ _
-  simp [mapComp', mapComp_id_right_hom, this]
+  simp [mapComp', mapComp_id_right_hom,
+    Subsingleton.elim (ρ_ f).hom (eqToHom (by simp))]
 
 lemma mapComp'_id_comp {b₀ b₁ : B} (f : b₀ ⟶ b₁) :
     F.mapComp' (𝟙 b₀) f f (by nth_rw 1 [← Category.id_comp f]) =
       (λ_ _).symm ≪≫ whiskerRightIso (F.mapId b₀).symm _ := by
   ext
-  have : (λ_ f).hom = eqToHom (by simp) := Subsingleton.elim _ _
-  simp [mapComp', mapComp_id_left_hom, this]
+  simp [mapComp', mapComp_id_left_hom,
+    Subsingleton.elim ((λ_ f).hom) (eqToHom (by simp))]
 
 @[reassoc]
 lemma mapComp'_assoc {b₀ b₁ b₂ b₃ : B} (f₀₁ : b₀ ⟶ b₁)

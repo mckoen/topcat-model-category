@@ -1,5 +1,7 @@
 import TopCatModelCategory.TopPackage
 import TopCatModelCategory.TopCat.W
+import TopCatModelCategory.SSet.Finite
+import TopCatModelCategory.SSet.Skeleton
 import Mathlib.Topology.Category.TopCat.Limits.Basic
 import Mathlib.AlgebraicTopology.SimplicialSet.Boundary
 import Mathlib.AlgebraicTopology.SimplicialSet.Horn
@@ -12,13 +14,30 @@ namespace HomotopicalAlgebra
 def packageTopCat : TopPackage.{0} TopCat.{0} where
   I' := ofHoms (fun n ↦ SSet.toTop.map (SSet.boundary.{0} n).ι)
   J' := ⨆ n, ofHoms (fun i ↦ SSet.toTop.map (SSet.horn.{0} (n + 1) i).ι)
-  -- using `S' := finite CW-complexes`, the next three sorries should be easy
-  S' := sorry
-  src_I_le_S' := sorry
-  src_J_le_S' := sorry
-  -- use results in `SSet.Skeleton`
-  rlp_I'_le_rlp_J' := sorry
-  -- the next two were formalised in Lean 3 by Reid Barton
+  S' := Set.range (fun (X : {(X : SSet.{0}) | SSet.IsFinite X}) ↦ SSet.toTop.obj X)
+  src_I_le_S' := by
+    rintro _ _ _ ⟨i⟩
+    simp only [Set.coe_setOf, Set.mem_setOf_eq, Set.mem_range, Subtype.exists, exists_prop]
+    exact ⟨_, inferInstance, rfl⟩
+  src_J_le_S' := by
+    rintro _ _ _ hf
+    simp only [iSup_iff] at hf
+    obtain ⟨_, ⟨_⟩⟩ := hf
+    simp only [Set.coe_setOf, Set.mem_setOf_eq, Set.mem_range, Subtype.exists, exists_prop]
+    exact ⟨_, inferInstance, rfl⟩
+  rlp_I'_le_rlp_J' := by
+    intro _ _ f hf _ _ g hg
+    simp only [iSup_iff] at hg
+    obtain ⟨n, ⟨i⟩⟩ := hg
+    rw [sSetTopAdj.hasLiftingProperty_iff]
+    have : SSet.modelCategoryQuillen.I.rlp (TopCat.toSSet.map f) := by
+      rintro _ _ _ ⟨n⟩
+      rw [← sSetTopAdj.hasLiftingProperty_iff]
+      apply hf
+      constructor
+    rw [SSet.modelCategoryQuillen.I_rlp_eq_monomorphisms_rlp] at this
+    exact this _ (monomorphisms.infer_property _)
+  -- the next two sorries were formalised in Lean 3 by Reid Barton
   preservesColimit' := sorry
   infiniteCompositions_le_W' := sorry
   -- this is the key property
