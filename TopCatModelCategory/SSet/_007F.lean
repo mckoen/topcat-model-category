@@ -341,7 +341,7 @@ lemma filtration₁_succ (b : Fin n) :
 -- `X(n - 1, n - 1) = X(n - 1) ⊔ σ0(n - 1) ... ⊔ σ(n - 1)(n - 1) = X(n)`
 noncomputable
 def filtration₂ {n} (b : Fin n) (a : Fin b.succ.1) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
-  (filtration₁ b) ⊔ (⨆ (k : Fin a.succ.1), σ k b (by
+  (filtration₁ b.castSucc) ⊔ (⨆ (k : Fin a.succ.1), σ k b (by
     rcases a with ⟨a, ha⟩
     rcases b with ⟨b, hb⟩
     rcases k with ⟨k, hk⟩
@@ -386,7 +386,7 @@ lemma filtration₂_last (b : Fin n) :
 -- `X(b,a) = X(b) ⊔ ... ⊔ σab`
 -- `X(b,a + 1) = X(b) ⊔ ... ⊔ σ(a + 1)b`
 /-- `X(b,a) ↪ X(b, a + 1)` for `a < b ≤ n` is just the union of `X(b,a)` with `σ(a + 1)b`. -/
-lemma filtration₂_succ (b : Fin (n + 1)) (a : Fin b.1) :
+lemma filtration₂_succ (b : Fin n) (a : Fin b.1) :
     filtration₂ b a.succ = (filtration₂ b a.castSucc) ⊔
       (σ a.succ b (Fin.natCast_mono b.2.le (Fin.is_le a.succ))) := by
   dsimp [filtration₂]
@@ -464,7 +464,7 @@ def filtration₄ {n} (b : Fin (n + 1)) (a : Fin b.succ.1) : (Δ[n] ⊗ Δ[2]).S
     refine (Fin.natCast_le_natCast ?_ ?_).mpr ?_
     all_goals linarith))
 
--- `X(b,0) = X(b) ∪ (τ0b)` for `0 ≤ b ≤ n`
+-- `Y(b,0) = Y(b) ∪ (τ0b)` for `0 ≤ b ≤ n`
 lemma filtration₄_zero (b : Fin (n + 1)) :
     filtration₄ b ⟨0, Nat.zero_lt_succ b⟩ = filtration₃ b ⊔ (τ 0 b (Fin.zero_le _)) := by
   simp [filtration₄]
@@ -517,6 +517,8 @@ lemma filtration₄_last' : filtration₄ n ⟨n, by simp⟩ = (⊤ : (Δ[n] ⊗
   simp at h₁ h₂
   rw [h₁, h₂]
 
+open Subcomplex
+
 /-- the image of Λ[n + 1, a + 1] under σab : Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2] -/
 @[simp]
 noncomputable
@@ -532,26 +534,21 @@ def boundaryProdSubcomplex {n} (a b : Fin (n + 1)) (hab : a ≤ b) : (Δ[n] ⊗ 
 /-- image of i-th face under some f : Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2] -/
 @[simp]
 noncomputable
-def face_image {n} (i : Fin (n + 2)) (f : Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2]) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
+def faceProdSubcomplex {n} (i : Fin (n + 2)) (f : Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2]) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
   (face {i}ᶜ).image f
 
 -- image of Λ[n + 1, a + 1] under (f a b hab) is the union of the image under f of all faces except
 -- the (a + 1)-th
 lemma hornProdSubcomplex_eq_iSup (a b : Fin (n + 1)) (hab : a ≤ b) :
     hornProdSubcomplex a b hab =
-      ⨆ (j : ({a.succ}ᶜ : Set (Fin (n + 2)))), face_image j.1 (f a b hab) := by
-  dsimp [hornProdSubcomplex, face_image]
-  rw [horn_eq_iSup]
-  aesop
+      ⨆ (j : ({a.succ}ᶜ : Set (Fin (n + 2)))), faceProdSubcomplex j.1 (f a b hab) := by
+  simp only [hornProdSubcomplex, horn_eq_iSup, image_iSup, faceProdSubcomplex]
 
 lemma boundaryProdSubcomplex_eq_iSup (a b : Fin (n + 1)) (hab : a ≤ b) :
     boundaryProdSubcomplex a b hab =
-      ⨆ (j : Fin (n + 2)), face_image j.1 (f a b hab) := by
-  dsimp [boundaryProdSubcomplex, face_image]
-  rw [boundary_eq_iSup]
-  aesop
-
-open Subcomplex
+      ⨆ (j : Fin (n + 2)), faceProdSubcomplex j.1 (f a b hab) := by
+  simp only [boundaryProdSubcomplex, boundary_eq_iSup, image_iSup, faceProdSubcomplex,
+    Fin.cast_val_eq_self]
 
 lemma hornProdSubcomplex_le_σ {n} (a b : Fin (n + 1)) (hab : a ≤ b) :
     hornProdSubcomplex.{u} a b hab ≤ σ a b hab := by
@@ -559,13 +556,13 @@ lemma hornProdSubcomplex_le_σ {n} (a b : Fin (n + 1)) (hab : a ≤ b) :
   exact iSup_le fun j ↦ image_le_range _ (f a b hab)
 
 lemma face_le_σ {n} (a b : Fin (n + 1)) (hab : a ≤ b) (j : Fin (n + 2)) :
-    face_image j (f a b hab) ≤ σ a b hab := image_le_range _ (f a b hab)
+    faceProdSubcomplex j (f a b hab) ≤ σ a b hab := image_le_range _ (f a b hab)
 
 /-- each face of σab except the a-th and (a+1)-th is contained in (boundary n).unionProd (horn 2 1) -/
-lemma face_le_boundary_unionProd_horn {n} (a b : Fin (n + 1)) (hab : a ≤ b) (j : Fin (n + 2))
-    (hj : ¬j = a.succ) (hj' : ¬j = a.castSucc) :
-      face_image j (f a b hab) ≤ (boundary n).unionProd (horn 2 1) := by
-  dsimp [Subcomplex.unionProd, face_image]
+lemma face_le_boundary_unionProd_horn {n} (a b : Fin (n + 1)) (hab : a ≤ b)
+    (j : Fin (n + 2)) (hj : ¬j = a.succ) (hj' : ¬j = a.castSucc) :
+      faceProdSubcomplex j (f a b hab) ≤ (boundary n).unionProd (horn 2 1) := by
+  dsimp [unionProd, faceProdSubcomplex]
   apply le_sup_of_le_right
   rw [face_singleton_compl, image_ofSimplex, ofSimplex_le_iff]
   refine ⟨?_, by simp only [Subpresheaf.top_obj, Set.top_eq_univ, Set.mem_univ]⟩
@@ -625,8 +622,8 @@ lemma face_le_boundary_unionProd_horn {n} (a b : Fin (n + 1)) (hab : a ≤ b) (j
 
 /-- the 0-th face of σ0b is contained in the unionProd -/
 lemma zero_face_le {n} (b : Fin (n + 1)):
-      face_image 0 (f 0 b b.zero_le) ≤ (boundary n).unionProd (horn 2 1) := by
-  dsimp [Subcomplex.unionProd, face_image]
+      faceProdSubcomplex 0 (f 0 b b.zero_le) ≤ (boundary n).unionProd (horn 2 1) := by
+  dsimp [Subcomplex.unionProd, faceProdSubcomplex]
   apply le_sup_of_le_left
   rw [face_singleton_compl, image_ofSimplex, ofSimplex_le_iff]
   simp
@@ -642,10 +639,10 @@ lemma zero_face_le {n} (b : Fin (n + 1)):
 
 /-- for a > 0 the a-th face of σab is the a-th face of σ(a-1)b -/
 lemma face_eq_face_pred {n} (a b : Fin (n + 1)) (hab : a ≤ b) (ha : ¬a = 0) :
-    face_image.{u} a.castSucc (f a b hab) =
-      face_image.{u} a.castSucc (f (a.castSucc.pred (Fin.castSucc_ne_zero_iff.mpr ha)) b
+    faceProdSubcomplex a.castSucc (f a b hab) =
+      faceProdSubcomplex a.castSucc (f (a.castSucc.pred (Fin.castSucc_ne_zero_iff.mpr ha)) b
         (by rw [Fin.pred_le_iff]; exact ((Fin.castSucc_le_castSucc_iff.2 hab).trans (Fin.castSucc_le_succ b)))) := by
-  dsimp [Subcomplex.unionProd, face_image]
+  dsimp [Subcomplex.unionProd, faceProdSubcomplex]
   rw [face_singleton_compl, image_ofSimplex]
   simp
   congr
@@ -701,71 +698,57 @@ lemma face_eq_face_pred {n} (a b : Fin (n + 1)) (hab : a ≤ b) (ha : ¬a = 0) :
 
 /-- the a-th face of σab is contained in σ(a-1)b -/
 lemma face_le_σ_pred {n} (a b : Fin (n + 1)) (hab : a ≤ b) (ha : a ≠ 0) :
-    face_image a.castSucc (f a b hab) ≤ σ (a.castSucc.pred (Fin.castSucc_ne_zero_iff.mpr ha)) b
+    faceProdSubcomplex a.castSucc (f a b hab) ≤ σ (a.castSucc.pred (Fin.castSucc_ne_zero_iff.mpr ha)) b
       ((Fin.pred_castSucc_lt (Fin.castSucc_ne_zero_iff.mpr ha)).le.trans hab) := by
   rw [face_eq_face_pred a b hab ha]
   exact image_le_range _ _
 
+/-- the a-th face of σab is contained in σ(a-1)b -/
+lemma face_succ_le_σ {n} (a b : Fin (n + 1)) (hab : a ≤ b) :
+    faceProdSubcomplex a.succ (f a b hab) ≤ σ a b hab := by
+  exact image_le_range _ _
+
 /-- for 0 ≤ a < b < n, Λ[n + 1, (a + 1) + 1] ≤ X(b,a) = X(b) ⊔ ... ⊔ σ a b -/
 lemma hornProdSubcomplex_le_filt {n} (b : Fin n) (a : Fin b.1) :
-    hornProdSubcomplex
-      ⟨a.succ, lt_of_le_of_lt a.succ.le_val_last (Nat.lt_add_right 1 (by simp [b.2]))⟩
-      ⟨b.1, Nat.lt_add_right 1 b.2⟩ (by simpa using a.succ.le_val_last) ≤
-        filtration₂ b a.castSucc := by
+    hornProdSubcomplex a.succ.1 b.castSucc ((Fin.natCast_mono b.is_lt.le a.succ.is_le).trans (by simp))
+      ≤ filtration₂ b a.castSucc := by
   rw [hornProdSubcomplex_eq_iSup]
   apply iSup_le
   rintro ⟨j, hj⟩
-  by_cases j = (⟨a.succ, lt_of_le_of_lt a.succ.le_val_last (Nat.lt_add_right 1 (by simp [b.2]))⟩ : Fin (n + 1)).castSucc -- check the a-th face first
-  all_goals rename_i h
-  · by_cases (⟨a.succ, lt_of_le_of_lt a.succ.le_val_last (Nat.lt_add_right 1 (by simp [b.2]))⟩ : Fin (n + 1)) = 0 -- two cases for a = 0 or a > 0
-    all_goals rename_i ha
-    · apply le_sup_of_le_left
-      apply le_sup_of_le_left
+  by_cases h : j = (a.succ : Fin (n + 1)).castSucc -- check the a-th face first
+  · by_cases ha : (a.succ : Fin (n + 1)) = 0 -- two cases for a = 0 or a > 0
+    · refine le_sup_of_le_left (le_sup_of_le_left ?_)
       simp only [h, ha, Fin.castSucc_zero, Fin.isValue, zero_face_le]
-    · dsimp
-      rw [h]
-      apply le_sup_of_le_right
-      apply le_iSup_of_le <| ⟨a.1, by aesop⟩
-      refine (le_of_eq_of_le') ?_ (face_le_σ_pred _ _ _ ha)
+    · subst h
+      refine le_sup_of_le_right
+        (le_iSup_of_le ⟨a.1 , Nat.lt_add_one a⟩ (le_of_eq_of_le' ?_ (face_le_σ_pred _ _ _ ha)))
       congr
-      · ext
-        refine Eq.symm (Fin.val_cast_of_lt (a.isLt.trans (Nat.lt_add_right 1 b.2)))
-      · refine Eq.symm (Nat.mod_eq_of_lt (Nat.lt_add_right 1 b.2))
-  · exact
-    le_sup_of_le_left
-      (le_sup_of_le_left
-        (face_le_boundary_unionProd_horn ⟨a.succ, lt_of_le_of_lt a.succ.le_val_last (Nat.lt_add_right 1 (by simp [b.2]))⟩
-          ⟨b.1, Nat.lt_add_right 1 b.isLt⟩ _ j hj h))
+      · have : (a.succ : Fin (n + 1)) = (⟨a, a.2.trans b.2⟩ : Fin n).succ := by
+          ext
+          simp [a.2.trans b.2]
+        simp_rw [this, Fin.pred_castSucc_succ]
+        exact Fin.eq_of_val_eq (Fin.val_cast_of_lt (Nat.lt_add_right 1 (a.isLt.trans b.isLt))).symm
+      · exact Fin.coe_eq_castSucc.symm
+  · exact le_sup_of_le_left (le_sup_of_le_left (face_le_boundary_unionProd_horn _ _ _ j hj h))
 
+/-
 /-- for 0 < a ≤ b < n, Λ[n + 1, a + 1] ≤ X(b, a - 1) = X(b) ⊔ ... ⊔ σ (a - 1) b -/
 lemma hornProdSubcomplex_le_filt' {n} (b : Fin n) (a : Fin b.succ.1) (h' : a.1 ≠ 0) :
     hornProdSubcomplex
-      ⟨a, lt_of_le_of_lt a.is_le (Nat.lt_add_right 1 b.2)⟩ ⟨b.1, Nat.lt_add_right 1 b.2⟩ a.is_le ≤
+      ⟨a, lt_of_le_of_lt a.is_le (Nat.lt_add_right 1 b.2)⟩ b (Fin.mk_le_of_le_val (by simp [Fin.is_le])) ≤
         filtration₂ b ⟨a.pred (by aesop), (Nat.sub_one_lt h').trans a.isLt⟩ := by
   rw [hornProdSubcomplex_eq_iSup]
   apply iSup_le
   rintro ⟨j, hj⟩
-  by_cases j = (⟨a, lt_of_le_of_lt a.is_le (Nat.lt_add_right 1 b.2)⟩ : Fin (n + 1)).castSucc -- check the a-th face first
-  all_goals rename_i h
-  · by_cases (⟨a, lt_of_le_of_lt a.is_le (Nat.lt_add_right 1 b.2)⟩ : Fin (n + 1)) = 0 -- two cases for a = 0 or a > 0
-    all_goals rename_i ha
-    · apply le_sup_of_le_left
-      apply le_sup_of_le_left
-      simp only [h, ha, Fin.castSucc_zero, Fin.isValue, zero_face_le]
-    · dsimp
-      rw [h]
-      apply le_sup_of_le_right
-      apply le_iSup_of_le <| ⟨a.1.pred, by simp⟩
-      refine (le_of_eq_of_le') ?_ (face_le_σ_pred _ _ _ ha)
-      congr
-      · ext
-        refine Eq.symm (Fin.val_cast_of_lt <| Nat.sub_one_lt_of_le (Nat.zero_lt_of_ne_zero h') (lt_of_le_of_lt a.is_le (Nat.lt_add_right 1 b.2)).le)
-      · refine Eq.symm (Nat.mod_eq_of_lt (Nat.lt_add_right 1 b.2))
-  · exact
-    le_sup_of_le_left
-      (le_sup_of_le_left
-        (face_le_boundary_unionProd_horn ⟨a, lt_of_le_of_lt a.is_le (Nat.lt_add_right 1 b.2)⟩
-          ⟨b.1, Nat.lt_add_right 1 b.isLt⟩ _ j hj h))
+  by_cases h : j = (⟨a, lt_of_le_of_lt a.is_le (Nat.lt_add_right 1 b.2)⟩ : Fin (n + 1)).castSucc -- check the a-th face first
+  · subst h
+    refine le_sup_of_le_right
+      (le_iSup_of_le ⟨a.1.pred, by simp⟩ (le_of_eq_of_le' ?_ (face_le_σ_pred _ _ _ (by simp [h']))))
+    congr
+    · ext
+      refine Eq.symm (Fin.val_cast_of_lt <| Nat.sub_one_lt_of_le (Nat.zero_lt_of_ne_zero h') (lt_of_le_of_lt a.is_le (Nat.lt_add_right 1 b.2)).le)
+  · exact le_sup_of_le_left (le_sup_of_le_left (face_le_boundary_unionProd_horn _ b _ j hj h))
+-/
 
 def image_monotone {X Y : SSet} (f : X ⟶ Y) :
     Monotone (fun (A : Subcomplex X) ↦ A.image f) := by
@@ -860,6 +843,7 @@ def subset_orderIso {X : SSet} (R : X.Subcomplex) :
     · intro h
       exact image_monotone _ h
 
+/-
 lemma image_le_boundary_iff' {n} {X : SSet} (f : Δ[n] ⟶ X) [Mono f]
       (A : (range f).toSSet.Subcomplex) :
     A ≤ ((boundary n).image (toRangeSubcomplex f)) ↔ A ≠ ⊤ := by
@@ -884,6 +868,7 @@ lemma image_le_boundary_iff' {n} {X : SSet} (f : Δ[n] ⟶ X) [Mono f]
     refine Monotone.of_le_map_sup ?_
     intro j k l p i o
     aesop
+-/
 
 lemma helper {X Y : SSet} (f : X ⟶ Y) (A : Subcomplex X) :
     range (Subcomplex.homOfLE (image_le_range A f)) = A.image (toRangeSubcomplex f) := by
@@ -937,7 +922,6 @@ lemma hornProdSubcomplex_le_boundary_iff {a b hab} (A : (Δ[n] ⊗ Δ[2]).Subcom
     A ≤ (boundaryProdSubcomplex a b hab) ↔ A ≠ (σ a b hab) :=
   image_le_boundary_iff (f a b hab) _ hA
 
---#check stdSimplex.subcomplex_le_horn_iff
 -- need to add extra lemmas to make this simple
 lemma le_horn_image_iff {n} {X : SSet} (f : Δ[n + 1] ⟶ X) [Mono f]
     (A : X.Subcomplex) (hA : A ≤ range f) (i : Fin (n + 2)) :
@@ -980,70 +964,45 @@ lemma le_horn_image_iff {n} {X : SSet} (f : Δ[n + 1] ⟶ X) [Mono f]
     apply hA
     exact a
 
-lemma le_horn_condition {a b hab} (A : (Δ[n] ⊗ Δ[2]).Subcomplex) (hA : A ≤ σ a b hab) :
-    A ≤ hornProdSubcomplex a b hab ↔ ¬ face_image a.succ (f a b hab) ≤ A :=
-  le_horn_image_iff (f a b hab) A hA _
+lemma le_horn_condition {n} {a b hab} (A : (Δ[n] ⊗ Δ[2]).Subcomplex) (hA : A ≤ σ a b hab) :
+    A ≤ hornProdSubcomplex a b hab ↔ ¬ faceProdSubcomplex a.succ (f a b hab) ≤ A :=
+  le_horn_image_iff (f a b hab) A hA a.succ
 
 /-
-for 0 ≤ a < b ≤ n, the following square
+for 0 ≤ a < b < n, the following square
 
-Λ[n + 2, (a + 1) + 1] ---> X(b) ∪ σ0b ∪ ... ∪ σab
+Λ[n + 1, (a + 1) + 1] ---> X(b) ∪ σ0b ∪ ... ∪ σab
         |                             |
         |                             |
         v                             V
     σ(a + 1)b -------> X(b) ∪ σ0b ∪ ... ∪ σab ∪ σ(a + 1)b
+
+e.g. the last square looks like
+Λ[n + 1, n] ---> X(n-1) ∪ σ0(n-1) ∪ ... ∪ σ(n-2)(n-1) = X(n-1, n-2)
+     |                             |
+     |                             |
+     v                             V
+ σ(n-1)(n-1) -------------------> X(n) = X(n-1, n-1)
+
+-- need b < n because X(n) is the last term. X(n-1, n-1) = X(n)
 -/
-def mySq {n} (b : Fin (n + 1)) (a : Fin b.1) :
+def mySq {n} (b : Fin n) (a : Fin b.1) :
     Sq
-      (hornProdSubcomplex
-        ⟨a.1.succ, lt_of_le_of_lt a.succ.le_val_last (Nat.lt_add_right 1 (by simp [b.2]))⟩
-          b.castSucc (by simpa only [Fin.natCast_eq_last] using a.succ.le_val_last))
-      (σ a.1.succ b.castSucc (by
-        have := (Fin.natCast_mono b.2.le (Fin.is_le a.succ))
-        rwa [Fin.coe_eq_castSucc] at this))
+      (hornProdSubcomplex a.succ.1 b.castSucc ((Fin.natCast_mono b.is_lt.le a.succ.is_le).trans (by simp)))
+      (σ a.succ.1 b.castSucc ((Fin.natCast_mono b.is_lt.le a.succ.is_le).trans (by simp)))
       (filtration₂ b a.castSucc)
       (filtration₂ b a.succ)
       where
   max_eq := by
-    rw [filtration₂_succ n b a]
-    aesop
+    rw [filtration₂_succ n b a, sup_comm]
+    simp only [Fin.coe_eq_castSucc]
   min_eq := by
     apply le_antisymm
-    ·
-      have : (σ a.1.succ b.castSucc (by
-          have := (Fin.natCast_mono b.2.le (Fin.is_le a.succ))
-          rwa [Fin.coe_eq_castSucc] at this)) = σ ⟨a.1.succ, lt_of_le_of_lt a.succ.le_val_last (Nat.lt_add_right 1 (by simp [b.2]))⟩
-          b.castSucc (by simpa only [Fin.natCast_eq_last] using a.succ.le_val_last) := by
-        congr
-        ext
-        simp
-        exact lt_trans a.2 b.2
-      rw [this]
-      refine (le_horn_condition _ _ ?_).2 ?_
-      · refine le_trans inf_le_left ?_
-        apply le_of_eq
-        congr
-      · rw [le_inf_iff]
-        rw [not_and]
+    · refine (le_horn_condition _ (inf_le_left.trans (le_of_eq rfl))).2 ?_
+      · rw [le_inf_iff, not_and]
         intro h' h
         clear h'
-        simp at h
         -- show (a + 1)-th face is not contained in anything
         sorry
-    · apply le_inf
-      · refine le_of_eq_of_le' ?_ (hornProdSubcomplex_le_σ _ _ _)
-        congr
-        · exact Eq.symm (Nat.mod_eq_of_lt (lt_of_le_of_lt a.succ.le_val_last (by simp [Nat.lt_add_right 1 b.2])))
-      · exact hornProdSubcomplex_le_filt _ _
-
-variable (b : Fin (n + 1)) (a : Fin b.1)
-
-def sanity_check :
-    (hornProdSubcomplex
-      ⟨a.1.succ, lt_of_le_of_lt a.succ.le_val_last (Nat.lt_add_right 1 (by simp [b.2]))⟩
-        b.castSucc (by simpa only [Fin.natCast_eq_last] using a.succ.le_val_last)).toSSet
-          ≅ Λ[n + 2, a.1 + 2].toSSet := by
-  simp
-  sorry
-
-#check Sq.isPushout (mySq b a)
+    · apply le_inf (le_of_eq_of_le' rfl (hornProdSubcomplex_le_σ _ _ _))
+      · exact hornProdSubcomplex_le_filt b a
