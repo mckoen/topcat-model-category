@@ -48,6 +48,7 @@ import TopCatModelCategory.SSet.HomotopyGroup
 import TopCatModelCategory.SSet.HomotopySequence
 import TopCatModelCategory.SSet.Horn
 import TopCatModelCategory.SSet.IsFiniteCoproducts
+import TopCatModelCategory.SSet.KanComplexKeyLemma
 import TopCatModelCategory.SSet.KanComplexW
 import TopCatModelCategory.SSet.KanComplexWHomotopy
 import TopCatModelCategory.SSet.KanComplexWRetracts

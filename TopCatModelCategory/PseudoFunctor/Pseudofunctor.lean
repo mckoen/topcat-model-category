@@ -34,7 +34,7 @@ section
 variable {B C : Type*} [Bicategory B] [Bicategory C] (F : Pseudofunctor B C)
 
 /-- More flexible variant of `mapId`. -/
-def mapId' {b : B} (f : b ⟶ b) (hf : f = 𝟙 b) :
+def mapId' {b : B} (f : b ⟶ b) (hf : f = 𝟙 b := by aesop_cat) :
     F.map f ≅ 𝟙 _ :=
   F.map₂Iso (eqToIso (by rw [hf])) ≪≫ F.mapId _
 
@@ -43,7 +43,8 @@ lemma mapId'_eq_mapId (b : B) :
   simp [mapId']
 
 /-- More flexible variant of `mapComp`. -/
-def mapComp' {b₀ b₁ b₂ : B} (f : b₀ ⟶ b₁) (g : b₁ ⟶ b₂) (fg : b₀ ⟶ b₂) (h : fg = f ≫ g) :
+def mapComp' {b₀ b₁ b₂ : B} (f : b₀ ⟶ b₁) (g : b₁ ⟶ b₂) (fg : b₀ ⟶ b₂)
+    (h : fg = f ≫ g := by aesop_cat) :
     F.map fg ≅ F.map f ≫ F.map g :=
   F.map₂Iso (eqToIso (by rw [h])) ≪≫ F.mapComp f g
 

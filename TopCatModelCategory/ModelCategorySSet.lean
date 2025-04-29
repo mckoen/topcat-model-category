@@ -16,6 +16,8 @@ namespace SSet
 
 attribute [local instance] Cardinal.fact_isRegular_aleph0
 
+open TopCat.modelCategory
+
 namespace modelCategoryQuillen
 
 open MorphismProperty SmallObject
@@ -101,7 +103,7 @@ lemma J_inverseImage_trivialCofibrations :
   intro _ _ f hf
   simp only [J, iSup_iff] at hf
   obtain ⟨n, ⟨i⟩⟩ := hf
-  rw [TopCat.ModelCategory.trivialCofibrations_eq_llp_rlp]
+  rw [TopCat.modelCategory.trivialCofibrations_eq_llp_rlp]
   apply le_llp_rlp
   simp only [iSup_iff]
   exact ⟨n, ⟨i⟩⟩
