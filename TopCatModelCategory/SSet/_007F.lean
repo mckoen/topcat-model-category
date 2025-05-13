@@ -968,6 +968,70 @@ lemma le_horn_condition {n} {a b hab} (A : (Δ[n] ⊗ Δ[2]).Subcomplex) (hA : A
     A ≤ hornProdSubcomplex a b hab ↔ ¬ faceProdSubcomplex a.succ (f a b hab) ≤ A :=
   le_horn_image_iff (f a b hab) A hA a.succ
 
+/-- for 0 ≤ a < b < n,  show ((a + 1) + 1)-th face is not contained in anything -/
+lemma faceProdSubcomplex_succ_not_le {n} (b : Fin n) (a : Fin b.1) :
+    ¬ faceProdSubcomplex (a.succ : Fin (n + 1)).succ (f a.succ.1 b.castSucc ((Fin.natCast_mono b.is_lt.le a.succ.is_le).trans (by simp)))
+      ≤ filtration₂ b a.castSucc := by
+  dsimp [faceProdSubcomplex]
+  simp [face_singleton_compl, ← image_le_iff, image_ofSimplex, ofSimplex_le_iff]
+  simp [filtration₂, filtration₁, unionProd]
+  refine ⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩
+  · sorry -- not in Δ[n] ⨯ Λ[2, 1]
+  · sorry -- not in ∂Δ[n] ⨯ Δ[2]
+  · sorry -- not in any σij for i ≤ j < b
+  · -- not in any σib for any i < a + 1
+    simp [σ]
+    intro i x h
+    simp [f] at h
+    have h₁ := congr_arg Prod.fst h
+    have h₂ := congr_arg Prod.snd h
+    clear h
+    change (SSet.yonedaEquiv.symm (objEquiv.symm _)).app _ x =
+      (SSet.yonedaEquiv.symm (objEquiv.symm _)).app _ _ at h₁
+    change (SSet.yonedaEquiv.symm (objMk _)).app _ x =
+      (SSet.yonedaEquiv.symm (objMk _)).app _ _ at h₂
+    simp [SSet.yonedaEquiv, yonedaCompUliftFunctorEquiv, stdSimplex] at h₁ h₂
+    simp [ChosenFiniteProducts.product, yoneda, SSet.uliftFunctor, CategoryStruct.comp] at h₁ h₂
+    have := congrArg SimplexCategory.Hom.toOrderHom h₂
+    have := congrArg OrderHom.toFun this
+    simp only [SimplexCategory.Hom.mk, SimplexCategory.Hom.toOrderHom, OrderHom.comp, objMk, f₂] at this
+    have USE := congr_fun this (a.succ : Fin (n + 1))
+    simp [objEquiv, Equiv.ulift] at USE
+
+
+    change (if x (a.succ : Fin (n + 1)) ≤ _ then 0 else if x (a.succ : Fin (n + 1)) ≤ b.castSucc.succ then 1 else 2) = _ at USE
+    simp [SimplexCategory.Hom.mk, SimplexCategory.Hom.toOrderHom, objEquiv] at h₁ h₂
+    simp at USE
+
+    have : OrderHom.comp (SimplexCategory.σ (i : Fin (n + 1))).toOrderHom (objEquiv x).toOrderHom =
+        OrderHom.comp (SimplexCategory.σ (a.succ : Fin (n + 1))).toOrderHom (SimplexCategory.δ ((a.succ : Fin (n + 1))).succ).toOrderHom := by
+      simp only [SimplexCategory.len_mk, SimplexCategory.Hom.toOrderHom, objEquiv, Equiv.ulift,
+        yoneda_obj_obj, Equiv.coe_fn_mk, h₁, Fin.val_succ]
+    apply_fun (fun f ↦ OrderHom.toFun f) at this
+    simp only [SimplexCategory.Hom.toOrderHom, OrderHom.comp] at this
+    have := congr_fun this (a.succ : Fin (n + 1))
+    change ((SimplexCategory.σ _) ∘ (objEquiv x)) _ = _ at this
+    simp [SimplexCategory.σ, SimplexCategory.δ, ConcreteCategory.hom, Fin.succAboveOrderEmb,
+      SimplexCategory.Hom.mk] at this
+    change Fin.predAbove (i : Fin (n + 1)) (x (a.succ : Fin (n + 1))) = (a.succ : Fin (n + 1)) at this
+    simp [Fin.predAbove] at this
+    by_cases h : (i : Fin (n + 1)).castSucc < x (a.succ : Fin (n + 1))
+    · simp at h
+      simp [h, Fin.pred_eq_iff_eq_succ] at this
+      simp [h.not_le] at USE
+      simp [SimplexCategory.δ, SimplexCategory.Hom.mk] at USE
+      aesop
+    · simp at h
+      simp [h.not_lt] at this
+      rw [← Fin.castPred_le_iff] at h
+      rw [this] at h
+      apply h.not_lt
+      refine Fin.natCast_strictMono ?_ i.2
+      have one := a.2
+      have two := b.2
+      have : a.1 + 1 ≤ b := one
+      exact this.trans b.2.le
+
 /-
 for 0 ≤ a < b < n, the following square
 
@@ -1001,8 +1065,41 @@ def mySq {n} (b : Fin n) (a : Fin b.1) :
     · refine (le_horn_condition _ (inf_le_left.trans (le_of_eq rfl))).2 ?_
       · rw [le_inf_iff, not_and]
         intro h' h
-        clear h'
-        -- show (a + 1)-th face is not contained in anything
-        sorry
+        exact (faceProdSubcomplex_succ_not_le b a) h
     · apply le_inf (le_of_eq_of_le' rfl (hornProdSubcomplex_le_σ _ _ _))
       · exact hornProdSubcomplex_le_filt b a
+
+variable (b : Fin n) (a : Fin b.1)
+
+#check Subcomplex.isColimitPushoutCoconeOfPullback (f a.succ.1 b.castSucc ((Fin.natCast_mono b.is_lt.le a.succ.is_le).trans (by simp)))
+  (filtration₂ b a.castSucc) (filtration₂ b a.succ) (Λ[n + 1, a + 2]) ⊤
+
+noncomputable
+def mono_iso {S T : SSet} (f : S ⟶ T) [h : Mono f] : S ≅ (range f).toSSet where
+  hom := {
+    app n x := ⟨f.app n x, ⟨x, rfl⟩⟩
+    naturality n m g := by
+      ext
+      simp
+      congr
+      apply FunctorToTypes.naturality }
+  inv := {
+    app n x := x.2.choose
+    naturality n m g := by
+      ext x
+      apply (mono_iff_injective (f.app m)).1 (((NatTrans.mono_iff_mono_app f).1 h) m)
+      dsimp
+      let a := ((range f).toPresheaf.map g x).property
+      rw [a.choose_spec, ← types_comp_apply (S.map g) (f.app m),
+        congr_fun (f.naturality g) x.property.choose, types_comp_apply, x.property.choose_spec]
+      rfl
+    }
+  hom_inv_id := by
+    ext n x
+    apply (mono_iff_injective _).1 (((NatTrans.mono_iff_mono_app _).1 h) n)
+    exact Exists.choose_spec (Set.mem_range_self x)
+  inv_hom_id := by
+    ext n x
+    simp
+    congr
+    exact x.2.choose_spec
