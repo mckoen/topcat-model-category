@@ -288,11 +288,59 @@ instance (a b : Fin (n + 2)) (hab : a ≤ b) : Mono (g a b hab) := by
   apply_fun (fun f ↦ f.toOrderHom e) at H'
   simp [Hom.toOrderHom, objMk, g₂, objEquiv,
     Equiv.ulift, Hom.mk, CategoryStruct.comp, OrderHom.comp, f₂] at H H'
-
-  by_cases a.castSucc < g'.toOrderHom e
-  all_goals rename_i h'
-  · sorry
-  · sorry
+  fin_cases e
+  simp at H
+  dsimp at H'
+  simp [Fin.predAbove] at H
+  have A : (a : Fin (n + 1)).castSucc.succ < (((b.1 + 1) : ℕ) : Fin (n + 2)).castSucc := sorry
+  split at H
+  simp_rw [Fin.lt_pred_iff] at H
+  · next h' =>
+    simp_all
+    simp [A.trans h'] at H
+    have B : ¬ g' 0 ≤ a.castSucc := by
+      rw [not_le]
+      have : a.castSucc < (a : Fin (n + 1)).castSucc.succ := by
+        sorry
+      convert this.trans (A.trans h')
+    have C : ¬ g' 0 ≤ b.succ := by
+      sorry
+    dsimp [ConcreteCategory.hom, Hom.toOrderHom] at B C
+    simp [B, C] at H'
+    split at H'
+    · next => simp only [Fin.isValue, Fin.reduceEq] at H'
+    · next h'' =>
+      simp_all
+      split at H'
+      · next => simp only [Fin.isValue, Fin.reduceEq] at H'
+      · next h''' =>
+        simp_all
+        split at H
+        · next q => simpa only [Fin.lt_pred_iff, A.trans q, Fin.isValue, ↓reduceDIte, Fin.pred_inj] using H
+        · next q =>
+          exfalso
+          rw [not_lt] at q
+          have := lt_of_lt_of_le h''' q
+          apply this.not_le (le_of_eq ?_)
+          ext
+          simp
+          change b.1 + 1 ≤ n + 1
+          apply Nat.le_of_lt_succ
+          change b.1 + 1 < n + 2
+          suffices b.succ < Fin.last (n + 2) by
+            simp [Fin.last, Fin.succ] at this
+            simpa
+          exact (@Fin.lt_last_iff_ne_last (n + 2) b.succ).2 (Fin.ne_last_of_lt C)
+  · next h' =>
+    simp_rw [Fin.lt_castPred_iff] at H
+    rw [not_lt] at h'
+    split at H
+    · next h'' =>
+      simp_all
+      sorry
+    · next h'' =>
+      rw [not_lt] at h''
+      sorry
 
 /-- `X(b)` for `0 ≤ b ≤ n`. Goes up to `X(n)`, the first object in the `τ` filtration.
 `X(b) = X(0) ⊔ [σ00] ⊔ [σ01 ⊔ σ11] ⊔ ... ⊔ [σ0(b-1) ⊔ σ1(b-1) ⊔ ... ⊔ σ(b-1)(b-1)]` -/
@@ -968,80 +1016,212 @@ lemma le_horn_condition {n} {a b hab} (A : (Δ[n] ⊗ Δ[2]).Subcomplex) (hA : A
     A ≤ hornProdSubcomplex a b hab ↔ ¬ faceProdSubcomplex a.succ (f a b hab) ≤ A :=
   le_horn_image_iff (f a b hab) A hA a.succ
 
-/-- for 0 ≤ a < b < n,  show ((a + 1) + 1)-th face is not contained in anything -/
+lemma faceProdSubcomplex_succ_not_le_unionProd₁ {n} (b : Fin n) (a : Fin b.1) :
+    ¬ faceProdSubcomplex (a.succ : Fin (n + 1)).succ (f a.succ.1 b.castSucc ((Fin.natCast_mono b.is_lt.le a.succ.is_le).trans (by simp)))
+      ≤ Subcomplex.prod ⊤ Λ[2, 1] := by
+  dsimp [faceProdSubcomplex]
+  simp [face_singleton_compl, ← image_le_iff, image_ofSimplex, ofSimplex_le_iff]
+  refine Set.nmem_setOf_iff.2 ?_
+  simp [horn]
+  change insert 1 (Set.range (f₂' (_) b.castSucc ∘ ⇑(SimplexCategory.δ _))) = Set.univ
+  simp [ConcreteCategory.hom, SimplexCategory.Hom.toOrderHom, SimplexCategory.σ,
+    SimplexCategory.δ, SimplexCategory.Hom.mk, Fin.predAbove, Fin.succAboveOrderEmb]
+  ext i
+  simp
+  fin_cases i
+  · simp
+    use a.succ
+    simp
+  · simp
+  · simp
+    use b.castSucc.succ
+    simp [Fin.succAbove]
+    split
+    · next h =>
+      exfalso
+      exact h.not_lt (Fin.natCast_strictMono b.2 <| Nat.lt_of_le_of_lt (show a.1 + 1 ≤ b from a.2) (Nat.lt_add_one b))
+    · next h =>
+      split
+      · next h' =>
+        exfalso
+        apply h
+        simp at h'
+        exact h'.le
+      · next h' =>
+        simp
+        refine Fin.castSucc_lt_iff_succ_le.mpr (le_of_eq ?_)
+        ext
+        refine Eq.symm (Fin.val_cast_of_lt (Nat.add_lt_add_right b.2 1))
+
+lemma faceProdSubcomplex_succ_not_le_unionProd₂ {n} (b : Fin n) (a : Fin b.1) :
+    ¬ faceProdSubcomplex (a.succ : Fin (n + 1)).succ (f a.succ.1 b.castSucc ((Fin.natCast_mono b.is_lt.le a.succ.is_le).trans (by simp)))
+      ≤ ∂Δ[n].prod ⊤ := by
+  dsimp [faceProdSubcomplex]
+  simp [face_singleton_compl, ← image_le_iff, image_ofSimplex, ofSimplex_le_iff]
+  refine Set.nmem_setOf_iff.2 ?_
+  simp [boundary, f]
+  change Function.Surjective (((a.succ : Fin (n + 1))).predAbove ∘ ⇑((a.succ : Fin (n + 1))).succ.succAboveOrderEmb)
+  simp [Fin.succAboveOrderEmb]
+  intro i
+  simp [Fin.predAbove, Fin.succAbove]
+  use i
+  split
+  next => aesop
+  next h =>
+    simp
+    intro h'
+    exfalso
+    exact h h'.le
+
+lemma faceProdSubcomplex_succ_not_le_σij {n} (b : Fin n) (a : Fin b.1) (j : Fin b.1) (i : Fin (j.1 + 1)) :
+    ¬ faceProdSubcomplex (a.succ : Fin (n + 1)).succ (f a.succ.1 b.castSucc ((Fin.natCast_mono b.is_lt.le a.succ.is_le).trans (by simp)))
+      ≤ σ ⟨i, by omega⟩ ⟨j, by omega⟩ (by simp only [Fin.mk_le_mk]; omega) := by
+  simp [σ, face_singleton_compl, ← image_le_iff, image_ofSimplex, ofSimplex_le_iff, Set.prod]
+  intro x h
+  simp [f] at h
+  have h₁ := congr_arg Prod.fst h
+  have h₂ := congr_arg Prod.snd h
+  simp only [stdSimplex, yoneda, CategoryStruct.comp, SimplexCategory.Hom.comp, unop_id,
+    SimplexCategory.id_toOrderHom, SimplexCategory.Hom.comp.eq_1, id_eq, eq_mpr_eq_cast,
+    Quiver.Hom.unop_op, SimplexCategory.Hom.toOrderHom_mk, cast_eq, SSet.uliftFunctor,
+    Functor.comp_obj, SimplexCategory.len_mk, SimplicialObject.whiskering_obj_obj_obj,
+    uliftFunctor_obj, Nat.reduceAdd, SSet.yonedaEquiv, yonedaCompUliftFunctorEquiv,
+    Opposite.op_unop, Equiv.coe_fn_symm_mk, prod_map_fst, SimplicialObject.whiskering_obj_obj_map,
+    uliftFunctor_map, ULift.up.injEq, prod_map_snd] at h₁ h₂
+  have h₁' := congrArg OrderHom.toFun (congrArg SimplexCategory.Hom.toOrderHom h₁)
+  have h₂' := congrArg OrderHom.toFun (congrArg SimplexCategory.Hom.toOrderHom h₂)
+  clear h h₁ h₂
+  simp only [SimplexCategory.Hom.mk, SimplexCategory.Hom.toOrderHom, OrderHom.comp, objMk, f₂] at h₁' h₂'
+  cases lt_or_eq_of_le (show a.1 + 1 ≤ b from a.2)
+  · next h =>
+    have h₁' := congr_fun h₁' b.succ
+    have h₂' := congr_fun h₂' b.succ
+    dsimp [objEquiv, Equiv.ulift] at h₁' h₂'
+    change (SimplexCategory.σ _) (x b.succ) = _ at h₁'
+    change (if x _ ≤ _ then 0 else if x _ ≤ _ then 1 else 2) = _ at h₂'
+    simp only [Fin.val_succ, Fin.isValue] at h₁' h₂'
+    simp only [SimplexCategory.len_mk, ConcreteCategory.hom, SimplexCategory.Hom.toOrderHom,
+      SimplexCategory.σ, SimplexCategory.mkHom, SimplexCategory.Hom.mk, SimplexCategory,
+      OrderHom.coe_mk, Fin.predAbove, Fin.castSucc_mk, SimplexCategory.δ,
+      OrderEmbedding.toOrderHom_coe, Fin.succAboveOrderEmb_apply, Fin.succ_succAbove_succ,
+      Fin.castSucc_lt_succ_iff, Fin.pred_succ, Fin.isValue, Fin.succ_le_castSucc_iff,
+      Fin.succ_le_succ_iff] at h₁' h₂'
+    have A : ¬ b.castSucc < (a.succ : Fin (n + 1)) := by
+      simp
+      rw [Fin.le_castSucc_iff]
+      refine Fin.val_fin_lt.mp ?_
+      simp
+      refine Nat.lt_add_right 1 (lt_of_eq_of_lt ?_ h)
+      simp only [Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one, add_lt_add_iff_right]
+      exact a.2.trans b.2
+    have B : (a.succ : Fin (n + 1)) ≤ b.succ := le_of_not_ge A
+    dsimp at A B
+    simp [Fin.succAbove, A, B, B.not_lt] at h₁' h₂'
+    split at h₁'
+    · next h' =>
+      rw [Fin.pred_eq_iff_eq_succ] at h₁'
+      simp [h'.not_le] at h₂'
+      sorry
+    · next h' => aesop
+
+    /-
+    split at h₂'
+    · next h' =>
+      simp only [Fin.isValue, Fin.reduceEq] at h₂'
+    · next h' =>
+      simp at h'
+      simp [Fin.succAbove, A, B, h'] at h₁'
+      rw [Fin.pred_eq_iff_eq_succ] at h₁'
+      split at h₂'
+      · next h'' =>
+        simp at h₂'
+      · next h'' =>
+        simp_all
+        sorry
+    -/
+  · next h =>
+    have : (a.succ : Fin (n + 1)) = b.castSucc := by aesop
+    have h₁' := congr_fun h₁' (a.succ : Fin (n + 1))
+    have h₂' := congr_fun h₂' (a.succ : Fin (n + 1))
+    dsimp [objEquiv, Equiv.ulift] at h₁' h₂'
+    change (SimplexCategory.σ _) (x (a.succ : Fin (n + 1))) = _ at h₁'
+    change (if x (a.succ : Fin (n + 1)) ≤ _ then 0 else if x (a.succ : Fin (n + 1)) ≤ _ then 1 else 2) = _ at h₂'
+    rw [this] at h₁'
+    simp at this
+    simp [ConcreteCategory.hom, SimplexCategory.Hom.toOrderHom, SimplexCategory] at h₁' h₂'
+    simp_rw [this] at h₂' h₁'
+    simp [SimplexCategory.σ, SimplexCategory.δ, SimplexCategory.Hom.mk, Fin.predAbove] at h₁'
+    split at h₁'
+    · next h' =>
+      simp [SimplexCategory.σ, SimplexCategory.δ, SimplexCategory.Hom.mk, Fin.predAbove, h'] at h₂'
+      aesop
+    · next h' =>
+      rw [Fin.castPred_eq_iff_eq_castSucc] at h₁'
+      rw [h₁'] at h'
+      apply h' (Fin.val_lt_of_le i j.2)
+
+lemma faceProdSubcomplex_succ_not_le_σib {n} (b : Fin n) (a : Fin b.1) (i : Fin (a.1 + 1)) :
+    ¬ faceProdSubcomplex (a.succ : Fin (n + 1)).succ (f a.succ.1 b.castSucc ((Fin.natCast_mono b.is_lt.le a.succ.is_le).trans (by simp)))
+      ≤ σ (i : Fin (n + 1)) b.castSucc (by
+        rw [Fin.le_castSucc_iff]
+        refine Fin.coe_succ_lt_iff_lt.mp ?_
+        simp
+        have : i.1 < n + 1 := by omega
+        rw [(Nat.mod_eq_iff_lt (Nat.ne_zero_of_lt this)).2 this]
+        refine (Fin.natCast_lt_natCast (Nat.le_of_succ_le this) (Nat.le_add_right_of_le b.2)).mpr (i.2.trans <| Nat.add_lt_add_right a.2 1)) := by
+  simp [σ, face_singleton_compl, ← image_le_iff, image_ofSimplex, ofSimplex_le_iff]
+  intro x h
+  simp [f] at h
+  have h₁ := congr_arg Prod.fst h
+  have h₂ := congr_arg Prod.snd h
+  simp [SSet.yonedaEquiv, yonedaCompUliftFunctorEquiv, stdSimplex, ChosenFiniteProducts.product,
+    yoneda, SSet.uliftFunctor, CategoryStruct.comp] at h₁ h₂
+  have h₁' := congrArg OrderHom.toFun (congrArg SimplexCategory.Hom.toOrderHom h₁)
+  have h₂' := congrArg OrderHom.toFun (congrArg SimplexCategory.Hom.toOrderHom h₂)
+  clear h h₁ h₂
+  simp only [SimplexCategory.Hom.mk, SimplexCategory.Hom.toOrderHom, OrderHom.comp, objMk, f₂] at h₁' h₂'
+  have h₁' := congr_fun h₁' (a.succ : Fin (n + 1))
+  have h₂' := congr_fun h₂' (a.succ : Fin (n + 1))
+  simp [objEquiv, Equiv.ulift] at h₁' h₂'
+  change (SimplexCategory.σ _) (x (a.succ : Fin (n + 1))) = _ at h₁'
+  change (if x (a.succ : Fin (n + 1)) ≤ _ then 0 else if x (a.succ : Fin (n + 1)) ≤ b.castSucc.succ then 1 else 2) = _ at h₂'
+  simp only [Fin.val_succ, Fin.isValue] at h₁' h₂'
+
+  by_cases h : (i : Fin (n + 1)).castSucc < x (a.succ : Fin (n + 1))
+  · simp at h
+    simp [h, Fin.pred_eq_iff_eq_succ] at h₁'
+    simp [h.not_le, SimplexCategory.δ, SimplexCategory.Hom.mk] at h₂'
+    aesop
+  · simp at h
+    simp [h.not_lt, ConcreteCategory.hom, SimplexCategory.Hom.toOrderHom, SimplexCategory.σ,
+      SimplexCategory.δ, SimplexCategory.Hom.mk, Fin.predAbove] at h₁'
+    rw [← Fin.castPred_le_iff, h₁'] at h
+    apply h.not_lt
+    refine Fin.natCast_strictMono ?_ i.2
+    exact (show a.1 + 1 ≤ b from a.2).trans b.2.le
+
+/-- for `0 ≤ a < b < n`,  show `((a + 1) + 1)`-th face is not contained in anything -/
 lemma faceProdSubcomplex_succ_not_le {n} (b : Fin n) (a : Fin b.1) :
     ¬ faceProdSubcomplex (a.succ : Fin (n + 1)).succ (f a.succ.1 b.castSucc ((Fin.natCast_mono b.is_lt.le a.succ.is_le).trans (by simp)))
       ≤ filtration₂ b a.castSucc := by
-  dsimp [faceProdSubcomplex]
-  simp [face_singleton_compl, ← image_le_iff, image_ofSimplex, ofSimplex_le_iff]
-  simp [filtration₂, filtration₁, unionProd]
-  refine ⟨⟨⟨Set.nmem_setOf_iff.2 ?_, Set.nmem_setOf_iff.2 ?_⟩, ?_⟩, ?_⟩
-  · -- not in Δ[n] ⨯ Λ[2, 1]
-    simp [horn]
-    change insert 1 (Set.range (f₂' (_) b.castSucc ∘ ⇑(SimplexCategory.δ _))) = Set.univ
-    simp [ConcreteCategory.hom, SimplexCategory.Hom.toOrderHom, SimplexCategory.σ,
-      SimplexCategory.δ, SimplexCategory.Hom.mk, Fin.predAbove, Fin.succAboveOrderEmb]
-    ext i
-    simp
-    fin_cases i
-    · simp
-      sorry
-    · simp
-    · simp
-      sorry
-  · -- not in ∂Δ[n] ⨯ Δ[2]
-    simp [boundary, f]
-    change Function.Surjective (((a.succ : Fin (n + 1))).predAbove ∘ ⇑((a.succ : Fin (n + 1))).succ.succAboveOrderEmb)
-    simp [Fin.succAboveOrderEmb]
-    intro i
-    simp [Fin.predAbove, Fin.succAbove]
-    use i
-    split
-    next => aesop
-    next h =>
-      simp
-      intro h'
-      exfalso
-      exact h h'.le
-  · -- not in any σij for i ≤ j < b
-    sorry
-  · -- not in any σib for any i < a + 1
-    sorry
-    /-
-    simp [σ]
-    intro i x h
-    simp [f] at h
-    have h₁ := congr_arg Prod.fst h
-    have h₂ := congr_arg Prod.snd h
-    simp [SSet.yonedaEquiv, yonedaCompUliftFunctorEquiv, stdSimplex, ChosenFiniteProducts.product,
-      yoneda, SSet.uliftFunctor, CategoryStruct.comp] at h₁ h₂
-    have h₁' := congrArg OrderHom.toFun (congrArg SimplexCategory.Hom.toOrderHom h₁)
-    have h₂' := congrArg OrderHom.toFun (congrArg SimplexCategory.Hom.toOrderHom h₂)
-    clear h h₁ h₂
-    simp only [SimplexCategory.Hom.mk, SimplexCategory.Hom.toOrderHom, OrderHom.comp, objMk, f₂] at h₁' h₂'
-    have h₁' := congr_fun h₁' (a.succ : Fin (n + 1))
-    have h₂' := congr_fun h₂' (a.succ : Fin (n + 1))
-    simp [objEquiv, Equiv.ulift] at h₁' h₂'
-    change (SimplexCategory.σ _) (x (a.succ : Fin (n + 1))) = _ at h₁'
-    change (if x (a.succ : Fin (n + 1)) ≤ _ then 0 else if x (a.succ : Fin (n + 1)) ≤ b.castSucc.succ then 1 else 2) = _ at h₂'
-    simp only [Fin.val_succ, Fin.isValue] at h₁' h₂'
-
-    by_cases h : (i : Fin (n + 1)).castSucc < x (a.succ : Fin (n + 1))
-    · simp at h
-      simp [h, Fin.pred_eq_iff_eq_succ] at h₁'
-      simp [h.not_le, SimplexCategory.δ, SimplexCategory.Hom.mk] at h₂'
-      aesop
-    · simp at h
-      simp [h.not_lt, ConcreteCategory.hom, SimplexCategory.Hom.toOrderHom, SimplexCategory.σ,
-        SimplexCategory.δ, SimplexCategory.Hom.mk, Fin.predAbove] at h₁'
-      rw [← Fin.castPred_le_iff, h₁'] at h
-      apply h.not_lt
-      refine Fin.natCast_strictMono ?_ i.2
-      exact (show a.1 + 1 ≤ b from a.2).trans b.2.le
-    -/
+  simp [face_singleton_compl, ← image_le_iff, image_ofSimplex, ofSimplex_le_iff, filtration₂,
+    filtration₁, unionProd]
+  refine ⟨⟨⟨Set.nmem_setOf_iff.2 ?_, Set.nmem_setOf_iff.2 ?_⟩, fun j i ↦ ?_⟩, fun i ↦ ?_⟩
+  · -- not in `Δ[n] ⨯ Λ[2, 1]`
+    simpa [Set.mem_univ, Fin.isValue, true_and, face_singleton_compl, ← image_le_iff,
+      image_ofSimplex, ofSimplex_le_iff, Set.prod] using faceProdSubcomplex_succ_not_le_unionProd₁ b a
+  · -- not in `∂Δ[n] ⨯ Δ[2]`
+    simpa [Set.mem_univ, and_true, face_singleton_compl, ← image_le_iff, image_ofSimplex,
+      ofSimplex_le_iff, Set.prod] using faceProdSubcomplex_succ_not_le_unionProd₂ b a
+  · -- not in any `σij` for `i ≤ j < b`
+    simpa [face_singleton_compl, ← image_le_iff, image_ofSimplex, ofSimplex_le_iff]
+      using faceProdSubcomplex_succ_not_le_σij b a j i
+  · -- not in any `σib` for any `i < a + 1`
+    simpa [face_singleton_compl, ← image_le_iff, image_ofSimplex, ofSimplex_le_iff]
+      using faceProdSubcomplex_succ_not_le_σib b a i
 
 /-
-for 0 ≤ a < b < n, the following square
+for `0 ≤ a < b < n`, the following square
 
 Λ[n + 1, (a + 1) + 1] ---> X(b) ∪ σ0b ∪ ... ∪ σab
         |                             |
@@ -1049,14 +1229,14 @@ for 0 ≤ a < b < n, the following square
         v                             V
     σ(a + 1)b -------> X(b) ∪ σ0b ∪ ... ∪ σab ∪ σ(a + 1)b
 
+need `b < n` because `X(n)` is the last term. `X(n-1, n-1) = X(n)`.
+need `a < b` because we need `a + 1 ≤ b`
 e.g. the last square looks like
 Λ[n + 1, n] ---> X(n-1) ∪ σ0(n-1) ∪ ... ∪ σ(n-2)(n-1) = X(n-1, n-2)
      |                             |
      |                             |
      v                             V
  σ(n-1)(n-1) -------------------> X(n) = X(n-1, n-1)
-
--- need b < n because X(n) is the last term. X(n-1, n-1) = X(n)
 -/
 def mySq {n} (b : Fin n) (a : Fin b.1) :
     Sq
