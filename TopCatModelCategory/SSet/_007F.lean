@@ -1094,10 +1094,10 @@ lemma faceProdSubcomplex_succ_not_le_σij {n} (b : Fin n) (a : Fin b.1) (j : Fin
   simp only [SimplexCategory.Hom.mk, SimplexCategory.Hom.toOrderHom, OrderHom.comp, objMk, f₂] at h₁' h₂'
   cases lt_or_eq_of_le (show a.1 + 1 ≤ b from a.2)
   · next h =>
-    have h₁' := congr_fun h₁' b.succ
-    have h₂' := congr_fun h₂' b.succ
+    have h₁' := congr_fun h₁' b
+    have h₂' := congr_fun h₂' b
     dsimp [objEquiv, Equiv.ulift] at h₁' h₂'
-    change (SimplexCategory.σ _) (x b.succ) = _ at h₁'
+    change (SimplexCategory.σ _) (x b) = _ at h₁'
     change (if x _ ≤ _ then 0 else if x _ ≤ _ then 1 else 2) = _ at h₂'
     simp only [Fin.val_succ, Fin.isValue] at h₁' h₂'
     simp only [SimplexCategory.len_mk, ConcreteCategory.hom, SimplexCategory.Hom.toOrderHom,
@@ -1106,39 +1106,27 @@ lemma faceProdSubcomplex_succ_not_le_σij {n} (b : Fin n) (a : Fin b.1) (j : Fin
       OrderEmbedding.toOrderHom_coe, Fin.succAboveOrderEmb_apply, Fin.succ_succAbove_succ,
       Fin.castSucc_lt_succ_iff, Fin.pred_succ, Fin.isValue, Fin.succ_le_castSucc_iff,
       Fin.succ_le_succ_iff] at h₁' h₂'
-    have A : ¬ b.castSucc < (a.succ : Fin (n + 1)) := by
+    have A : ¬ b.castSucc ≤ (a.succ : Fin (n + 1)) := by
       simp
-      rw [Fin.le_castSucc_iff]
-      refine Fin.val_fin_lt.mp ?_
-      simp
-      refine Nat.lt_add_right 1 (lt_of_eq_of_lt ?_ h)
-      simp only [Nat.mod_succ_eq_iff_lt, Nat.succ_eq_add_one, add_lt_add_iff_right]
-      exact a.2.trans b.2
-    have B : (a.succ : Fin (n + 1)) ≤ b.succ := le_of_not_ge A
+      rcases a with ⟨a, ha⟩
+      rcases b with ⟨b, hb⟩
+      simp at h ⊢
+      refine Fin.lt_iff_val_lt_val.mpr ?_
+      convert h
+      exact Fin.val_cast_of_lt (by omega)
+    have B : (a.succ : Fin (n + 1)) ≤ b.castSucc := le_of_not_ge A
     dsimp at A B
     simp [Fin.succAbove, A, B, B.not_lt] at h₁' h₂'
     split at h₁'
     · next h' =>
       rw [Fin.pred_eq_iff_eq_succ] at h₁'
       simp [h'.not_le] at h₂'
-      sorry
+      rw [h₁'] at h₂'
+      apply h₂'.not_lt
+      rcases j with ⟨j, hj⟩
+      rcases b with ⟨b, hb⟩
+      simp [hj]
     · next h' => aesop
-
-    /-
-    split at h₂'
-    · next h' =>
-      simp only [Fin.isValue, Fin.reduceEq] at h₂'
-    · next h' =>
-      simp at h'
-      simp [Fin.succAbove, A, B, h'] at h₁'
-      rw [Fin.pred_eq_iff_eq_succ] at h₁'
-      split at h₂'
-      · next h'' =>
-        simp at h₂'
-      · next h'' =>
-        simp_all
-        sorry
-    -/
   · next h =>
     have : (a.succ : Fin (n + 1)) = b.castSucc := by aesop
     have h₁' := congr_fun h₁' (a.succ : Fin (n + 1))
