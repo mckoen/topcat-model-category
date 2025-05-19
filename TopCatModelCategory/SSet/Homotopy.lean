@@ -16,15 +16,29 @@ variable {X Y : SSet.{u}} {A : X.Subcomplex} {B : Y.Subcomplex} {φ : (A : SSet)
 
 namespace Subcomplex
 
-variable (A B φ) in
+variable (A B φ)
+
 noncomputable def relativeMorphism : ((ihom X).obj Y).Subcomplex :=
   Subcomplex.fiber ((MonoidalClosed.pre A.ι).app Y)
     (ihom₀Equiv.symm (φ ≫ B.ι))
+
+lemma range_le_relativeMorphism_iff {T : SSet.{u}} (f : T ⟶ (ihom X).obj Y) :
+    range f ≤ relativeMorphism A B φ ↔
+      f ≫ (MonoidalClosed.pre A.ι).app Y = const (ihom₀Equiv.symm (φ ≫ B.ι)) := by
+  apply range_le_fiber_iff
+
+@[reassoc (attr := simp)]
+lemma relativeMorphism_ι_comp_pre_app :
+    (relativeMorphism A B φ).ι ≫ (MonoidalClosed.pre A.ι).app Y =
+      const (ihom₀Equiv.symm (φ ≫ B.ι)) := by
+  simp [relativeMorphism]
 
 instance [IsFibrant Y] :
     IsFibrant (C := SSet.{u}) (relativeMorphism A B φ) := by
   dsimp [relativeMorphism]
   infer_instance
+
+variable {A B φ}
 
 namespace RelativeMorphism
 
@@ -52,16 +66,36 @@ noncomputable def equiv {f g : RelativeMorphism A B φ} :
         (.mk (RelativeMorphism.equiv f))
         (.mk (RelativeMorphism.equiv g)) where
   toFun h := KanComplex.FundamentalGroupoid.Edge.mk
-      (Subcomplex.lift (MonoidalClosed.curry h.h) sorry) (by
+      (Subcomplex.lift (MonoidalClosed.curry h.h) (by
+        rw [← top_le_iff, ← Subcomplex.image_le_iff, Subcomplex.image_top,
+          range_le_relativeMorphism_iff, MonoidalClosed.curry_pre_app, h.rel]
+        rfl)) (by
         rw [← cancel_mono (Subpresheaf.ι _), assoc, Subcomplex.lift_ι, const_comp,
-          Subpresheaf.ι_app, equiv_apply_coe, ← h.h₀]
-        apply yonedaEquiv.injective
-        sorry) sorry
+          Subpresheaf.ι_app, equiv_apply_coe, ← h.h₀,
+          ← MonoidalClosed.curry_natural_left, ← stdSimplex.rightUnitor_hom_ι₀, assoc]
+        rfl) (by
+        rw [← cancel_mono (Subpresheaf.ι _), assoc, Subcomplex.lift_ι, const_comp,
+          Subpresheaf.ι_app, equiv_apply_coe, ← h.h₁,
+          ← MonoidalClosed.curry_natural_left, ← stdSimplex.rightUnitor_hom_ι₁, assoc]
+        rfl)
   invFun h :=
     { h := MonoidalClosed.uncurry (h.map ≫ Subpresheaf.ι _)
-      h₀ := sorry
-      h₁ := sorry
-      rel := sorry }
+      h₀ := by
+        rw [← cancel_epi (stdSimplex.rightUnitor X).hom,
+          stdSimplex.rightUnitor_hom_ι₀_assoc,
+          MonoidalClosed.uncurry_natural_left,
+          ← MonoidalCategory.whiskerLeft_comp_assoc, h.comm₀]
+        rfl
+      h₁ := by
+        rw [← cancel_epi (stdSimplex.rightUnitor X).hom,
+          stdSimplex.rightUnitor_hom_ι₁_assoc,
+          MonoidalClosed.uncurry_natural_left,
+          ← MonoidalCategory.whiskerLeft_comp_assoc, h.comm₁]
+        rfl
+      rel := by
+        rw [MonoidalClosed.whiskerRight_comp_uncurry, assoc,
+          relativeMorphism_ι_comp_pre_app]
+        rfl }
   left_inv h := by aesop
   right_inv h := by aesop
 
@@ -90,8 +124,41 @@ noncomputable def Homotopy.of_eq {f g : RelativeMorphism A B φ} [IsFibrant Y]
     (h : f.homotopyClass = g.homotopyClass) : Homotopy f g :=
   ((Equivalence.quot_mk_eq_iff (Homotopy.equivalence A B φ) _ _).1 h).some
 
+@[simps]
+def botEquiv :
+    RelativeMorphism (⊥ : X.Subcomplex) (⊥ : Y.Subcomplex)
+      (botIsInitial.to _) ≃ (X ⟶ Y) where
+  toFun f := f.map
+  invFun f := { map := f }
+  left_inv _ := rfl
+  right_inv _ := rfl
+
 end RelativeMorphism
 
 end Subcomplex
+
+def Homotopy (f g : X ⟶ Y) := (Subcomplex.RelativeMorphism.botEquiv.symm f).Homotopy
+      (Subcomplex.RelativeMorphism.botEquiv.symm g)
+
+namespace Homotopy
+
+variable {f g : X ⟶ Y} (h : Homotopy f g)
+
+@[reassoc (attr := simp)]
+lemma h₀ : ι₀ ≫ h.h = f :=
+  Subcomplex.RelativeMorphism.Homotopy.h₀ h
+
+@[reassoc (attr := simp)]
+lemma h₁ : ι₁ ≫ h.h = g :=
+  Subcomplex.RelativeMorphism.Homotopy.h₁ h
+
+@[simps]
+def mk (h : X ⊗ Δ[1] ⟶ Y) (h₀ : ι₀ ≫ h = f) (h₁ : ι₁ ≫ h = g) : Homotopy f g where
+  h := h
+  rel := by
+    ext _ ⟨⟨_, hx⟩, _⟩
+    simp at hx
+
+end Homotopy
 
 end SSet

@@ -862,6 +862,24 @@ lemma iSup_obj {ι : Sort*} (S : ι → X.Subcomplex) (U : SimplexCategoryᵒᵖ
     (⨆ i, S i).obj U = ⋃ i, (S i).obj U := by
   simp [iSup, Subpresheaf.sSup_obj]
 
+instance : Subsingleton ((⊥ : X.Subcomplex).toSSet ⟶ Y) where
+  allEq f g := by
+    ext _ ⟨x, hx⟩
+    simp at hx
+
+instance : Inhabited ((⊥ : X.Subcomplex).toSSet ⟶ Y) where
+  default :=
+    { app _ := fun ⟨_, hx⟩ ↦ by simp at hx
+      naturality _ _ _ := by
+        ext ⟨_, hx⟩
+        simp at hx }
+
+instance : Unique ((⊥ : X.Subcomplex).toSSet ⟶ Y) where
+  uniq _ := Subsingleton.elim _ _
+
+def botIsInitial : IsInitial (⊥ : X.Subcomplex).toSSet :=
+  IsInitial.ofUnique _
+
 end Subcomplex
 
 end SSet

@@ -464,6 +464,85 @@ lemma eq_cofanInj_apply_eq_of_isColimit {i j : ι} (x : X i) (y : X j)
   rw [cofanInj_apply_eq_iff_of_isColimit hc] at h
   exact h.choose
 
+lemma preimage_image_eq_of_coproducts
+    {X' : ι → Type u} {c' : Cofan X'} (hc' : IsColimit c') (f : ∀ i, X i ⟶ X' i)
+    (φ : c.pt ⟶ c'.pt) (hφ : ∀ i, c.inj i ≫ φ = f i ≫ c'.inj i)
+    (i : ι) (F : Set (X' i)) :
+    φ ⁻¹' (c'.inj i '' F) = c.inj i '' ((f i) ⁻¹' F) := by
+  replace hφ {i : ι} (x : X i) : φ (c.inj i x) = c'.inj i (f i x) := congr_fun (hφ i) x
+  ext y
+  simp only [Set.mem_preimage, Set.mem_image]
+  constructor
+  · rintro ⟨x, hx, eq⟩
+    obtain ⟨j, z, rfl⟩ := jointly_surjective_of_isColimit_cofan hc y
+    rw [hφ] at eq
+    obtain rfl := eq_cofanInj_apply_eq_of_isColimit hc' _ _ eq
+    obtain rfl := cofanInj_injective_of_isColimit hc' i eq
+    refine ⟨z, hx, rfl⟩
+  · rintro ⟨x, hx, rfl⟩
+    exact ⟨_, hx, (hφ x).symm⟩
+
+end
+
+section
+
+variable {S X₁ X₂ : Type u} (f : S ⟶ X₁) (g : S ⟶ X₂)
+
+lemma Pushout.inl_eq_inl_iff [Mono f] (x₁ y₁ : X₁) :
+    (inl f g x₁ = inl f g y₁) ↔
+      x₁ = y₁ ∨ ∃ x₀ y₀, x₁ = f x₀ ∧ y₁ = f y₀ ∧ g x₀ = g y₀ :=
+  (Pushout.quot_mk_eq_iff f g (Sum.inl x₁) (Sum.inl y₁)).trans (by aesop)
+
+variable {f g}
+
+lemma pushoutCocone_inl_eq_inl_imp_of_iso {c c' : PushoutCocone f g} (e : c ≅ c')
+    (x₁ y₁ : X₁) (h : c.inl x₁ = c.inl y₁) :
+    c'.inl x₁ = c'.inl y₁ := by
+  convert congr_arg e.hom.hom h
+  all_goals apply congr_fun (e.hom.w WalkingSpan.left).symm
+
+lemma pushoutCocone_inl_eq_inl_iff_of_iso {c c' : PushoutCocone f g} (e : c ≅ c')
+    (x₁ y₁ : X₁) :
+    c.inl x₁ = c.inl y₁ ↔ c'.inl x₁ = c'.inl y₁ := by
+  constructor
+  · apply pushoutCocone_inl_eq_inl_imp_of_iso e
+  · apply pushoutCocone_inl_eq_inl_imp_of_iso e.symm
+
+lemma pushoutCocone_inl_eq_inl_iff_of_isColimit {c : PushoutCocone f g} (hc : IsColimit c)
+    (h₁ : Function.Injective f) (x₁ y₁ : X₁) :
+    c.inl x₁ = c.inl y₁ ↔
+      x₁ = y₁ ∨ ∃ x₀ y₀, x₁ = f x₀ ∧ y₁ = f y₀ ∧ g x₀ = g y₀ := by
+  rw [pushoutCocone_inl_eq_inl_iff_of_iso
+    (Cocones.ext (IsColimit.coconePointUniqueUpToIso hc (Pushout.isColimitCocone f g))
+    (by simp))]
+  have := (mono_iff_injective f).2 h₁
+  apply Pushout.inl_eq_inl_iff f g
+
+end
+
+
+section
+
+variable {X₁ X₂ X₃ X₄ : Type u} {t : X₁ ⟶ X₂} {l : X₁ ⟶ X₃}
+  {r : X₂ ⟶ X₄} {b : X₃ ⟶ X₄}
+
+lemma preimage_image_eq_of_isPushout (sq : IsPushout t l r b) (ht : Function.Injective t)
+    (F : Set X₃) :
+    r ⁻¹' (b '' F) = t '' (l ⁻¹' F) := by
+  ext x₂
+  simp only [Set.mem_preimage, Set.mem_image]
+  constructor
+  · rintro ⟨x₃, hx₃, hx₃'⟩
+    obtain ⟨x₁, rfl, rfl⟩ := (Types.pushoutCocone_inl_eq_inr_iff_of_isColimit
+      sq.isColimit ht x₂ x₃).1 hx₃'.symm
+    exact ⟨x₁, hx₃, rfl⟩
+  · rintro ⟨x₁, hx₁, rfl⟩
+    exact ⟨l x₁, hx₁, congr_fun sq.w.symm x₁⟩
+
+lemma injective_of_isPushout (sq : IsPushout t l r b) (ht : Function.Injective t) :
+    Function.Injective b :=
+  Types.pushoutCocone_injective_inr_of_isColimit sq.isColimit ht
+
 end
 
 end Types

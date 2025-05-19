@@ -66,6 +66,7 @@ lemma image_le : A.image f.map ≤ B := by
 lemma le_preimage : A ≤ B.preimage f.map := by
   simpa only [← image_le_iff] using f.image_le
 
+@[ext]
 structure Homotopy where
   h : X ⊗ Δ[1] ⟶ Y
   h₀ : ι₀ ≫ h = f.map := by aesop_cat
@@ -75,6 +76,11 @@ structure Homotopy where
 namespace Homotopy
 
 attribute [reassoc (attr := simp)] h₀ h₁ rel
+
+variable {f g} in
+@[simps]
+noncomputable def ofEq (h : f = g) : Homotopy f g where
+  h := fst _ _ ≫ f.map
 
 @[simps]
 noncomputable def refl : Homotopy f f where

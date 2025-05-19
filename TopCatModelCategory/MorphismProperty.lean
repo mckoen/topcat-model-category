@@ -116,4 +116,14 @@ instance [W.IsStableUnderRetracts] : (W.inverseImage F).IsStableUnderRetracts wh
 
 end
 
+instance (W : MorphismProperty C) :
+    IsStableUnderTransfiniteComposition.{w} W.llp where
+  isStableUnderTransfiniteCompositionOfShape J _ _ _ _ :=
+    isStableUnderTransfiniteCompositionOfShape_llp W J
+
+instance (W : MorphismProperty C) :
+    IsStableUnderCoproducts.{w} W.llp where
+  isStableUnderCoproductsOfShape J :=
+    llp_isStableUnderCoproductsOfShape W J
+
 end CategoryTheory.MorphismProperty

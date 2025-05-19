@@ -247,9 +247,8 @@ lemma ι_ι (i j : Fin (n + 1)) (hi : i ≤ j) :
 
 lemma isPushout (j : Fin n) :
     IsPushout
-      (stdSimplex.{u}.map
-        (SimplexCategory.δ j.succ.castSucc) ≫ ι (by rfl))
-      (stdSimplex.map (SimplexCategory.δ j.succ.castSucc))
+      (stdSimplex.{u}.δ j.succ.castSucc ≫ ι (by rfl))
+      (stdSimplex.δ j.succ.castSucc)
       (Subcomplex.homOfLE (filtration.monotone j.castSucc_le_succ))
       (ι (by rfl)) := by
   fapply (sq.{u} j).isPushout.of_iso'
@@ -263,8 +262,9 @@ lemma isPushout (j : Fin n) :
     dsimp
     simp only [Category.assoc, Category.comp_id, ι_ι]
     rw [Subcomplex.homOfLE_ι,
-      Subcomplex.isoOfRepresentableBy_ofSimplexRepresentableBy_hom,
-      ← yonedaEquiv_symm_map, ← Fin.succ_castSucc,
+      Subcomplex.isoOfRepresentableBy_ofSimplexRepresentableBy_hom]
+    dsimp [CosimplicialObject.δ]
+    rw [← yonedaEquiv_symm_map, ← Fin.succ_castSucc,
       ← δ_succ_nonDegenerateEquiv]
     rfl
   · apply Subcomplex.hom_ext
@@ -272,8 +272,9 @@ lemma isPushout (j : Fin n) :
     simp only [Category.assoc]
     rw [Subcomplex.homOfLE_ι,
       Subcomplex.isoOfRepresentableBy_ofSimplexRepresentableBy_hom,
-      Subcomplex.isoOfRepresentableBy_ofSimplexRepresentableBy_hom,
-      ← yonedaEquiv_symm_map, ← δ_castSucc_nonDegenerateEquiv]
+      Subcomplex.isoOfRepresentableBy_ofSimplexRepresentableBy_hom]
+    dsimp [CosimplicialObject.δ]
+    rw [← yonedaEquiv_symm_map, ← δ_castSucc_nonDegenerateEquiv]
     rfl
   · simp
   · aesop_cat
@@ -281,9 +282,9 @@ lemma isPushout (j : Fin n) :
 variable {X : SSet.{u}} {j : Fin (n + 1)}
   (α : ∀ (i : Fin (n + 1)) (_ : i ≤ j), Δ[n + 1] ⟶ X)
   (hα : ∀ (i : Fin n) (hi : i.succ ≤ j),
-    stdSimplex.map (SimplexCategory.δ i.succ.castSucc) ≫
+    stdSimplex.δ i.succ.castSucc ≫
         α i.castSucc (i.castSucc_le_succ.trans hi) =
-      stdSimplex.map (SimplexCategory.δ i.succ.castSucc) ≫ α i.succ hi)
+      stdSimplex.δ i.succ.castSucc ≫ α i.succ hi)
 
 def exists_desc :
     ∃ (φ : (filtration j : SSet.{u}) ⟶ X),
@@ -337,8 +338,8 @@ lemma hom_ext {X : SSet.{u}} {f g : Δ[n] ⊗ Δ[1] ⟶ X}
 variable {X : SSet.{u}}
   (α : Fin (n + 1) → (Δ[n + 1] ⟶ X))
   (hα : ∀ (i : Fin n),
-    stdSimplex.map (SimplexCategory.δ i.succ.castSucc) ≫ α i.castSucc =
-      stdSimplex.map (SimplexCategory.δ i.succ.castSucc) ≫ α i.succ)
+    stdSimplex.δ i.succ.castSucc ≫ α i.castSucc =
+      stdSimplex.δ i.succ.castSucc ≫ α i.succ)
 
 def exists_desc :
     ∃ (φ : Δ[n] ⊗ Δ[1] ⟶ X),
@@ -350,7 +351,7 @@ def exists_desc :
 
 @[reassoc]
 lemma δ_ι_last :
-    stdSimplex.map (SimplexCategory.δ (Fin.last (n + 1))) ≫ ι (Fin.last n) = ι₀.{u} := by
+    stdSimplex.δ (Fin.last (n + 1)) ≫ ι (Fin.last n) = ι₀.{u} := by
   apply yonedaEquiv.injective
   apply prodStdSimplex.objEquiv.injective
   ext i : 3
@@ -358,13 +359,13 @@ lemma δ_ι_last :
       SimplexCategory.congr_toOrderHom_apply
         (SimplexCategory.δ_comp_σ_succ (i := Fin.last n)) i
   · simp [ι, yonedaEquiv_snd, ← yonedaEquiv_symm_map, stdSimplex.map_op_apply,
-      SimplexCategory.δ]
+      CosimplicialObject.δ, SimplexCategory.δ]
     rw [stdSimplex.objMk₁_of_castSucc_lt _ _ (by simpa using i.castSucc_lt_last)]
     rfl
 
 @[reassoc]
 lemma δ_ι_zero :
-    stdSimplex.map (SimplexCategory.δ 0) ≫ ι (0 : Fin (n + 1)) = ι₁.{u} := by
+    stdSimplex.δ 0 ≫ ι (0 : Fin (n + 1)) = ι₁.{u} := by
   apply yonedaEquiv.injective
   apply prodStdSimplex.objEquiv.injective
   ext i : 3
@@ -375,13 +376,14 @@ lemma δ_ι_zero :
 
 @[reassoc]
 lemma ι_whiskerRight_δ_of_le (i : Fin (n + 2)) (j : Fin (n + 1)) (hij : i ≤ j.castSucc) :
-    ι.{u} j ≫ stdSimplex.map (SimplexCategory.δ i) ▷ Δ[1] =
-      stdSimplex.map (SimplexCategory.δ i.castSucc) ≫ ι.{u} j.succ := by
+    ι.{u} j ≫ stdSimplex.δ i ▷ Δ[1] =
+      stdSimplex.δ i.castSucc ≫ ι.{u} j.succ := by
   apply yonedaEquiv.injective
   apply prodStdSimplex.objEquiv.injective
   ext k : 3
   · exact SimplexCategory.congr_toOrderHom_apply (SimplexCategory.δ_comp_σ_of_le hij).symm k
-  · simp [ι, ← yonedaEquiv_symm_map, stdSimplex.map_op_apply, SimplexCategory.δ]
+  · simp [ι, ← yonedaEquiv_symm_map, stdSimplex.map_op_apply, SimplexCategory.δ,
+      CosimplicialObject.δ]
     by_cases hk : k ≤ j.castSucc
     · rw [stdSimplex.objMk₁_of_castSucc_lt _ _ (by simpa [← Fin.le_castSucc_iff]),
         stdSimplex.objMk₁_of_castSucc_lt]
@@ -399,9 +401,9 @@ lemma ι_whiskerRight_δ_of_le (i : Fin (n + 2)) (j : Fin (n + 1)) (hij : i ≤ 
 
 @[reassoc]
 lemma δ_ι_of_lt (i : Fin (n + 3)) (j : Fin (n + 2)) (hij : i < j.castSucc) :
-  stdSimplex.map (SimplexCategory.δ i) ≫ ι.{u} j =
+  stdSimplex.δ i ≫ ι.{u} j =
     ι.{u} (j.pred (by simpa using Fin.ne_zero_of_lt hij)) ≫
-      stdSimplex.map (SimplexCategory.δ (i.castPred (Fin.ne_last_of_lt hij))) ▷ Δ[1] := by
+      stdSimplex.δ (i.castPred (Fin.ne_last_of_lt hij)) ▷ Δ[1] := by
   obtain ⟨j, rfl⟩ := j.eq_succ_of_ne_zero (by simpa using Fin.ne_zero_of_lt hij)
   obtain ⟨i, rfl⟩ := i.eq_castSucc_of_ne_last (Fin.ne_last_of_lt hij)
   rw [Fin.pred_succ, Fin.castPred_castSucc,
@@ -409,13 +411,14 @@ lemma δ_ι_of_lt (i : Fin (n + 3)) (j : Fin (n + 2)) (hij : i < j.castSucc) :
 
 @[reassoc]
 lemma ι_whiskerRight_δ_of_gt (i : Fin (n + 2)) (j : Fin (n + 1)) (hij : j.castSucc < i ) :
-    ι.{u} j ≫ stdSimplex.map (SimplexCategory.δ i) ▷ Δ[1] =
-      stdSimplex.map (SimplexCategory.δ i.succ) ≫ ι.{u} j.castSucc := by
+    ι.{u} j ≫ stdSimplex.δ i ▷ Δ[1] =
+      stdSimplex.δ i.succ ≫ ι.{u} j.castSucc := by
   apply yonedaEquiv.injective
   apply prodStdSimplex.objEquiv.injective
   ext k : 3
   · exact SimplexCategory.congr_toOrderHom_apply (SimplexCategory.δ_comp_σ_of_gt hij).symm k
-  · simp [ι, ← yonedaEquiv_symm_map, stdSimplex.map_op_apply, SimplexCategory.δ]
+  · simp [ι, ← yonedaEquiv_symm_map, stdSimplex.map_op_apply, SimplexCategory.δ,
+      CosimplicialObject.δ]
     by_cases hk : k < j.succ
     · have : k.castSucc < i.succ := by
         rw [← Fin.castSucc_lt_castSucc_iff] at hk
@@ -437,28 +440,27 @@ lemma ι_whiskerRight_δ_of_gt (i : Fin (n + 2)) (j : Fin (n + 1)) (hij : j.cast
 
 @[reassoc]
 lemma δ_ι_of_succ_lt (i : Fin (n + 3)) (j : Fin (n + 2)) (hij : j.succ < i) :
-  stdSimplex.map (SimplexCategory.δ i) ≫ ι.{u} j = ι.{u} (j.castPred (by
+  stdSimplex.δ i ≫ ι.{u} j = ι.{u} (j.castPred (by
       rintro rfl
       simp [Fin.lt_iff_val_lt_val] at hij
       omega)) ≫
-      stdSimplex.map (SimplexCategory.δ (i.pred (Fin.ne_zero_of_lt hij))) ▷ Δ[1] := by
+      stdSimplex.δ (i.pred (Fin.ne_zero_of_lt hij)) ▷ Δ[1] := by
   rw [ι_whiskerRight_δ_of_gt _ _ (by
     rwa [← Fin.succ_lt_succ_iff, Fin.castSucc_castPred, Fin.succ_pred])]
   simp
 
 @[reassoc]
 lemma δ_succ_castSucc_ι_succ (i : Fin n) :
-    stdSimplex.map (SimplexCategory.δ i.succ.castSucc) ≫
-      prodStdSimplex₁.ι.{u} i.succ =
-    stdSimplex.map (SimplexCategory.δ i.succ.castSucc) ≫
-      prodStdSimplex₁.ι i.castSucc := by
+    stdSimplex.δ i.succ.castSucc ≫ prodStdSimplex₁.ι.{u} i.succ =
+    stdSimplex.δ i.succ.castSucc ≫ prodStdSimplex₁.ι i.castSucc := by
   apply yonedaEquiv.injective
   apply prodStdSimplex.objEquiv.injective
   ext k : 3
   · exact SimplexCategory.congr_toOrderHom_apply
       ((SimplexCategory.δ_comp_σ_self (i := i.succ)).trans
       (SimplexCategory.δ_comp_σ_succ (i := i.castSucc)).symm) k
-  · simp [ι, ← yonedaEquiv_symm_map, stdSimplex.map_op_apply, SimplexCategory.δ]
+  · simp [ι, ← yonedaEquiv_symm_map, stdSimplex.map_op_apply, CosimplicialObject.δ,
+      SimplexCategory.δ]
     by_cases hk : k < i.succ
     · rw [Fin.succAbove_of_castSucc_lt _ _ (by simpa using hk)]
       rw [stdSimplex.objMk₁_of_castSucc_lt, stdSimplex.objMk₁_of_castSucc_lt]

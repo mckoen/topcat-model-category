@@ -50,16 +50,14 @@ noncomputable def ι₁ : Δ[0] ⟶ (boundary 1 : SSet.{u}) :=
     Subcomplex.homOfLE (face_le_boundary (0 : Fin 2))
 
 @[reassoc (attr := simp)]
-lemma ι₀_ι : ι₀.{u} ≫ (boundary 1).ι =
-    stdSimplex.map (SimplexCategory.δ 1) := by
+lemma ι₀_ι : ι₀.{u} ≫ (boundary 1).ι = stdSimplex.δ 1 := by
   apply yonedaEquiv.injective
   ext i
   fin_cases i
   rfl
 
 @[reassoc (attr := simp)]
-lemma ι₁_ι : ι₁.{u} ≫ (boundary 1).ι =
-    stdSimplex.map (SimplexCategory.δ 0) := by
+lemma ι₁_ι : ι₁.{u} ≫ (boundary 1).ι = stdSimplex.δ 0 := by
   apply yonedaEquiv.injective
   ext i
   fin_cases i
@@ -150,8 +148,8 @@ lemma Edge.ext {x₀ x₁ : FundamentalGroupoid X} {p q : Edge x₀ x₁}
 
 @[simps]
 def Edge.mk {x₀ x₁ : FundamentalGroupoid X} (f : Δ[1] ⟶ X)
-    (h₀ : stdSimplex.map (SimplexCategory.δ 1) ≫ f = const x₀.pt := by simp)
-    (h₁ : stdSimplex.map (SimplexCategory.δ 0) ≫ f = const x₁.pt := by simp) :
+    (h₀ : stdSimplex.δ 1 ≫ f = const x₀.pt := by simp)
+    (h₁ : stdSimplex.δ 0 ≫ f = const x₁.pt := by simp) :
     Edge x₀ x₁ where
   map := f
   comm := by
@@ -171,28 +169,64 @@ def Edge.ofEq {x₀ x₁ : FundamentalGroupoid X} (h : x₀ = x₁) :
 
 @[reassoc]
 lemma Edge.comm₀ {x₀ x₁ : FundamentalGroupoid X} (p : Edge x₀ x₁) :
-    stdSimplex.map (SimplexCategory.δ 1) ≫ p.map = const x₀.pt := by
+    stdSimplex.δ 1 ≫ p.map = const x₀.pt := by
   have := boundary₁.ι₀ ≫= p.comm
   rw [assoc, boundary₁.ι₀_ι_assoc, boundary₁.ι₀_desc_assoc,
     yonedaEquiv_symm_zero, const_comp, FunctorToTypes.comp, Subpresheaf.ι_app,
     Subcomplex.topIso_inv_app_coe] at this
   exact this
 
+lemma Edge.comm₀' {x₀ x₁ : FundamentalGroupoid X} (p : Edge x₀ x₁) :
+    p.map.app (Opposite.op ⦋0⦌) (stdSimplex.obj₀Equiv.symm 0) = x₀.pt := by
+  convert congr_arg yonedaEquiv p.comm₀ using 1
+  · dsimp [CosimplicialObject.δ]
+    rw [yonedaEquiv_map_comp, stdSimplex.map_yonedaEquiv]
+    apply congr_arg
+    ext i
+    fin_cases i
+    rfl
+  · simp
+
+@[reassoc]
+lemma Edge.comm₀'' {x₀ x₁ : FundamentalGroupoid X} (p : Edge x₀ x₁) :
+    (stdSimplex.face {(0 : Fin 2)}).ι ≫ p.map = const x₀.pt := by
+  rw [← cancel_epi (stdSimplex.faceSingletonIso (0 : Fin 2)).hom, comp_const]
+  rw [stdSimplex.faceSingletonIso_zero_hom_comp_ι_eq_δ_assoc]
+  exact p.comm₀
+
 @[reassoc]
 lemma Edge.comm₁ {x₀ x₁ : FundamentalGroupoid X} (p : Edge x₀ x₁) :
-    stdSimplex.map (SimplexCategory.δ 0) ≫ p.map = const x₁.pt := by
+    stdSimplex.δ 0 ≫ p.map = const x₁.pt := by
   have := boundary₁.ι₁ ≫= p.comm
   rw [assoc, boundary₁.ι₁_ι_assoc, boundary₁.ι₁_desc_assoc,
     yonedaEquiv_symm_zero, const_comp, FunctorToTypes.comp, Subpresheaf.ι_app,
     Subcomplex.topIso_inv_app_coe] at this
   exact this
 
+lemma Edge.comm₁' {x₀ x₁ : FundamentalGroupoid X} (p : Edge x₀ x₁) :
+    p.map.app (Opposite.op ⦋0⦌) (stdSimplex.obj₀Equiv.symm 1) = x₁.pt := by
+  convert congr_arg yonedaEquiv p.comm₁ using 1
+  · dsimp [CosimplicialObject.δ]
+    rw [yonedaEquiv_map_comp, stdSimplex.map_yonedaEquiv]
+    apply congr_arg
+    ext i
+    fin_cases i
+    rfl
+  · simp
+
+@[reassoc]
+lemma Edge.comm₁'' {x₀ x₁ : FundamentalGroupoid X} (p : Edge x₀ x₁) :
+    (stdSimplex.face {(1 : Fin 2)}).ι ≫ p.map = const x₁.pt := by
+  rw [← cancel_epi (stdSimplex.faceSingletonIso (1 : Fin 2)).hom, comp_const]
+  rw [stdSimplex.faceSingletonIso_one_hom_comp_ι_eq_δ_assoc]
+  exact p.comm₁
+
 @[simps! map]
 def Edge.id (x : FundamentalGroupoid X) : Edge x x :=
   Edge.mk (const x.pt)
 
 @[simp]
-lemma Edge.ofEq_refl (x : FundamentalGroupoid x) :
+lemma Edge.ofEq_refl (x : FundamentalGroupoid X) :
     Edge.ofEq (rfl : x = x) = Edge.id x := rfl
 
 namespace Edge
@@ -278,9 +312,9 @@ variable {x₀ x₁ x₂ x₃ : FundamentalGroupoid X}
 
 structure CompStruct (p₀₁ : Edge x₀ x₁) (p₁₂ : Edge x₁ x₂) (p₀₂ : Edge x₀ x₂) where
   map : Δ[2] ⟶ X
-  h₀₁ : stdSimplex.map (SimplexCategory.δ 2) ≫ map = p₀₁.map := by aesop_cat
-  h₁₂ : stdSimplex.map (SimplexCategory.δ 0) ≫ map = p₁₂.map := by aesop_cat
-  h₀₂ : stdSimplex.map (SimplexCategory.δ 1) ≫ map = p₀₂.map := by aesop_cat
+  h₀₁ : stdSimplex.δ 2 ≫ map = p₀₁.map := by aesop_cat
+  h₁₂ : stdSimplex.δ 0 ≫ map = p₁₂.map := by aesop_cat
+  h₀₂ : stdSimplex.δ 1 ≫ map = p₀₂.map := by aesop_cat
 
 namespace CompStruct
 
@@ -294,36 +328,22 @@ def pushforward {p₀₁ : Edge x₀ x₁} {p₁₂ : Edge x₁ x₂} {p₀₂ :
   map := h.map ≫ f
 
 def idComp (p : Edge x₀ x₁) : CompStruct (Edge.id x₀) p p where
-  map := stdSimplex.map (SimplexCategory.σ 0) ≫ p.map
+  map := stdSimplex.σ 0 ≫ p.map
   h₀₁ := by
-    have := SimplexCategory.δ_comp_σ_of_gt (n := 0) (i := 1) (j := 0) (by simp)
+    have := stdSimplex.{u}.δ_comp_σ_of_gt (n := 0) (i := 1) (j := 0) (by simp)
     dsimp at this
-    rw [← Functor.map_comp_assoc, this, Functor.map_comp_assoc, p.comm₀, comp_const, id_map]
-  h₁₂ := by
-    have := SimplexCategory.δ_comp_σ_self (n := 1) (i := 0)
-    dsimp at this
-    rw [← Functor.map_comp_assoc, this, CategoryTheory.Functor.map_id,
-      CategoryTheory.Category.id_comp]
-  h₀₂ := by
-    have := SimplexCategory.δ_comp_σ_succ (n := 1) (i := 0)
-    dsimp at this
-    rw [← Functor.map_comp_assoc, this, CategoryTheory.Functor.map_id,
-      CategoryTheory.Category.id_comp]
+    rw [reassoc_of% this, p.comm₀, comp_const, id_map]
+  h₁₂ := stdSimplex.{u}.δ_comp_σ_self_assoc (n := 1) (i := 0) _
+  h₀₂ := stdSimplex.{u}.δ_comp_σ_succ_assoc (n := 1) (i := 0) _
 
 def compId (p : Edge x₀ x₁) : CompStruct p (Edge.id x₁) p where
-  map := stdSimplex.map (SimplexCategory.σ 1) ≫ p.map
-  h₀₁ := by
-    have := SimplexCategory.δ_comp_σ_succ (n := 1) (i := 1)
-    dsimp at this
-    rw [← Functor.map_comp_assoc, this, CategoryTheory.Functor.map_id, Category.id_comp]
+  map := stdSimplex.σ 1 ≫ p.map
+  h₀₁ := stdSimplex.δ_comp_σ_succ_assoc (n := 1) (i := 1) _
   h₁₂ := by
-    have := SimplexCategory.δ_comp_σ_of_le (n := 0) (i := 0) (j := 0) (by simp)
+    have := stdSimplex.{u}.δ_comp_σ_of_le (n := 0) (i := 0) (j := 0) (by simp)
     dsimp at this
-    rw [← Functor.map_comp_assoc, this, Functor.map_comp_assoc, p.comm₁, comp_const, id_map]
-  h₀₂ := by
-    have := SimplexCategory.δ_comp_σ_self (n := 1) (i := 1)
-    dsimp at this
-    rw [← Functor.map_comp_assoc, this, CategoryTheory.Functor.map_id, Category.id_comp]
+    rw [reassoc_of% this, p.comm₁, comp_const, id_map]
+  h₀₂ := stdSimplex.δ_comp_σ_self_assoc (n := 1) (i := 1) _
 
 variable [IsFibrant X]
 
@@ -337,14 +357,14 @@ lemma left_inverse (p : Edge x₀ x₁) :
   rw [horn.ι_ι_assoc, h₀₂] at h₀₂'
   have h₁₂' := horn₂₂.ι₁₂ ≫= hβ
   rw [horn.ι_ι_assoc, h₁₂] at h₁₂'
-  refine ⟨Edge.mk (stdSimplex.map (SimplexCategory.δ 2) ≫ β) ?_ ?_,
+  refine ⟨Edge.mk (stdSimplex.δ 2 ≫ β) ?_ ?_,
     ⟨{ map := β, h₀₁ := rfl, h₁₂ := h₁₂', h₀₂ := h₀₂' }⟩⟩
-  · have := SimplexCategory.δ_comp_δ_self (n := 0) (i := 1)
+  · have := stdSimplex.{u}.δ_comp_δ_self (n := 0) (i := 1)
     dsimp at this
-    rw [← Functor.map_comp_assoc, ← this, Functor.map_comp_assoc, h₀₂', comp_const]
-  · have := SimplexCategory.δ_comp_δ (n := 0) (i := 0) (j := 1) (by simp)
+    rw [← reassoc_of% this, h₀₂', comp_const]
+  · have := stdSimplex.{u}.δ_comp_δ (n := 0) (i := 0) (j := 1) (by simp)
     dsimp at this
-    rw [← Functor.map_comp_assoc, this, Functor.map_comp_assoc, h₁₂', p.comm₀]
+    rw [reassoc_of% this, h₁₂', p.comm₀]
 
 lemma right_inverse (p : Edge x₀ x₁) :
     ∃ (q : Edge x₁ x₀), Nonempty (CompStruct p q (Edge.id x₀)) := by
@@ -356,14 +376,14 @@ lemma right_inverse (p : Edge x₀ x₁) :
   rw [horn.ι_ι_assoc, h₀₁] at h₀₁'
   have h₀₂' := horn₂₀.ι₀₂ ≫= hβ
   rw [horn.ι_ι_assoc, h₁₂] at h₀₂'
-  refine ⟨Edge.mk (stdSimplex.map (SimplexCategory.δ 0) ≫ β) ?_ ?_,
+  refine ⟨Edge.mk (stdSimplex.δ 0 ≫ β) ?_ ?_,
     ⟨{ map := β, h₀₁ := h₀₁', h₁₂ := rfl, h₀₂ := h₀₂' }⟩⟩
-  · have := SimplexCategory.δ_comp_δ (n := 0) (i := 0) (j := 1) (by simp)
+  · have := stdSimplex.{u}.δ_comp_δ (n := 0) (i := 0) (j := 1) (by simp)
     dsimp at this
-    rw [← Functor.map_comp_assoc, ← this, Functor.map_comp_assoc, h₀₁', p.comm₁]
-  · have := SimplexCategory.δ_comp_δ_self (n := 0) (i := 0)
+    rw [← reassoc_of% this, h₀₁', p.comm₁]
+  · have := stdSimplex.{u}.δ_comp_δ_self (n := 0) (i := 0)
     dsimp at this
-    rw [← Functor.map_comp_assoc, this, Functor.map_comp_assoc, h₀₂', comp_const]
+    rw [reassoc_of% this, h₀₂', comp_const]
 
 noncomputable def assoc {f₀₁ : Edge x₀ x₁} {f₁₂ : Edge x₁ x₂} {f₂₃ : Edge x₂ x₃}
     {f₀₂ : Edge x₀ x₂} {f₁₃ : Edge x₁ x₃} {f₀₃ : Edge x₀ x₃}
@@ -377,22 +397,19 @@ noncomputable def assoc {f₀₁ : Edge x₀ x₁} {f₁₂ : Edge x₁ x₂} {f
   obtain ⟨β, hβ⟩ := anodyneExtensions.exists_lift_of_isFibrant α
     (anodyneExtensions.horn_ι_mem 2 1)
   exact ⟨{
-    map := stdSimplex.map (SimplexCategory.δ 1) ≫ β
+    map := stdSimplex.δ 1 ≫ β
     h₀₁ := by
-      have := SimplexCategory.δ_comp_δ (n := 1) (i := 1) (j := 2) (by simp)
+      have := stdSimplex.{u}.δ_comp_δ (n := 1) (i := 1) (j := 2) (by simp)
       dsimp at this
-      rw [← h₀₂.h₀₂, ← hα₃, ← hβ, horn.ι_ι_assoc, ← Functor.map_comp_assoc,
-        ← Functor.map_comp_assoc, this]
+      rw [← h₀₂.h₀₂, ← hα₃, ← hβ, horn.ι_ι_assoc, reassoc_of% this]
     h₁₂ := by
-      have := SimplexCategory.δ_comp_δ_self (n := 1) (i := 0)
+      have := stdSimplex.{u}.δ_comp_δ_self (n := 1) (i := 0)
       dsimp at this
-      rw [← h₁₃.h₁₂, ← hα₁, ← hβ, horn.ι_ι_assoc, ← Functor.map_comp_assoc,
-        ← Functor.map_comp_assoc, this]
+      rw [← h₁₃.h₁₂, ← hα₁, ← hβ, horn.ι_ι_assoc, reassoc_of% this]
     h₀₂ :=  by
-      have := SimplexCategory.δ_comp_δ_self (n := 1) (i := 1)
+      have := stdSimplex.{u}.δ_comp_δ_self (n := 1) (i := 1)
       dsimp at this
-      rw [← h.h₀₂, ← hα₂, ← hβ, horn.ι_ι_assoc, ← Functor.map_comp_assoc,
-        ← Functor.map_comp_assoc, this] }⟩
+      rw [← h.h₀₂, ← hα₂, ← hβ, horn.ι_ι_assoc, reassoc_of% this] }⟩
 
 noncomputable def assoc' {f₀₁ : Edge x₀ x₁} {f₁₂ : Edge x₁ x₂} {f₂₃ : Edge x₂ x₃}
     {f₀₂ : Edge x₀ x₂} {f₁₃ : Edge x₁ x₃} {f₀₃ : Edge x₀ x₃}
@@ -406,22 +423,19 @@ noncomputable def assoc' {f₀₁ : Edge x₀ x₁} {f₁₂ : Edge x₁ x₂} {
   obtain ⟨β, hβ⟩ := anodyneExtensions.exists_lift_of_isFibrant α
     (anodyneExtensions.horn_ι_mem 2 2)
   exact ⟨{
-    map := stdSimplex.map (SimplexCategory.δ 2) ≫ β
+    map := stdSimplex.δ 2 ≫ β
     h₀₁ := by
-      have := SimplexCategory.δ_comp_δ (n := 1) (i := 2) (j := 2) (by simp)
+      have := stdSimplex.{u}.δ_comp_δ (n := 1) (i := 2) (j := 2) (by simp)
       dsimp at this
-      rw [← h₀₂.h₀₁, ← hα₃, ← hβ, horn.ι_ι_assoc, ← Functor.map_comp_assoc,
-        ← Functor.map_comp_assoc, this]
+      rw [← h₀₂.h₀₁, ← hα₃, ← hβ, horn.ι_ι_assoc, reassoc_of% this]
     h₁₂ := by
-      have := SimplexCategory.δ_comp_δ (n := 1) (i := 0) (j := 1) (by simp)
+      have := stdSimplex.{u}.δ_comp_δ (n := 1) (i := 0) (j := 1) (by simp)
       dsimp at this
-      rw [← h₁₃.h₀₂, ← hα₁, ← hβ, horn.ι_ι_assoc, ← Functor.map_comp_assoc,
-        ← Functor.map_comp_assoc, this]
+      rw [← h₁₃.h₀₂, ← hα₁, ← hβ, horn.ι_ι_assoc, reassoc_of% this]
     h₀₂ :=  by
-      have := SimplexCategory.δ_comp_δ_self (n := 1) (i := 1)
+      have := stdSimplex.{u}.δ_comp_δ_self (n := 1) (i := 1)
       dsimp at this
-      rw [← h.h₀₂, ← hα₂, ← hβ, horn.ι_ι_assoc, ← Functor.map_comp_assoc,
-        ← Functor.map_comp_assoc, this] }⟩
+      rw [← h.h₀₂, ← hα₂, ← hβ, horn.ι_ι_assoc, reassoc_of% this] }⟩
 
 end CompStruct
 
@@ -441,14 +455,14 @@ lemma exists_compStruct [IsFibrant X] (p₀₁ : Edge x₀ x₁) (p₁₂ : Edge
   rw [horn.ι_ι_assoc, h₀₁] at h₀₁'
   have h₁₂' := horn₂₁.ι₁₂ ≫= hβ
   rw [horn.ι_ι_assoc, h₁₂] at h₁₂'
-  refine ⟨Edge.mk (stdSimplex.map (SimplexCategory.δ 1) ≫ β) ?_ ?_,
+  refine ⟨Edge.mk (stdSimplex.δ 1 ≫ β) ?_ ?_,
     ⟨{ map := β, h₀₁ := h₀₁', h₁₂ := h₁₂', h₀₂ := rfl }⟩⟩
-  · have := SimplexCategory.δ_comp_δ_self (n := 0) (i := 1)
+  · have := stdSimplex.{u}.δ_comp_δ_self (n := 0) (i := 1)
     dsimp at this
-    rw [← Functor.map_comp_assoc, this, Functor.map_comp_assoc, h₀₁', p₀₁.comm₀]
-  · have := SimplexCategory.δ_comp_δ (n := 0) (i := 0) (j := 0) (by simp)
+    rw [reassoc_of% this, h₀₁', p₀₁.comm₀]
+  · have := stdSimplex.{u}.δ_comp_δ (n := 0) (i := 0) (j := 0) (by simp)
     dsimp at this
-    rw [← Functor.map_comp_assoc, this, Functor.map_comp_assoc, h₁₂', p₁₂.comm₁]
+    rw [reassoc_of% this, h₁₂', p₁₂.comm₁]
 
 def HomotopyL (p q : Edge x₀ x₁) := CompStruct p (Edge.id x₁) q
 def HomotopyR (p q : Edge x₀ x₁) := CompStruct (Edge.id x₀) p q
@@ -564,27 +578,26 @@ variable {p q : Edge x₀ x₁}
 
 noncomputable def HomotopyL.homotopy (h : p.HomotopyL q) : Homotopy p q where
   h := square.isPushout.desc h.map
-      (stdSimplex.map (SimplexCategory.σ 0) ≫ q.map) (by
-        have := SimplexCategory.δ_comp_σ_succ (i := (0 : Fin 2))
+      (stdSimplex.σ 0 ≫ q.map) (by
+        have := stdSimplex.{u}.δ_comp_σ_succ (i := (0 : Fin 2))
         dsimp at this
-        rw [h.h₀₂, ← Functor.map_comp_assoc, this,
-          CategoryTheory.Functor.map_id, id_comp])
+        rw [h.h₀₂, reassoc_of% this])
   h₀ := by rw [← square.δ₂_ιTriangle₀, assoc, IsPushout.inl_desc, h.h₀₁]
   h₁ := by
-    have := SimplexCategory.δ_comp_σ_self (i := (0 : Fin 2))
+    have := stdSimplex.{u}.δ_comp_σ_self (i := (0 : Fin 2))
     dsimp at this
     rw [← square.δ₀_ιTriangle₁, assoc, IsPushout.inr_desc,
-      ← Functor.map_comp_assoc, this, CategoryTheory.Functor.map_id, id_comp]
+      reassoc_of% this]
   rel := by
     apply boundary₁.hom_ext_rightTensor
-    · have := SimplexCategory.δ_comp_σ_of_gt (n := 0) (i := 1) (j := 0) (by simp)
+    · have := stdSimplex.{u}.δ_comp_σ_of_gt (n := 0) (i := 1) (j := 0) (by simp)
       dsimp at this ⊢
       rw [assoc, Subcomplex.topIso_inv_ι, comp_id, whiskerRight_fst_assoc,
         boundary₁.ι₀_desc, yonedaEquiv_symm_zero, comp_const,
         ← MonoidalCategory.comp_whiskerRight_assoc,
         boundary₁.ι₀_ι, square.δ₁_whiskerRight, assoc, assoc,
-        IsPushout.inr_desc, ← Functor.map_comp_assoc, this,
-        Functor.map_comp_assoc, q.comm₀, comp_const, comp_const]
+        IsPushout.inr_desc, reassoc_of% this,
+        q.comm₀, comp_const, comp_const]
     · rw [assoc, Subcomplex.topIso_inv_ι, comp_id, whiskerRight_fst_assoc,
         boundary₁.ι₁_desc, yonedaEquiv_symm_zero, comp_const,
         ← MonoidalCategory.comp_whiskerRight_assoc,
@@ -785,7 +798,7 @@ open FundamentalGroupoid
 
 variable {X} {Y : SSet.{u}} [IsFibrant X] [IsFibrant Y] (f : X ⟶ Y)
 
-@[simps]
+@[simps! -isSimp obj_pt map]
 def mapFundamentalGroupoid :
     FundamentalGroupoid X ⥤ FundamentalGroupoid Y where
   obj x := x.map f
@@ -797,6 +810,14 @@ def mapFundamentalGroupoid :
     obtain ⟨p₀₁, rfl⟩ := homMk_surjective f₀₁
     obtain ⟨p₁₂, rfl⟩ := homMk_surjective f₁₂
     exact ((Edge.compStruct p₀₁ p₁₂).pushforward f).fac.symm
+
+attribute [simp] mapFundamentalGroupoid_obj_pt
+attribute [local simp] mapFundamentalGroupoid_map
+
+@[simp]
+lemma mapFundamentalGroupoid_map_homMk {x₀ x₁ : FundamentalGroupoid X} (p : Edge x₀ x₁)
+    {Y : SSet.{u}} [IsFibrant Y] (f : X ⟶ Y) :
+    (mapFundamentalGroupoid f).map (homMk p) = homMk (p.pushforward f) := rfl
 
 variable {f}
 noncomputable def congrMapFundamentalGroupoid {g : X ⟶ Y} (h : f = g) :

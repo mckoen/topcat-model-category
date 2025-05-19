@@ -449,7 +449,7 @@ lemma filtration₀_from_succ_mem (i : Fin (n + 1)) :
     (anodyneExtensions.{u}.comp_mem _ _
       (horn_ι_mem n i.castSucc) (of_isIso ((Subcomplex.topIso _).inv)))
 
-lemma filtation₀_map_mem {i j : Fin (n + 2)} (h : i ≤ j) :
+lemma filtration₀_map_mem {i j : Fin (n + 2)} (h : i ≤ j) :
     anodyneExtensions (Subcomplex.homOfLE (antitone_filtration₀.{u} h)) := by
   let F : Fin (n + 2) ⥤ SSet.{u}ᵒᵖ :=
     { obj i := op (filtration₀ i : SSet)
@@ -467,7 +467,7 @@ lemma mem₀ :
     (Subcomplex.isoOfEq (filtration₀_zero.{u} n)).hom ≫
     (Subcomplex.topIso _).hom)
   refine anodyneExtensions.comp_mem _ _ ?_
-    (anodyneExtensions.comp_mem _ _ (filtation₀_map_mem (by simp))
+    (anodyneExtensions.comp_mem _ _ (filtration₀_map_mem (by simp))
     (anodyneExtensions.comp_mem _ _ ?_ ?_))
   all_goals apply of_isIso
 

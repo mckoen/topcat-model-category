@@ -67,7 +67,7 @@ lemma param_surjective : Function.Surjective (param E) := fun v ↦ by
     exact ⟨⟨0, Classical.arbitrary _⟩, by simp⟩
   exact ⟨⟨⟨‖v‖, by simp⟩, ⟨‖v‖ ⁻¹ • v, by simp [hv, norm_smul]⟩⟩, by simp [hv]⟩
 
-lemma param_isQuotientMap_aux
+/-lemma param_isQuotientMap_aux
     (U : Set E) (hU₀ : 0 ∈ U) (hU : IsOpen ((param E) ⁻¹' U)) :
     ∃ ε > 0, Metric.ball 0 ε ≤ U := by
   sorry
@@ -100,7 +100,7 @@ lemma param_isQuotientMap [ProperSpace E] :
       tauto
     · rintro (hu | hu)
       · exact hu.1
-      · exact h₃ hu
+      · exact h₃ hu-/
 
 end PolarParametrization
 

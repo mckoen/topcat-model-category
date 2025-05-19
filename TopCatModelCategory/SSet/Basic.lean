@@ -37,6 +37,18 @@ lemma stdSimplex.map_comp_yonedaEquiv_symm {X : SSet.{u}} {n m : SimplexCategory
   conv_rhs => rw [Equiv.apply_symm_apply, ← Category.id_comp f]
   rfl
 
+@[reassoc]
+lemma stdSimplex.δ_comp_yonedaEquiv_symm {X : SSet.{u}} {n : ℕ} (i : Fin (n + 2))
+    (x : X _⦋n + 1⦌) :
+    stdSimplex.δ i ≫ yonedaEquiv.symm x = yonedaEquiv.symm (X.δ i x) := by
+  apply stdSimplex.map_comp_yonedaEquiv_symm
+
+@[reassoc]
+lemma stdSimplex.σ_comp_yonedaEquiv_symm {X : SSet.{u}} {n : ℕ} (i : Fin (n + 2))
+    (x : X _⦋n + 1⦌) :
+    stdSimplex.σ i ≫ yonedaEquiv.symm x = yonedaEquiv.symm (X.σ i x) := by
+  apply stdSimplex.map_comp_yonedaEquiv_symm
+
 lemma yonedaEquiv_const {X : SSet.{u}} (x : X _⦋0⦌) :
     yonedaEquiv (const x : Δ[0] ⟶ X) = x := by
   simp [yonedaEquiv, yonedaCompUliftFunctorEquiv]

@@ -1,8 +1,9 @@
 import TopCatModelCategory.AttachCells
 import Mathlib.Order.SuccPred.Basic
 import Mathlib.CategoryTheory.MorphismProperty.TransfiniteComposition
+import Mathlib.AlgebraicTopology.RelativeCellComplex.Basic
 
-universe w t w' v u
+--universe w t w' v u
 
 open CategoryTheory Limits Category
 
@@ -96,3 +97,34 @@ lemma hom_ext {Z : C} {φ₁ φ₂ : Y ⟶ Z} (h₀ : f ≫ φ₁ = f ≫ φ₂)
 end RelativeCellComplex
 
 end HomotopicalAlgebra-/
+
+universe w t w' w''
+
+namespace HomotopicalAlgebra
+
+namespace RelativeCellComplex
+
+variable {C : Type*} [Category C]
+  {J : Type w'} [LinearOrder J] [SuccOrder J] [OrderBot J] [WellFoundedLT J]
+  {α : J → Type t} {A B : ∀ (j : J), α j → C}
+  {basicCell : (j : J) → (i : α j) → A j i ⟶ B j i}
+  {J' : Type w''} [LinearOrder J'] [SuccOrder J'] [OrderBot J'] [WellFoundedLT J']
+  {X Y : C} {f : X ⟶ Y}
+
+def ofOrderIso (hf : RelativeCellComplex.{w} basicCell f) (e : J' ≃o J) :
+    RelativeCellComplex.{w}
+      (α := fun (j' : J') ↦ α (e j'))
+      (fun _ i ↦ basicCell _ i) f where
+  toTransfiniteCompositionOfShape :=
+    hf.toTransfiniteCompositionOfShape.ofOrderIso e
+  attachCells j hj :=
+    (hf.attachCells (e j) (by simpa only [OrderIso.isMax_apply])).ofArrowIso
+      (Arrow.isoMk (Iso.refl _)
+        (hf.F.mapIso (eqToIso (OrderIso.map_succ e j).symm)) (by
+          dsimp
+          rw [id_comp, ← Functor.map_comp]
+          rfl))
+
+end RelativeCellComplex
+
+end HomotopicalAlgebra

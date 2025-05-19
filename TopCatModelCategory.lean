@@ -1,8 +1,8 @@
+import TopCatModelCategory.AlephZero
 import TopCatModelCategory.AttachCells
 import TopCatModelCategory.CWComplex
 import TopCatModelCategory.CatCommSq
 import TopCatModelCategory.CellComplex
-import TopCatModelCategory.ClosedEmbeddings
 import TopCatModelCategory.ColimitsType
 import TopCatModelCategory.CommSq
 import TopCatModelCategory.Factorization
@@ -11,6 +11,7 @@ import TopCatModelCategory.Homotopy.Basic
 import TopCatModelCategory.IsFibrant
 import TopCatModelCategory.Iso
 import TopCatModelCategory.JoyalTrickDual
+import TopCatModelCategory.ModelCategory
 import TopCatModelCategory.ModelCategoryCopy
 import TopCatModelCategory.ModelCategorySSet
 import TopCatModelCategory.ModelCategoryTopCat
@@ -47,7 +48,10 @@ import TopCatModelCategory.SSet.HomotopyGroup
 import TopCatModelCategory.SSet.HomotopySequence
 import TopCatModelCategory.SSet.Horn
 import TopCatModelCategory.SSet.IsFiniteCoproducts
+import TopCatModelCategory.SSet.KanComplexKeyLemma
 import TopCatModelCategory.SSet.KanComplexW
+import TopCatModelCategory.SSet.KanComplexWHomotopy
+import TopCatModelCategory.SSet.KanComplexWRetracts
 import TopCatModelCategory.SSet.MinimalFibrations
 import TopCatModelCategory.SSet.MonoCoprod
 import TopCatModelCategory.SSet.Monoidal
@@ -57,6 +61,7 @@ import TopCatModelCategory.SSet.Paths
 import TopCatModelCategory.SSet.Presentable
 import TopCatModelCategory.SSet.ProdSimplex
 import TopCatModelCategory.SSet.ProdSimplexOne
+import TopCatModelCategory.SSet.Pseudofunctor
 import TopCatModelCategory.SSet.PtSimplex
 import TopCatModelCategory.SSet.SimplexCategory
 import TopCatModelCategory.SSet.Skeleton
@@ -66,8 +71,16 @@ import TopCatModelCategory.SSet.StrictSegal
 import TopCatModelCategory.SSet.Subcomplex
 import TopCatModelCategory.Set
 import TopCatModelCategory.SimplicialPresheaves.LocalLiftingProperty
+import TopCatModelCategory.TopCat.ClosedEmbeddings
+import TopCatModelCategory.TopCat.Colimits
+import TopCatModelCategory.TopCat.CompactOpen
+import TopCatModelCategory.TopCat.DeformationRetract
+import TopCatModelCategory.TopCat.Glueing
+import TopCatModelCategory.TopCat.IsQuotientMap
+import TopCatModelCategory.TopCat.Monoidal
+import TopCatModelCategory.TopCat.W
+import TopCatModelCategory.TopCat.t1Inclusion
 import TopCatModelCategory.TopCatIsColimit
 import TopCatModelCategory.TopPackage
-import TopCatModelCategory.TopologyLemmas.IsQuotientMap
 import TopCatModelCategory.ULift
 import TopCatModelCategory.WellOrderContinuous

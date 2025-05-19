@@ -1,9 +1,10 @@
 import Mathlib.CategoryTheory.SmallObject.Basic
 import Mathlib.AlgebraicTopology.ModelCategory.Basic
---import Mathlib.AlgebraicTopology.ModelCategory.JoyalTrick
+import TopCatModelCategory.AlephZero
 import TopCatModelCategory.JoyalTrickDual
 import TopCatModelCategory.Factorization
 import TopCatModelCategory.ModelCategoryCopy
+import TopCatModelCategory.CellComplex
 
 open CategoryTheory Limits MorphismProperty
 
@@ -13,9 +14,9 @@ namespace HomotopicalAlgebra
 
 variable (T : Type u) [Category.{v} T]
 
+variable [CategoryWithWeakEquivalences T]
+
 structure TopPackage where
-  -- data
-  W : MorphismProperty T
   /-- generation cofibrations -/
   I' : MorphismProperty T
   /-- generation trivial cofibrations -/
@@ -29,17 +30,17 @@ structure TopPackage where
   isSmall_I' : IsSmall.{w} I' := by infer_instance
   isSmall_J' : IsSmall.{w} J' := by infer_instance
   -- axioms
-  hasTwoOutOfThreeProperty : W.HasTwoOutOfThreeProperty := by infer_instance
-  isStableUnderRetracts : W.IsStableUnderRetracts := by infer_instance
+  hasTwoOutOfThreeProperty : (weakEquivalences T).HasTwoOutOfThreeProperty := by infer_instance
+  isStableUnderRetracts : (weakEquivalences T).IsStableUnderRetracts := by infer_instance
   rlp_I'_le_rlp_J' : I'.rlp ≤ J'.rlp
   fibration_is_trivial_iff' {X Y : T} (p : X ⟶ Y) (hp : J'.rlp p) :
-    I'.rlp p ↔ W p
+    I'.rlp p ↔ WeakEquivalence p
   src_I_le_S' {A B : T} (i : A ⟶ B) (hi : I' i) : A ∈ S'
   src_J_le_S' {A B : T} (i : A ⟶ B) (hj : J' i) : A ∈ S'
   infiniteCompositions_le_W' :
-    (coproducts.{w} J').pushouts.transfiniteCompositionsOfShape ℕ ≤ W
+    (coproducts.{w} J').pushouts.transfiniteCompositionsOfShape ℕ ≤ weakEquivalences T
   preservesColimit' (X : T) (hX : X ∈ S') {A B : T} (f : A ⟶ B)
-    (hf : RelativeCellComplex.{0} (fun (_ : ℕ) ↦ (I' ⊔ J').homFamily) f) :
+    (hf : RelativeCellComplex.{w} (fun (_ : ℕ) ↦ (I' ⊔ J').homFamily) f) :
     PreservesColimit hf.F (coyoneda.obj (Opposite.op X))
 
 namespace TopPackage
@@ -66,8 +67,8 @@ instance (J : Type w) [LinearOrder J] : HasIterationOfShape J π.Cat where
 instance : HasFiniteColimits π.Cat :=
   hasFiniteColimits_of_hasColimitsOfSize π.Cat
 
-instance : CategoryWithWeakEquivalences π.Cat where
-  weakEquivalences := π.W
+instance : CategoryWithWeakEquivalences π.Cat :=
+  inferInstanceAs (CategoryWithWeakEquivalences T)
 
 instance : CategoryWithFibrations π.Cat where
   fibrations := π.J.rlp
@@ -105,22 +106,34 @@ attribute [local instance] Cardinal.aleph0_isRegular
   Cardinal.orderbot_aleph0_ord_to_type
 
 lemma preservesColimit (X : π.Cat) (hX : X ∈ π.S) {A B : T} (f : A ⟶ B)
-    (hf : RelativeCellComplex
+    (hf : RelativeCellComplex.{w}
       (fun (_ : Cardinal.aleph0.{w}.ord.toType) ↦ (π.I ⊔ π.J).homFamily) f) :
     PreservesColimit hf.F (coyoneda.obj (Opposite.op X)) := by
-  sorry
+  let hf' := hf.ofOrderIso Cardinal.aleph0OrdToTypeOrderIso.{w}.symm
+  have := π.preservesColimit' X hX f hf'
+  let e := Cardinal.aleph0OrdToTypeOrderIso.{w}.equivalence
+  have : hf.F ≅ e.functor ⋙ hf'.F :=
+    (Functor.leftUnitor _).symm ≪≫ isoWhiskerRight e.unitIso hf.F ≪≫
+      Functor.associator _ _ _
+  apply preservesColimit_of_iso_diagram _ this.symm
 
 instance isCardinalForSmallObjectArgument_I :
     π.I.IsCardinalForSmallObjectArgument Cardinal.aleph0.{w} where
   hasIterationOfShape := by infer_instance
-  preservesColimit {X _ A B} _ h f hf := sorry
-  --π.preservesColimit X (π.src_I_le_S _ h) f hf
+  preservesColimit {X _ A B} _ h f hf :=
+    π.preservesColimit X (π.src_I_le_S _ h) f
+        { toTransfiniteCompositionOfShape := hf.toTransfiniteCompositionOfShape
+          attachCells j hj := (hf.attachCells j hj).reindexCellTypes _
+              (fun ⟨x, hx⟩ ↦ ⟨x, Or.inl hx⟩) (fun _ ↦ Iso.refl _) }
 
 instance isCardinalForSmallObjectArgument_J :
     π.J.IsCardinalForSmallObjectArgument Cardinal.aleph0.{w} where
   hasIterationOfShape := by infer_instance
-  preservesColimit {X _ A B} _ h f hf := sorry
-  --π.preservesColimit X (π.src_J_le_S _ h) f hf
+  preservesColimit {X _ A B} _ h f hf :=
+    π.preservesColimit X (π.src_J_le_S _ h) f
+        { toTransfiniteCompositionOfShape := hf.toTransfiniteCompositionOfShape
+          attachCells j hj := (hf.attachCells j hj).reindexCellTypes _
+              (fun ⟨x, hx⟩ ↦ ⟨x, Or.inr hx⟩) (fun _ ↦ Iso.refl _) }
 
 instance : HasSmallObjectArgument.{w} π.I where
   exists_cardinal := ⟨Cardinal.aleph0.{w}, inferInstance, inferInstance, inferInstance⟩
@@ -141,9 +154,9 @@ lemma infiniteCompositions_le_weakEquivalences :
 lemma transfiniteCompositionsOfShape_aleph0_le_weakEquivalences :
     (coproducts.{w} π.J).pushouts.transfiniteCompositionsOfShape
       Cardinal.aleph0.{w}.ord.toType ≤ weakEquivalences π.Cat := by
-  refine le_trans ?_ π.infiniteCompositions_le_weakEquivalences
-  sorry
-  --rw [transfiniteCompositionsOfShape_aleph0]
+  rw [transfiniteCompositionsOfShape_eq_of_orderIso _
+    Cardinal.aleph0OrdToTypeOrderIso.{w}]
+  exact π.infiniteCompositions_le_weakEquivalences
 
 lemma J_rlp_llp_le_weakEquivalences : π.J.rlp.llp ≤ weakEquivalences π.Cat := by
   rw [SmallObject.llp_rlp_of_isCardinalForSmallObjectArgument' π.J Cardinal.aleph0.{w}]
@@ -160,10 +173,8 @@ instance : (trivialCofibrations π.Cat).HasFunctorialFactorization (fibrations �
   MorphismProperty.hasFunctorialFactorization_of_le (W₂ := π.J.rlp)
     (π.J_rlp_llp_le_trivialCofibrations) (by rfl)
 
-
 lemma I_rlp_iff_weakEquivalence_of_fibration {X Y : π.Cat} (p : X ⟶ Y) [hp : Fibration p] :
     π.I.rlp p ↔ WeakEquivalence p := by
-  rw [weakEquivalence_iff]
   rw [fibration_iff] at hp
   exact π.fibration_is_trivial_iff' p hp
 
@@ -207,12 +218,19 @@ instance {A B X Y : π.Cat} (i : A ⟶ B) (p : X ⟶ Y)
 
 instance modelCategoryCat : ModelCategory π.Cat where
 
-def modelCategory [CategoryWithWeakEquivalences T]
+lemma cofibrations_eq_llp_rlp_I :
+    cofibrations π.Cat = π.I.rlp.llp := by
+  rw [I_rlp_eq_trivialFibrations, trivialFibrations_llp]
+
+lemma trivialCofibrations_eq_llp_rlp_J :
+    trivialCofibrations π.Cat = π.J.rlp.llp := by
+  rw [← fibrations_eq, fibrations_llp π.Cat]
+
+def modelCategory
     [CategoryWithCofibrations T] [CategoryWithFibrations T]
     (h₁ : cofibrations T = π.I.rlp.llp)
-    (h₂ : fibrations T = π.J.rlp)
-    (h₃ : weakEquivalences T = π.W) : ModelCategory T :=
-  ModelCategory.copy π.modelCategoryCat h₁ h₂ h₃
+    (h₂ : fibrations T = π.J.rlp) : ModelCategory T :=
+  ModelCategory.copy π.modelCategoryCat h₁ h₂ rfl
 
 end TopPackage
 

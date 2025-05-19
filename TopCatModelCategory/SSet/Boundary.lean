@@ -124,7 +124,7 @@ def ι (i : Fin (n + 2)) :
 @[reassoc (attr := simp)]
 lemma ι_ι (i : Fin (n + 2)) :
     ι.{u} i ≫ (boundary.{u} (n + 1)).ι =
-      stdSimplex.{u}.map (SimplexCategory.δ i) := rfl
+      stdSimplex.{u}.δ i := rfl
 
 @[reassoc (attr := simp)]
 lemma faceSingletonComplIso_inv_ι (i : Fin (n + 2)) :
@@ -142,7 +142,24 @@ lemma hom_ext {n : ℕ} {X : SSet.{u}} {f g : (boundary (n + 1) : SSet) ⟶ X}
   obtain ⟨i, ⟨y, rfl⟩⟩ := hx
   exact congr_fun ((congr_app (h i)) _) _
 
+@[ext]
+lemma hom_ext₀ {X : SSet.{u}} {f g : (boundary 0 : SSet) ⟶ X} : f = g := by
+  ext _ ⟨x, hx⟩
+  simp at hx
+
 open MonoidalClosed
+
+@[ext]
+lemma hom_ext_tensorLeft₀ {X Y : SSet.{u}}
+    {f g : Y ⊗ (boundary 0 : SSet) ⟶ X} : f = g := by
+  apply curry_injective
+  apply hom_ext₀
+
+@[ext]
+lemma hom_ext_tensorRight₀ {X Y : SSet.{u}}
+    {f g : (boundary 0 : SSet) ⊗ Y ⟶ X} : f = g := by
+  rw [← cancel_epi (β_ _ _).hom]
+  ext
 
 @[ext]
 lemma hom_ext_tensorLeft {n : ℕ} {X Y : SSet.{u}}
@@ -235,6 +252,75 @@ lemma exists_isPushout_of_ne_top {X : SSet.{u}} (A : X.Subcomplex) (hA : A ≠ �
       exact not_not.1 hy₃
     obtain rfl := X.unique_nonDegenerate₃ _ φ ⟨x, hx'⟩ rfl ψ ⟨x, hx'⟩ h
     rfl
+
+section
+
+variable (n)
+
+lemma multicoequalizerDiagram :
+  CompleteLattice.MulticoequalizerDiagram (boundary n)
+    (ι := Fin (n + 1)) (fun j ↦ stdSimplex.face {j}ᶜ)
+    (fun j k ↦ stdSimplex.face {j, k}ᶜ) where
+  iSup_eq := by rw [boundary_eq_iSup]
+  min_eq j k := by
+    rw [stdSimplex.face_inter_face]
+    congr
+    aesop
+
+noncomputable def isColimit :
+    IsColimit ((multicoequalizerDiagram n).multicofork.toLinearOrder.map Subcomplex.toPresheafFunctor) :=
+  Subcomplex.multicoforkIsColimit' (multicoequalizerDiagram n)
+
+def exists_desc' {X : SSet.{u}}
+    (f : ∀ (j : Fin (n + 1)), (stdSimplex.face {j}ᶜ : SSet) ⟶ X)
+    (hf : ∀ (j k : Fin (n + 1)) (_ : j < k),
+      Subcomplex.homOfLE (show stdSimplex.face {j, k}ᶜ ≤ _ by
+        simp [stdSimplex.face_le_face_iff]) ≫ f j =
+      Subcomplex.homOfLE (show stdSimplex.face {j, k}ᶜ ≤ _ by
+        simp [stdSimplex.face_le_face_iff]) ≫ f k) :
+    ∃ (φ : (∂Δ[n] : SSet) ⟶ X),
+      ∀ j, faceι j ≫ φ = f j :=
+  ⟨(isColimit n).desc
+    (Multicofork.ofπ _ _ f (fun s ↦ hf _ _ s.2)), fun j ↦ by
+      exact (isColimit n).fac _ (.right j)⟩
+
+end
+
+open stdSimplex in
+lemma exists_desc {X : SSet.{u}} (f : Fin (n + 3) → ((Δ[n + 1] : SSet) ⟶ X))
+    (hf : ∀ (j k : Fin (n + 3)) (hjk : j < k),
+      stdSimplex.δ (k.pred (Fin.ne_zero_of_lt hjk)) ≫ f j =
+        stdSimplex.δ (j.castPred (Fin.ne_last_of_lt hjk)) ≫ f k) :
+    ∃ (φ : (∂Δ[n + 2] : SSet) ⟶ X), ∀ j, ι j ≫ φ = f j := by
+  obtain ⟨φ, hφ⟩ := exists_desc' (n := n + 2)
+    (f := fun j ↦ (faceSingletonComplIso j).inv ≫ f j) (fun j k hjk ↦ by
+      dsimp
+      rw [homOfLE_faceSingletonComplIso_inv_eq_facePairComplIso_δ_pred_assoc _ _ hjk,
+        homOfLE_faceSingletonComplIso_inv_eq_facePairComplIso_δ_castPred_assoc _ _ hjk,
+        hf _ _ hjk])
+  exact ⟨φ, fun j ↦ by
+    rw [← cancel_epi (faceSingletonComplIso j).inv, ← hφ,
+      faceSingletonComplIso_inv_ι_assoc]⟩
+
+lemma exists_tensorLeft_desc {X Y : SSet.{u}} (f : Fin (n + 3) → (Y ⊗ Δ[n + 1] ⟶ X))
+    (hf : ∀ (j k : Fin (n + 3)) (hjk : j < k),
+      _ ◁ stdSimplex.δ (k.pred (Fin.ne_zero_of_lt hjk)) ≫ f j =
+        _ ◁ stdSimplex.δ (j.castPred (Fin.ne_last_of_lt hjk)) ≫ f k) :
+    ∃ (φ : Y ⊗ ∂Δ[n + 2] ⟶ X), ∀ j, _ ◁ ι j ≫ φ = f j := by
+  obtain ⟨ψ, hψ⟩ := exists_desc (fun j ↦ curry (f j)) (fun j k hjk ↦ uncurry_injective (by
+    dsimp
+    rw [uncurry_natural_left, uncurry_curry, uncurry_natural_left, uncurry_curry, hf j k hjk]))
+  exact ⟨uncurry ψ, fun j ↦ curry_injective (by
+    rw [curry_natural_left, curry_uncurry, hψ])⟩
+
+lemma exists_tensorRight_desc {X Y : SSet.{u}} (f : Fin (n + 3) → ((Δ[n + 1] : SSet) ⊗ Y ⟶ X))
+    (hf : ∀ (j k : Fin (n + 3)) (hjk : j < k),
+      stdSimplex.δ (k.pred (Fin.ne_zero_of_lt hjk)) ▷ _ ≫ f j =
+        stdSimplex.δ (j.castPred (Fin.ne_last_of_lt hjk)) ▷ _ ≫ f k) :
+    ∃ (φ : (∂Δ[n + 2] : SSet) ⊗ Y ⟶ X), ∀ j, ι j ▷ _ ≫ φ = f j := by
+  obtain ⟨ψ, hψ⟩ := exists_tensorLeft_desc (fun j ↦ (β_ _ _).hom ≫ f j) (fun j k hjk ↦ by
+    simpa using (β_ _ _).hom ≫= hf j k hjk)
+  exact ⟨(β_ _ _).hom ≫ ψ, fun j ↦ by simpa using (β_ _ _).hom ≫= hψ j⟩
 
 end boundary
 

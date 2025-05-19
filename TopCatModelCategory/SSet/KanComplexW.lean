@@ -1,9 +1,8 @@
-import TopCatModelCategory.SSet.Homotopy
 import TopCatModelCategory.SSet.FundamentalGroupoidAction
 
 universe u
 
-open CategoryTheory HomotopicalAlgebra Simplicial SSet.modelCategoryQuillen
+open CategoryTheory HomotopicalAlgebra Simplicial SSet.modelCategoryQuillen Simplicial
 
 namespace SSet
 
@@ -110,6 +109,32 @@ instance : W.{u}.HasTwoOutOfThreeProperty where
   comp_mem f g hf hg := W.comp f g hf hg
   of_postcomp f g hg hfg := W.of_postcomp f g hg hfg
   of_precomp f g hf hfg := W.of_precomp f g hf hfg
+
+lemma isFibrant_of_retract {X Y : SSet.{u}} (r : Retract X Y) [hY : IsFibrant Y] : IsFibrant X := by
+  rw [isFibrant_iff, HomotopicalAlgebra.fibration_iff] at hY ⊢
+  refine MorphismProperty.of_retract ?_ hY
+  exact
+    { i := Arrow.homMk r.i (𝟙 _)
+      r := Arrow.homMk r.r (𝟙 _) }
+
+attribute [local simp] mapπ_mapπ
+
+@[simps]
+def retractArrowMapπ {X X' Y Y' : SSet.{u}} {f : X ⟶ X'} {g : Y ⟶ Y'} (r : RetractArrow f g)
+    (n : ℕ) (x : X _⦋0⦌) (x' : X' _⦋0⦌) (hxx' : f.app _ x = x')
+    (y : Y _⦋0⦌) (y' : Y' _⦋0⦌) (hyy' : g.app _ y = y') (hy : r.left.i.app _ x = y) :
+    RetractArrow (C := Type _) (mapπ f n x x' hxx') (mapπ g n y y' hyy') where
+  i := Arrow.homMk (mapπ r.left.i n x y hy) ((mapπ r.right.i n x' y' (by
+        subst hxx' hyy' hy
+        exact congr_fun (congr_app r.i_w.symm _) x)))
+  r := Arrow.homMk
+      (mapπ r.left.r n y x (by
+        subst hy
+        exact congr_fun (congr_app r.left.retract _) x))
+      (mapπ r.right.r n y' x' (by
+        subst hxx' hyy' hy
+        have : r.left.i ≫ g ≫ r.right.r = f := by simp
+        exact congr_fun (congr_app this _) x))
 
 end KanComplex
 
