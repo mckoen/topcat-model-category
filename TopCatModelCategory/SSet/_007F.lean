@@ -122,67 +122,6 @@ lemma faceImage_zero_le_unionProd : faceImage 0 (f 0 b) ≤ (boundary n).unionPr
   have := he e.succ_ne_zero
   aesop
 
-/-
-/-- for a > 0 the a-th face of σab is the a-th face of σ(a-1)b -/
-lemma face_eq_face_pred (a b : Fin (n + 1)) (hab : a ≤ b) (ha : ¬a = 0) :
-    faceImage a.castSucc (f a b hab) =
-      faceImage a.castSucc (f (a.castSucc.pred (Fin.castSucc_ne_zero_iff.mpr ha)) b
-        (by rw [Fin.pred_le_iff]; exact ((Fin.castSucc_le_castSucc_iff.2 hab).trans (Fin.castSucc_le_succ b)))) := by
-  dsimp [Subcomplex.unionProd, faceImage]
-  rw [face_singleton_compl, image_ofSimplex]
-  simp
-  congr
-  simp [f, SimplexCategory.δ, SimplexCategory.σ]
-  change ((SSet.uliftFunctor.obj (yoneda ^⦋n⦌)).map _ _,
-    (SSet.uliftFunctor.obj (yoneda ^⦋2⦌)).map _ _) =
-    ((SSet.uliftFunctor.obj (yoneda ^⦋n⦌)).map _ _,
-    (SSet.uliftFunctor.obj (yoneda ^⦋2⦌)).map _ _)
-  simp [yoneda, SSet.uliftFunctor, ChosenFiniteProducts.product]
-  refine ⟨?_, ?_⟩
-  · simp [CategoryStruct.comp, SimplexCategory.Hom.mk, SimplexCategory.comp_toOrderHom,
-      SimplexCategory.Hom.toOrderHom, objEquiv, Equiv.ulift, OrderEmbedding.toOrderHom,
-      Fin.succAboveOrderEmb]
-    have : a.predAbove ∘ a.castSucc.succAbove =
-        (a.castSucc.pred (Fin.castSucc_ne_zero_iff.mpr ha)).predAbove ∘ a.castSucc.succAbove := by
-      ext e
-      simp
-      by_cases a ≤ e
-      all_goals rename_i h'
-      · have := Fin.succAbove_castSucc_of_le _ _ h'
-        simp [h', this]
-        have := Fin.predAbove_pred_of_le a.castSucc e.succ ?_ (Fin.castSucc_ne_zero_iff.mpr ha)
-        simp [this]
-        have : a.castSucc ≤ e.castSucc := h'
-        exact this.trans e.castSucc_le_succ
-      · rw [not_le] at h'
-        have := Fin.succAbove_castSucc_of_lt _ _ h'
-        simp [h', this]
-        have := Fin.predAbove_pred_of_lt a.castSucc e.castSucc h'
-        simp only [this, Fin.castPred_castSucc]
-    aesop
-  · simp [f₂]
-    have : f₂' a b ∘ a.castSucc.succAbove =
-        f₂' (a.castSucc.pred (Fin.castSucc_ne_zero_iff.mpr ha)) b ∘ a.castSucc.succAbove := by
-      ext e
-      by_cases e < a
-      all_goals rename_i h'
-      · simp [h', Fin.succAbove, h'.le,
-          (Fin.le_pred_castSucc_iff (Fin.castSucc_ne_zero_iff.mpr ha)).mpr h']
-      · simp [h', Fin.succAbove]
-        have : ¬e < a.castSucc.pred (Fin.castSucc_ne_zero_iff.mpr ha) := by
-          intro p
-          apply h'
-          have : a.castSucc.pred (Fin.castSucc_ne_zero_iff.mpr ha) < a := Fin.pred_castSucc_lt (Fin.castSucc_ne_zero_iff.mpr ha)
-          exact p.trans this
-        by_cases e ≤ b
-        all_goals rename_i h''
-        all_goals simp [h'', this]
-    simp [CategoryStruct.comp, SimplexCategory.Hom.mk, SimplexCategory.comp_toOrderHom,
-      SimplexCategory.Hom.toOrderHom, objEquiv, Equiv.ulift, OrderEmbedding.toOrderHom,
-      Fin.succAboveOrderEmb, OrderHom.comp, objMk]
-    aesop
--/
-
 /-- for `0 ≤ a < b ≤ n` the `(a+1)`-th face of `σ(a+1)b` is the `(a+1)`-th face of `σab`. -/
 lemma faceImage_succ_eq (hab : a < b) :
     faceImage a.succ (f ⟨a.succ, by simp; omega⟩ b) =
@@ -280,15 +219,6 @@ lemma faceImage_succ_eq (hab : a < b) :
     simp [objEquiv, Equiv.ulift, SimplexCategory.Hom.mk]
     aesop
 
-/-
-/-- the a-th face of σab is contained in σ(a-1)b -/
-lemma faceImage_le_σ_pred {n} (a b : Fin (n + 1)) (hab : a ≤ b) (ha : a ≠ 0) :
-    faceImage a.castSucc (f a b hab) ≤ σ (a.castSucc.pred (Fin.castSucc_ne_zero_iff.mpr ha)) b
-      ((Fin.pred_castSucc_lt (Fin.castSucc_ne_zero_iff.mpr ha)).le.trans hab) := by
-  rw [face_eq_face_pred a b hab ha]
-  exact image_le_range _ _
--/
-
 /-- for 0 ≤ a < b ≤ n, the (a + 1)-th face of σ(a + 1)b is contained in σab -/
 lemma faceImage_succ_le_σ (hab : a < b) :
     faceImage a.succ (f ⟨a.succ, by simp; omega⟩ b) ≤ σ a b := by
@@ -355,25 +285,6 @@ lemma innerHornImage_zero_le_filtration₁ (b : Fin n) :
     have := hy (Fin.succ_ne_zero y)
     aesop
   · apply le_sup_of_le_left <| faceImage_le_unionProd 0 b.castSucc j hj h
-
-/-
-/-- for 0 < a ≤ b < n, Λ[n + 1, a + 1] ≤ X(b, a - 1) = X(b) ⊔ ... ⊔ σ (a - 1) b -/
-lemma innerHornImage_succ_le_filtration₂' {n} (b : Fin n) (a : Fin b.succ.1) (h' : a.1 ≠ 0) :
-    innerHornImage
-      ⟨a, lt_of_le_of_lt a.is_le (Nat.lt_add_right 1 b.2)⟩ b (Fin.mk_le_of_le_val (by simp [Fin.is_le])) ≤
-        filtration₂ b ⟨a.pred (by aesop), (Nat.sub_one_lt h').trans a.isLt⟩ := by
-  rw [innerHornImage_eq_iSup]
-  apply iSup_le
-  rintro ⟨j, hj⟩
-  by_cases h : j = (⟨a, lt_of_le_of_lt a.is_le (Nat.lt_add_right 1 b.2)⟩ : Fin (n + 1)).castSucc -- check the a-th face first
-  · subst h
-    refine le_sup_of_le_right
-      (le_iSup_of_le ⟨a.1.pred, by simp⟩ (le_of_eq_of_le' ?_ (faceImage_le_σ_pred _ _ _ (by simp [h']))))
-    congr
-    · ext
-      refine Eq.symm (Fin.val_cast_of_lt <| Nat.sub_one_lt_of_le (Nat.zero_lt_of_ne_zero h') (lt_of_le_of_lt a.is_le (Nat.lt_add_right 1 b.2)).le)
-  · exact le_sup_of_le_left (le_sup_of_le_left (faceImage_le_unionProd _ b _ j hj h))
--/
 
 lemma subcomplex_le_boundaryImage_iff {a b} (A : (Δ[n] ⊗ Δ[2]).Subcomplex) (hA : A ≤ σ a b) :
     A ≤ (boundaryImage a b) ↔ A ≠ (σ a b) :=
@@ -599,7 +510,6 @@ lemma faceImage_succ_not_le_σij (b : Fin n) (a j : Fin b) (i : Fin j.succ) :
     rw [this] at h₁'
     simp at this
     simp [ConcreteCategory.hom, SimplexCategory.Hom.toOrderHom, SimplexCategory] at h₁' h₂'
-    --simp_rw [this] at h₂' h₁'
     simp [SimplexCategory.σ, SimplexCategory.δ, SimplexCategory.Hom.mk, Fin.predAbove] at h₁'
     split at h₁'
     · next h' =>
@@ -873,7 +783,7 @@ def filtrationPushout_intermediate (n) (b : Fin n) (a : Fin b) :
     · exact le_inf (σ.innerHornImage_le_σ _ _) (σ.innerHornImage_succ_le_filtration₂ _ _)
 
 /--
-`0 ≤ b < n`
+`0 ≤ b < (n + 1)`
 `X(b) ↪ X(b, 0)`
 `filtration₁ b ↪ filtration₂ b 0`
 
