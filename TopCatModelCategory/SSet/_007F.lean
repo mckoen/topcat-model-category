@@ -1,4 +1,3 @@
-import TopCatModelCategory.SSet.Horn
 import TopCatModelCategory.SSet._007F_filtration
 import TopCatModelCategory.SSet._Order
 
