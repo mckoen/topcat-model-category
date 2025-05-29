@@ -1,5 +1,5 @@
-import TopCatModelCategory.SSet._007F_filtration
 import Mathlib.Data.Sigma.Order
+import TopCatModelCategory.SSet.NonDegenerateProdSimplex
 
 open CategoryTheory MonoidalCategory SSet Simplicial SimplexCategory prodStdSimplex
 
@@ -171,6 +171,15 @@ def τ' (i : Σₗ (b : Fin (n + 1)), Fin b.succ) : (Δ[n] ⊗ Δ[2] : SSet) _�
 def σ' (i : Σₗ (b : Fin n), Fin b.succ) : (Δ[n] ⊗ Δ[2] : SSet) _⦋n + 1⦌ :=
   (stdSimplex.objEquiv.symm (σ i.2), σ.objMk₂ i)
 
+/-
+/-- for all `0 ≤ a ≤ b < n`, we get a nondegenerate `(n+1)`-simplex. -/
+def σ.nonDegenerateEquiv.toFun (i : Σₗ (b : Fin n), Fin b.succ) :
+    (Δ[n] ⊗ Δ[2] : SSet).nonDegenerate (n + 1) := by
+  refine ⟨σ' i, ?_⟩
+  rcases i with ⟨b, a⟩
+  sorry
+-/
+
 /-- for all `0 ≤ a ≤ b ≤ n`, we get a nondegenerate `(n+2)`-simplex. -/
 def τ.nonDegenerateEquiv.toFun (i : Σₗ (b : Fin (n + 1)), Fin b.succ) :
     (Δ[n] ⊗ Δ[2] : SSet).nonDegenerate (n + 2) := by
@@ -200,13 +209,8 @@ def τ.nonDegenerateEquiv.toFun (i : Σₗ (b : Fin (n + 1)), Fin b.succ) :
       omega
     simp [(h.trans this).not_lt]
 
-/-- for all `0 ≤ a ≤ b < n`, we get a nondegenerate `(n+1)`-simplex. -/
-def σ.nonDegenerateEquiv.toFun (i : Σₗ (b : Fin n), Fin b.succ) :
-    (Δ[n] ⊗ Δ[2] : SSet).nonDegenerate (n + 1) := by
-  refine ⟨σ' i, ?_⟩
-  rcases i with ⟨b, a⟩
-  sorry
-
+/-- There is a bijection (via `τ`) between pairs `0 ≤ a ≤ b ≤ n` and nondegenerate
+  `(n + 2)`-simplices. -/
 noncomputable
 def τ.nonDegenerateEquiv :
     (Σₗ (b : Fin (n + 1)), Fin b.succ) ≃ (Δ[n] ⊗ Δ[2] : SSet).nonDegenerate (n + 2) := by

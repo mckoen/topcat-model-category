@@ -19,7 +19,7 @@ lemma filtration₁_zero :
 /-- `X(b) ↪ X(b + 1)` for `b < n` is just the union of `X(b.castSucc)` with `[σ0b ⊔ ... ⊔ σbb]`. -/
 lemma filtration₁_succ (b : Fin n) :
     filtration₁ b.succ =
-      filtration₁ b.castSucc ⊔ (⨆ (i : Fin b.succ), σ ⟨i, by omega⟩ b.castSucc) := by
+      filtration₁ b.castSucc ⊔ (⨆ (i : Fin b.succ), σ ⟨i, by omega⟩ b) := by
   simp [filtration₁]
   apply le_antisymm
   · apply sup_le
@@ -31,7 +31,6 @@ lemma filtration₁_succ (b : Fin n) :
       · next h =>
         apply le_sup_of_le_right <| le_iSup_of_le ⟨k, by omega⟩ _
         simp [h]
-        rfl
   · apply sup_le
     · apply sup_le le_sup_left
       · exact le_sup_of_le_right
@@ -41,12 +40,12 @@ lemma filtration₁_succ (b : Fin n) :
 /-- `X(b,a) = X(b) ⊔ ... ⊔ σab` for `0 ≤ a ≤ b < n`. -/
 noncomputable
 def filtration₂ (b : Fin n) (a : Fin b.succ) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
-  (filtration₁ b.castSucc) ⊔ (⨆ (k : Fin a.succ), σ ⟨k, by omega⟩ b.castSucc)
+  (filtration₁ b.castSucc) ⊔ (⨆ (k : Fin a.succ), σ ⟨k, by omega⟩ b)
 
 /-- `X(b,0) = X(b) ∪ (σ 0 b)` for `0 ≤ b < n` -/
-lemma filtration₂_zero (b : Fin n) :
+lemma filtration₂_zero (hn : n ≠ 0) (b : Fin n) :
     filtration₂ b ⟨0, Nat.zero_lt_succ b⟩ =
-      filtration₁ b.castSucc ⊔ (σ 0 b.castSucc) := by
+      filtration₁ b.castSucc ⊔ (σ ⟨0, by omega⟩ b) := by
   simp [filtration₂]
 
 /-- `X(b,b) = X(b+1)` for `0 ≤ b < n` -/
@@ -58,7 +57,7 @@ lemma filtration₂_last (b : Fin n) :
 /-- `X(b,a) ↪ X(b,a+1)` for `0 ≤ a < b < n` is just the union of `X(b,a)` with `σ(a+1)b`. -/
 lemma filtration₂_succ (b : Fin n) (a : Fin b) :
     filtration₂ b a.succ = (filtration₂ b a.castSucc) ⊔
-      (σ ⟨a.succ, by omega⟩ b.castSucc) := by
+      (σ ⟨a.succ, by omega⟩ b) := by
   dsimp [filtration₂]
   apply le_antisymm
   · refine sup_le (le_sup_of_le_left le_sup_left) (iSup_le fun ⟨i, hi⟩ ↦ ?_)
@@ -78,7 +77,7 @@ noncomputable
 def filtration₃ (b : Fin (n + 2)) :
     (Δ[n] ⊗ Δ[2]).Subcomplex :=
   (filtration₁ n) ⊔
-    (⨆ (i : Fin b) (k : Fin i.succ), τ ⟨k, by omega⟩ ⟨i, by omega⟩)  -- 0 ≤ k ≤ i < b
+    (⨆ (i : Fin b) (k : Fin i.succ), τ ⟨k, by omega⟩ ⟨i, by omega⟩)  -- 0 ≤ k ≤ i < b ≤ n + 1
 
 /-- `Y(0) = X(n)`. -/
 lemma filtration₃_zero :
@@ -89,7 +88,7 @@ lemma filtration₃_zero :
 lemma filtration₃_succ (b : Fin (n + 1)) :
     filtration₃ b.succ =
       filtration₃ b.castSucc ⊔ -- 0 ≤ i ≤ b, ⨆ τib
-        (⨆ (i : Fin b.succ), τ ⟨i, by omega⟩ b.castSucc) := by
+        (⨆ (i : Fin b.succ), τ ⟨i, by omega⟩ b) := by
     dsimp [filtration₁]
     apply le_antisymm
     · apply sup_le (le_sup_of_le_left (le_sup_of_le_left le_rfl))
@@ -99,7 +98,6 @@ lemma filtration₃_succ (b : Fin (n + 1)) :
         · next h =>
           refine le_sup_of_le_right (le_iSup_of_le ⟨k, by simp [← h]⟩ ?_)
           simp [h]
-          rfl
     · apply sup_le
       · apply sup_le (le_sup_of_le_left le_rfl)
         · exact le_sup_of_le_right
@@ -110,16 +108,19 @@ lemma filtration₃_succ (b : Fin (n + 1)) :
 -- simplices
 lemma filtration₃_last : filtration₃ n.succ = (⊤ : (Δ[n] ⊗ Δ[2]).Subcomplex) := by
   rw [prodStdSimplex.subcomplex_eq_top_iff _ rfl]
-  intro z hz
-  --#check prodStandardSimplex.objEquiv_non_degenerate_iff
-  --#check standardSimplex.mem_non_degenerate_iff_mono
-  -- show that all nondegenerate n+2 simplices are contained in X(n).obj (n + 2). (they are all the τ's)
-  sorry
+  intro x hx
+  obtain ⟨i, hi⟩ := τ.nonDegenerateEquiv.surjective ⟨x, hx⟩
+  obtain rfl : τ.simplex i = x := by rw [τ.simplex, hi]
+  rw [filtration₃, ← Subcomplex.ofSimplex_le_iff]
+  apply le_sup_of_le_right
+  rw [τ.eq_τ i]
+  apply le_iSup₂_of_le ⟨i.1, by simp⟩ ⟨i.2, by simp⟩
+  exact le_rfl
 
 /-- `Y(b,a) = Y(b) ⊔ ... ⊔ τab` for `0 ≤ a ≤ b ≤ n`. -/
 noncomputable
 def filtration₄ (b : Fin (n + 1)) (a : Fin b.succ) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
-  (filtration₃ b.castSucc) ⊔ (⨆ (k : Fin a.succ), τ ⟨k, by omega⟩ b.castSucc)
+  (filtration₃ b.castSucc) ⊔ (⨆ (k : Fin a.succ), τ ⟨k, by omega⟩ b)
 
 /-- `Y(b,0) = Y(b) ∪ (τ0b)` for `0 ≤ b ≤ n`. -/
 lemma filtration₄_zero (b : Fin (n + 1)) :
@@ -129,7 +130,7 @@ lemma filtration₄_zero (b : Fin (n + 1)) :
 /-- `Y(b,a) ↪ Y(b,a+1)` for `0 ≤ a < b ≤ n` is just the union of `Y(b,a)` with `τ(a+1)b`. -/
 lemma filtration₄_succ (b : Fin (n + 1)) (a : Fin b) :
     filtration₄ b a.succ = (filtration₄ b a.castSucc) ⊔
-      (τ ⟨a.succ, by omega⟩ b.castSucc) := by
+      (τ ⟨a.succ, by omega⟩ b) := by
   simp [filtration₄]
   apply le_antisymm
   · refine sup_le (le_sup_of_le_left le_sup_left) (iSup_le fun ⟨i, hi⟩ ↦ ?_)

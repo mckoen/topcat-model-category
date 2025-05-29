@@ -1,18 +1,18 @@
-import TopCatModelCategory.SSet.NonDegenerateProdSimplex
+import TopCatModelCategory.SSet._007F_nondeg
 
 open CategoryTheory Simplicial MonoidalCategory SSet
 
 variable {n : ℕ}
 
 @[simp]
-def f₂' (a b : Fin n) : Fin (n + 1) → Fin 3 :=
+def f₂' (a b : Fin n) : Fin (n + 2) → Fin 3 :=
   fun k ↦
-    if k ≤ a.castSucc then 0
-    else if k ≤ b.succ then 1
+    if k ≤ a.castSucc.castSucc then 0
+    else if k ≤ b.succ.castSucc then 1
     else 2
 
-/-- `[n] → [2]`. `0 ≤ a ≤ b < n` -/
-def f₂ (a b : Fin n) : Fin (n + 1) →o Fin 3 where
+/-- `[n + 1] → [2]`. `0 ≤ a ≤ b < n` -/
+def f₂ (a b : Fin n) : Fin (n + 2) →o Fin 3 where
   toFun := f₂' a b
   monotone' := by
     refine Fin.monotone_iff_le_succ.mpr ?_
@@ -21,7 +21,7 @@ def f₂ (a b : Fin n) : Fin (n + 1) →o Fin 3 where
     split
     · next => omega
     · next h =>
-      have h' : ¬i < a := fun h' ↦ h h'.le
+      have h' : ¬i < a.castSucc := fun h' ↦ h h'.le
       simp [h']
       split
       · next => aesop
@@ -38,29 +38,56 @@ def f₂ (a b : Fin n) : Fin (n + 1) →o Fin 3 where
 open SimplexCategory stdSimplex in
 /-- `0 ≤ a ≤ b < n` -/
 noncomputable
-def f (a b : Fin (n + 1)) : Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2] :=
+def f (a b : Fin n) : Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2] :=
   yonedaEquiv.symm (objEquiv.symm (σ a), objMk (f₂ a b))
 
 open SimplexCategory stdSimplex in
 /-- `0 ≤ a ≤ b ≤ n` -/
 noncomputable
-def g (a b : Fin (n + 2)) : Δ[n + 2] ⟶ Δ[n] ⊗ Δ[2] :=
+def g (a b : Fin (n + 1)) : Δ[n + 2] ⟶ Δ[n] ⊗ Δ[2] :=
   yonedaEquiv.symm (objEquiv.symm (σ a.castSucc ≫ σ b), objMk (f₂ a b))
 
 open Subcomplex in
 noncomputable
-def σ (a b : Fin (n + 1)) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
+def σ (a b : Fin n) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
   range (f a b)
 
 open Subcomplex in
 noncomputable
-def τ (a b : Fin (n + 2)) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
+def τ (a b : Fin (n + 1)) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
   range (g a b)
+
+noncomputable
+abbrev τ.simplex (i : Σₗ (b : Fin (n + 1)), Fin b.succ) := τ.nonDegenerateEquiv i
+
+noncomputable abbrev τ.ιSimplex (i : Σₗ (b : Fin (n + 1)), Fin b.succ) :
+    Δ[n + 2] ⟶ Δ[n] ⊗ Δ[2] :=
+  yonedaEquiv.symm (τ.simplex i)
+
+lemma τ.eq_g (i : Σₗ (b : Fin (n + 1)), Fin b.succ) :
+    τ.ιSimplex i = g ⟨i.2, by omega⟩ i.1 := rfl
+
+lemma τ.eq_τ (i : Σₗ (b : Fin (n + 1)), Fin b.succ) :
+    Subcomplex.ofSimplex (τ.simplex i).1 = τ ⟨i.2, by omega⟩ i.1 := by
+  simp [τ, simplex, nonDegenerateEquiv, nonDegenerateEquiv.toFun, τ', g,
+    Subcomplex.range_eq_ofSimplex]
+  rfl
+
+lemma τ.eq_τ' (i : Σₗ (b : Fin (n + 1)), Fin b.succ) :
+    Subcomplex.ofSimplex (τ.simplex i).1 = τ ⟨i.2, by omega⟩ i.1 := by
+  simp [τ, simplex, nonDegenerateEquiv, nonDegenerateEquiv.toFun, τ', g,
+    Subcomplex.range_eq_ofSimplex]
+  rfl
+
+-- g is a mono
+instance (i : Σₗ (b : Fin (n + 1)), Fin b.succ) : Mono (τ.ιSimplex i) := by
+  rw [stdSimplex.mono_iff]
+  exact (prodStdSimplex.nonDegenerate_iff' _).1 (τ.nonDegenerateEquiv i).2
 
 open stdSimplex
 
 open SimplexCategory in
-instance (a b : Fin (n + 1)) : Mono (f a b) := by
+instance (a b : Fin n) : Mono (f a b) := by
   rw [mono_iff]
   intro ⟨(g :  ⦋0⦌ ⟶ ⦋n + 1⦌)⟩ ⟨(h : ⦋0⦌ ⟶ ⦋n + 1⦌)⟩
   intro H
@@ -80,7 +107,7 @@ instance (a b : Fin (n + 1)) : Mono (f a b) := by
   apply_fun (fun f ↦ f.toOrderHom e) at H'
   simp [Hom.toOrderHom, objMk, f₂, objEquiv,
     Equiv.ulift, Hom.mk, CategoryStruct.comp, OrderHom.comp] at H'
-  by_cases a.castSucc < g.toOrderHom e
+  by_cases a.castSucc.castSucc < g.toOrderHom e
   all_goals rename_i h'
   · simp [Hom.toOrderHom] at h'
     simp [Fin.predAbove, h', h'.not_le] at H H'
@@ -88,7 +115,7 @@ instance (a b : Fin (n + 1)) : Mono (f a b) := by
   · simp only [len_mk, Nat.reduceAdd, not_lt] at h'
     simp [Hom.toOrderHom] at h'
     simp [Fin.predAbove, h', h'.not_lt] at H H'
-    by_cases a.castSucc < h.toOrderHom e
+    by_cases a.castSucc.castSucc < h.toOrderHom e
     all_goals rename_i h''
     · simp [Hom.toOrderHom] at h''
       simp [h'', h''.not_le] at H H'
@@ -99,6 +126,7 @@ instance (a b : Fin (n + 1)) : Mono (f a b) := by
       rw [Fin.castPred_eq_iff_eq_castSucc] at H
       aesop
 
+/-
 open SimplexCategory in
 /-- only works for `0 ≤ a ≤ b ≤ n` -/
 instance (a b : Fin (n + 1)) (hab : a ≤ b) : Mono (g a.castSucc b.castSucc) := by
@@ -168,3 +196,4 @@ instance (a b : Fin (n + 1)) (hab : a ≤ b) : Mono (g a.castSucc b.castSucc) :=
         split
         next => omega
         next => aesop
+-/
