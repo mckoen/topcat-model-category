@@ -89,47 +89,36 @@ open stdSimplex
 open SimplexCategory in
 instance (a b : Fin n) : Mono (f a b) := by
   rw [mono_iff]
-  intro ⟨(g :  ⦋0⦌ ⟶ ⦋n + 1⦌)⟩ ⟨(h : ⦋0⦌ ⟶ ⦋n + 1⦌)⟩
-  intro H
+  intro g g' h
   ext e
-  simp [f, SSet.yonedaEquiv, yonedaCompUliftFunctorEquiv, stdSimplex] at H
-  change
-    ((SSet.uliftFunctor.obj (yoneda ^⦋n⦌)).map _ _, (SSet.uliftFunctor.obj (yoneda ^⦋2⦌)).map _ _) =
-    ((SSet.uliftFunctor.obj (yoneda ^⦋n⦌)).map _ _, (SSet.uliftFunctor.obj (yoneda ^⦋2⦌)).map _ _) at H
-  simp [ChosenFiniteProducts.product, yoneda, SSet.uliftFunctor] at H
-  obtain ⟨H, H'⟩ := H
+  rw [Prod.ext_iff] at h
+  obtain ⟨h₁, h₂⟩ := h
+  simp [f, f₂, SSet.yonedaEquiv, SSet.uliftFunctor, yonedaCompUliftFunctorEquiv, stdSimplex,
+    objEquiv, SimplexCategory.σ, SimplexCategory.δ, Fin.succAboveOrderEmb, objMk] at h₁ h₂
+  rw [SimplexCategory.Hom.ext_iff, OrderHom.ext_iff] at h₁ h₂
+  replace h₁ := congr_fun h₁ e
+  replace h₂ := congr_fun h₂ e
+  simp [Fin.predAbove, Fin.lt_iff_val_lt_val, Fin.le_iff_val_le_val] at h₁ h₂
   refine Fin.val_eq_of_eq ?_
-  change g.toOrderHom e = h.toOrderHom e
-  simp [Hom.toOrderHom]
-  apply_fun (fun f ↦ f.toOrderHom e) at H
-  simp [SimplexCategory.σ, objEquiv, Hom.toOrderHom, Hom.mk, Equiv.ulift, CategoryStruct.comp,
-    OrderHom.comp] at H
-  apply_fun (fun f ↦ f.toOrderHom e) at H'
-  simp [Hom.toOrderHom, objMk, f₂, objEquiv,
-    Equiv.ulift, Hom.mk, CategoryStruct.comp, OrderHom.comp] at H'
-  by_cases a.castSucc.castSucc < g.toOrderHom e
-  all_goals rename_i h'
-  · simp [Hom.toOrderHom] at h'
-    simp [Fin.predAbove, h', h'.not_le] at H H'
+  split at h₁
+  next h =>
+    simp [h.not_le] at h₂
     aesop
-  · simp only [len_mk, Nat.reduceAdd, not_lt] at h'
-    simp [Hom.toOrderHom] at h'
-    simp [Fin.predAbove, h', h'.not_lt] at H H'
-    by_cases a.castSucc.castSucc < h.toOrderHom e
-    all_goals rename_i h''
-    · simp [Hom.toOrderHom] at h''
-      simp [h'', h''.not_le] at H H'
+  next h =>
+    simp [not_lt.1 h] at h₂
+    split at h₁
+    next h' =>
+      simp [h'.not_le] at h₂
       aesop
-    · simp only [len_mk, Nat.reduceAdd, not_lt] at h''
-      simp [Hom.toOrderHom] at h''
-      simp only [h''.not_lt, reduceDIte] at H
-      rw [Fin.castPred_eq_iff_eq_castSucc] at H
-      aesop
+    next h' => aesop
 
-/-
 open SimplexCategory in
 /-- only works for `0 ≤ a ≤ b ≤ n` -/
-instance (a b : Fin (n + 1)) (hab : a ≤ b) : Mono (g a.castSucc b.castSucc) := by
+instance g_mono (a b : Fin (n + 1)) (hab : a ≤ b) : Mono (g a b) := by
+  change Mono (τ.ιSimplex ⟨b, ⟨a, by simp ;omega⟩⟩)
+  infer_instance
+
+  /-
   rw [mono_iff]
   dsimp [g]
   rw [← prodStdSimplex.nonDegenerate_iff', prodStdSimplex.nonDegenerate_iff _ rfl]
@@ -196,4 +185,4 @@ instance (a b : Fin (n + 1)) (hab : a ≤ b) : Mono (g a.castSucc b.castSucc) :=
         split
         next => omega
         next => aesop
--/
+  -/
