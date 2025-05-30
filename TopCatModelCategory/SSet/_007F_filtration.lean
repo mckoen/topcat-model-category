@@ -81,8 +81,9 @@ def filtration₃ (b : Fin (n + 2)) :
 
 /-- `Y(0) = X(n)`. -/
 lemma filtration₃_zero :
-    filtration₃ (0 : Fin (n + 2)) = filtration₁ n := by
+    filtration₃ (0 : Fin (n + 2)) = filtration₁ ⟨n, by omega⟩ := by
   simp [filtration₃]
+  rfl
 
 /-- `Y(b) ↪ Y(b+1)` for `b < n + 1` is just the union of `Y(b.castSucc)` with `[τ0b ⊔ ... ⊔ τbb]`. -/
 lemma filtration₃_succ (b : Fin (n + 1)) :
