@@ -1,5 +1,5 @@
-import TopCatModelCategory.SSet._007F_filtration
-import TopCatModelCategory.SSet._Order
+import TopCatModelCategory._007F.Filtration
+import TopCatModelCategory._007F.Order
 
 open CategoryTheory Simplicial MorphismProperty MonoidalCategory SSet
 

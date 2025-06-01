@@ -1,4 +1,4 @@
-import TopCatModelCategory.SSet._007F_basic
+import TopCatModelCategory._007F.Basic
 
 open CategoryTheory Simplicial MonoidalCategory SSet
 

@@ -1,7 +1,6 @@
-import TopCatModelCategory.SSet.AnodyneExtensionsDefs
 import TopCatModelCategory.SSet.ProdSimplex
 
-open HomotopicalAlgebra CategoryTheory Limits SSet.modelCategoryQuillen MonoidalCategory
+open CategoryTheory Limits MonoidalCategory
   Simplicial Opposite
 
 universe u

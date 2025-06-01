@@ -1,4 +1,4 @@
-import TopCatModelCategory.SSet._007F_nondeg
+import TopCatModelCategory._007F.Nondegenerate
 
 open CategoryTheory Simplicial MonoidalCategory SSet
 
