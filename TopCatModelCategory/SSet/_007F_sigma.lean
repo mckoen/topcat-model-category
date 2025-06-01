@@ -12,28 +12,18 @@ namespace σ
 /-- for `0 ≤ a ≤ b < n`, the image of `Λ[n + 1, a + 1]` under `f a b : Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2]`. -/
 @[simp]
 noncomputable
-def innerHornImage : (Δ[n] ⊗ Δ[2]).Subcomplex :=
+abbrev innerHornImage : (Δ[n] ⊗ Δ[2]).Subcomplex :=
   (horn (n + 1) a.succ.castSucc).image (f a b)
 
-/-- for `0 ≤ a ≤ b < n`, the image of `∂Δ[n + 1]` under `f a b : Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2]`. -/
+/-- the image of the `i`-th face of `Δ[n + 1]` under some map `Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2]`. -/
 @[simp]
 noncomputable
-def boundaryImage : (Δ[n] ⊗ Δ[2]).Subcomplex :=
-  (boundary (n + 1)).image (f a b)
-
-/-- the image of the `i`-th face of `Δ[n + 1]` under some maps `Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2]`. -/
-@[simp]
-noncomputable
-def faceImage (i : Fin (n + 2)) (h : Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2]) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
+abbrev faceImage (i : Fin (n + 2)) (h : Δ[n + 1] ⟶ Δ[n] ⊗ Δ[2]) : (Δ[n] ⊗ Δ[2]).Subcomplex :=
   (face {i}ᶜ).image h
 
 lemma innerHornImage_eq_iSup : innerHornImage a b =
     ⨆ (j : ({a.succ.castSucc}ᶜ : Set (Fin (n + 2)))), faceImage j.1 (f a b) := by
   simp only [innerHornImage, horn_eq_iSup, image_iSup, faceImage]
-
-lemma boundaryImage_eq_iSup : boundaryImage a b =
-    ⨆ (j : Fin (n + 2)), faceImage j.1 (f a b) := by
-  simp only [boundaryImage, boundary_eq_iSup, image_iSup, faceImage, Fin.cast_val_eq_self]
 
 /-- the image of `Λ[n + 1, a + 1]` under `fab` is contained in `σ a b`. -/
 lemma innerHornImage_le : innerHornImage a b ≤ σ a b := by
@@ -90,8 +80,8 @@ lemma faceImage_le_boundary_prod_top (j : Fin (n + 2))
       aesop
 
 /-- the `0`-th face of `σ 0 b` is contained in `Δ[n] ⊗ Λ[2, 1]`. -/
-lemma faceImage_zero_le_top_prod_horn (hn : n ≠ 0) :
-    faceImage 0 (f ⟨0, by omega⟩ b) ≤ (⊤ : Subcomplex Δ[n]).prod (horn 2 1) := by
+lemma faceImage_zero_le_top_prod_horn (n : ℕ) (b : Fin (n + 1)) :
+    faceImage 0 (f 0 b) ≤ (⊤ : Subcomplex Δ[n + 1]).prod (horn 2 1) := by
   simp [face_singleton_compl]
   refine ⟨Set.mem_univ _, ?_⟩
   change Set.range (f₂' ⟨0, by omega⟩ b ∘ Fin.succ) ∪ {1} ≠ Set.univ
@@ -150,7 +140,7 @@ lemma innerHornImage_succ_le_filtration₂ (a : Fin b) :
         ((faceImage_le_boundary_prod_top _ _ _ hj h).trans (prod_top_le_unionProd _ _)))
 
 /-- for `0 ≤ b < n`, the image of `Λ[n + 1, 1]` under `f 0 b` is contained in `X(b)`. -/
-lemma innerHornImage_zero_le_filtration₁ (hn : n ≠ 0) :
+lemma innerHornImage_zero_le_filtration₁ (n : ℕ) (b : Fin (n + 1)) :
     innerHornImage ⟨0, by omega⟩ b ≤ filtration₁ b.castSucc := by
   rw [innerHornImage_eq_iSup]
   apply iSup_le
@@ -158,15 +148,9 @@ lemma innerHornImage_zero_le_filtration₁ (hn : n ≠ 0) :
   by_cases h : j = 0
   · subst h
     exact le_sup_of_le_left
-      ((faceImage_zero_le_top_prod_horn _ hn).trans (top_prod_le_unionProd _ _))
+      ((faceImage_zero_le_top_prod_horn n b).trans (top_prod_le_unionProd _ _))
   · exact le_sup_of_le_left
       ((faceImage_le_boundary_prod_top _ _ _ hj h).trans (prod_top_le_unionProd _ _))
-
-/-- a subcomplex `A` of `Δ[n] ⊗ Δ[2]` which is contained in `σ a b` is contained in
-  `∂Δ[n + 1]` iff `A ≠ σ a b`. -/
-lemma subcomplex_le_boundaryImage_iff {a b : Fin n} (A : (Δ[n] ⊗ Δ[2]).Subcomplex) (hA : A ≤ σ a b) :
-    A ≤ (boundaryImage a b) ↔ A ≠ (σ a b) :=
-  subcomplex_le_boundary_image_iff (f a b) _ hA
 
 /-- a subcomplex `A` of `Δ[n] ⊗ Δ[2]` which is contained in `σ a b` is contained in the image of
   `Λ[n + 1, a + 1]` under `f a b` iff the `(a + 1)`-th face of `σ a b` is not contained in `A`. -/
@@ -319,8 +303,8 @@ lemma faceImage_succ_not_le_filtration₂ (a : Fin b) :
     exact this
 
 /-- for `0 ≤ b < n`, the `1`-th face of `σ 0 b` is not contained in `X(b)`. -/
-lemma faceImage_one_not_le_filtration₁ (hn : n ≠ 0) :
-  ¬ faceImage 1 (f ⟨0, by omega⟩ b) ≤ filtration₁ b.castSucc := by
+lemma faceImage_one_not_le_filtration₁ (n : ℕ) (b : Fin (n + 1)) :
+  ¬ faceImage 1 (f 0 b) ≤ filtration₁ b.castSucc := by
   simp [face_singleton_compl, filtration₂, filtration₁, unionProd]
   refine ⟨⟨Set.nmem_setOf_iff.2 ?_, Set.nmem_setOf_iff.2 ?_⟩, ?_⟩
   · simp [mem_horn_iff]
@@ -359,7 +343,7 @@ lemma faceImage_one_not_le_filtration₁ (hn : n ≠ 0) :
       split at h₂
       · next => omega
       · next h' =>
-        have p : i.1 % (n + 1) < (x b.castSucc).1 := by rwa [Nat.mod_eq_of_lt (by omega), ← not_le]
+        have p : i.1 % (n + 1 + 1) < (x b.castSucc).1 := by rwa [Nat.mod_eq_of_lt (by omega), ← not_le]
         simp [p] at h₁
         split at h₂
         · rw [Fin.eq_mk_iff_val_eq] at h₁
@@ -420,8 +404,8 @@ def filtrationPushout_join (n : ℕ) (b : Fin (n + 1)) :
   min_eq := by
     apply le_antisymm
     · rw [σ.subcomplex_le_innerHornImage_iff _ inf_le_left, le_inf_iff, not_and]
-      exact fun _ ↦ σ.faceImage_one_not_le_filtration₁ b (Nat.zero_ne_add_one _).symm
-    · apply le_inf (σ.innerHornImage_le 0 _) (σ.innerHornImage_zero_le_filtration₁ b (Nat.zero_ne_add_one n).symm)
+      exact fun _ ↦ σ.faceImage_one_not_le_filtration₁ n b
+    · apply le_inf (σ.innerHornImage_le 0 _) (σ.innerHornImage_zero_le_filtration₁ n b)
 
 /--
 `Λ[n+3,n+2]` -------> `X(n+1) ∪ σ0(n+1) ∪ ... ∪ σn(n+1)`
@@ -431,15 +415,15 @@ def filtrationPushout_join (n : ℕ) (b : Fin (n + 1)) :
 `σ(n+1)(n+1)` ------> `X(n+1) ∪ σ0(n+1) ∪ ... ∪ σn(n+1) ∪ σ(n+1)(n+1) = X(n+2)` -/
 def filtrationPushout_last (n : ℕ) :
     Sq
-      (σ.innerHornImage (n := n + 2) (⟨n + 1, by omega⟩) ⟨n + 1, by omega⟩)
-      (σ ⟨n + 1, by omega⟩ ⟨n + 1, by omega⟩)
-      (filtration₂ ⟨n + 1, by omega⟩ ⟨n, by simp; omega⟩)
+      (σ.innerHornImage (n := n + 2) (Fin.last (n + 1)) (Fin.last (n + 1)))
+      (σ (Fin.last (n + 1)) (Fin.last (n + 1)))
+      (filtration₂ (Fin.last (n + 1)) ⟨n, by simp; omega⟩)
       (filtration₃ 0) := by
   rw [filtration₃_zero]
   have := filtration₂_last (n := n + 2) ⟨n + 1, by omega⟩
   simp at this
   rw [← this]
-  exact filtrationPushout_intermediate (n + 2) ⟨n + 1, by omega⟩ ⟨n, by simp⟩
+  exact filtrationPushout_intermediate (n + 2) (Fin.last (n + 1)) ⟨n, by simp⟩
 
 /-
 `Λ[n+2,1]` ---> `X(0)`
