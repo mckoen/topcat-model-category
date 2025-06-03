@@ -367,7 +367,7 @@ so this says `X(b,a) ↪ X(b,a+1)` is inner anodyne
 need `b < n` because `X(n)` is the last term. `X(n-1, n-1) = X(n)`.
 need `a < b` because we need `a + 1 ≤ b`
 -/
-def filtrationPushout_intermediate (n : ℕ) (b : Fin n) (a : Fin b) :
+def filtrationPushout_intermediate (a : Fin b) :
     Sq
       (σ.innerHornImage ⟨a.succ, by omega⟩ b)
       (σ ⟨a.succ, by omega⟩ b)
@@ -415,15 +415,15 @@ def filtrationPushout_join (n : ℕ) (b : Fin (n + 1)) :
 `σ(n+1)(n+1)` ------> `X(n+1) ∪ σ0(n+1) ∪ ... ∪ σn(n+1) ∪ σ(n+1)(n+1) = X(n+2)` -/
 def filtrationPushout_last (n : ℕ) :
     Sq
-      (σ.innerHornImage (n := n + 2) (Fin.last (n + 1)) (Fin.last (n + 1)))
+      (σ.innerHornImage (Fin.last (n + 1)) (Fin.last (n + 1)))
       (σ (Fin.last (n + 1)) (Fin.last (n + 1)))
-      (filtration₂ (Fin.last (n + 1)) ⟨n, by simp; omega⟩)
+      (filtration₂ (Fin.last (n + 1)) ⟨n, by dsimp; omega⟩)
       (filtration₃ 0) := by
   rw [filtration₃_zero]
   have := filtration₂_last (n := n + 2) ⟨n + 1, by omega⟩
   simp at this
   rw [← this]
-  exact filtrationPushout_intermediate (n + 2) (Fin.last (n + 1)) ⟨n, by simp⟩
+  exact filtrationPushout_intermediate (Fin.last (n + 1)) ⟨n, by simp⟩
 
 /-
 `Λ[n+2,1]` ---> `X(0)`
