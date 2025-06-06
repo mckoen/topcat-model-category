@@ -76,7 +76,7 @@ lemma filtration₂_succ (b : Fin n) (a : Fin b) :
 noncomputable
 def filtration₃ (b : Fin (n + 2)) :
     (Δ[n] ⊗ Δ[2]).Subcomplex :=
-  (filtration₁ n) ⊔
+  (filtration₁ (Fin.last n)) ⊔
     (⨆ (i : Fin b) (k : Fin i.succ), τ ⟨k, by omega⟩ ⟨i, by omega⟩)  -- 0 ≤ k ≤ i < b ≤ n + 1
 
 /-- `Y(0) = X(n)`. -/
