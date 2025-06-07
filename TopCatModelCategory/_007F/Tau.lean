@@ -124,8 +124,8 @@ lemma faceImage_le_boundary_prod_top (hab : a ≤ b) (j : Fin (n + 3))
           omega
 
 /-- for `0 ≤ a ≤ b < n` the `(b + 2)`-th face of `τ a b` is `σ a b`. -/
-lemma faceImage_b_succ_succ_eq (hab : a ≤ b) (hn : b < Fin.last n) :
-    faceImage b.succ.succ (g a b) = σ ⟨a, by omega⟩ ⟨b, by omega⟩ := by
+lemma faceImage_b_succ_succ_eq (n : ℕ) (b : Fin n) (a : Fin b.succ) :
+    faceImage b.castSucc.succ.succ (g ⟨a, by omega⟩ b.castSucc) = σ ⟨a, by omega⟩ b := by
   simp [face_singleton_compl, σ, f, g, f₂, range, Subpresheaf.range_eq_ofSection', SSet.yonedaEquiv,
     SSet.uliftFunctor, yonedaCompUliftFunctorEquiv, stdSimplex, objEquiv, SimplexCategory.σ,
     SimplexCategory.δ, objMk]
@@ -134,21 +134,28 @@ lemma faceImage_b_succ_succ_eq (hab : a ≤ b) (hn : b < Fin.last n) :
   all_goals
     simp [Equiv.ulift]
     rw [SimplexCategory.Hom.ext_iff, OrderHom.ext_iff]
-  · change (b.predAbove ∘ a.castSucc.predAbove) ∘ b.succ.succ.succAbove = a.predAbove
+  · change (Fin.predAbove _ ∘ Fin.predAbove _) ∘ Fin.succAbove _ = Fin.predAbove _
     ext e
     simp [Fin.predAbove, Fin.succAbove, Fin.lt_iff_val_lt_val]
+    have amod : a.1 % (n + 1) = a.1 := Nat.mod_eq_of_lt (by omega)
     split
-    · simp
+    · next h' =>
+      simp
       split
-      · simp [show ¬b.1 < e - 1 by omega]
-      · next h' => simp [((not_lt.1 h').trans hab).not_lt]
-    · simp [show a.1 < e + 1 by omega, show b.1 < e by omega, show a.1 < e by omega]
-  · change f₂' a b ∘ b.succ.succ.succAbove = f₂' ⟨a, by omega⟩ ⟨b, by omega⟩
+      · next h'' => simp [show ¬b.1 < e - 1 by omega, amod, h'']
+      · next h'' =>
+        simp [amod, h'']
+        simp [((not_lt.1 h'').trans a.is_le).not_lt]
+    · next h' =>
+      have := a.is_le
+      simp [amod, show a.1 < e + 1 by omega, show b.1 < e by omega, show a.1 < e by omega]
+  · change f₂' ⟨a, by omega⟩ b.castSucc ∘ b.succ.succ.castSucc.succAbove = f₂' ⟨a, by omega⟩ b
     ext e
     simp [Fin.predAbove, Fin.succAbove, Fin.lt_iff_val_lt_val, Fin.le_iff_val_le_val]
     split
     · aesop
-    · simp [show ¬e.1 + 1 ≤ a by omega, show ¬e.1 ≤ b by omega, show ¬e.1 ≤ a by omega,
+    · have := a.is_le
+      simp [show ¬e.1 + 1 ≤ a by omega, show ¬e.1 ≤ b by omega, show ¬e.1 ≤ a by omega,
         show ¬e.1 ≤ b + 1 by omega]
 
 /-- for `0 ≤ a ≤ n` the `(n + 2)`-th face of `τ a n` is contained in `Δ[n] ⊗ Λ[2, 1]`. -/
@@ -157,15 +164,14 @@ lemma faceImage_last_le_top_prod_horn :
   simp [face_singleton_compl, SimplexCategory.δ, Fin.succAboveOrderEmb]
   refine ⟨Set.mem_univ _, ?_⟩
   change Set.range (f₂' a (Fin.last n) ∘ Fin.castSucc) ∪ {1} ≠ Set.univ
-  intro h'
-  rw [Set.eq_univ_iff_forall] at h'
-  have h'' := h' 2
-  simp at h''
-  obtain ⟨e, he⟩ := h''
-  by_cases h : a.castSucc < e
-  · simp [h.not_le, Fin.lt_iff_val_lt_val] at he
+  rw [ne_eq, Set.eq_univ_iff_forall, not_forall]
+  use 2
+  simp
+  intro e he
+  split at he
+  · omega
+  · simp [Fin.lt_iff_val_lt_val] at he
     omega
-  · aesop
 
 /-- for `0 ≤ a ≤ b < n` the `((b + 1) + 1)`-th face of `τ a (b + 1)` is `σ a b`. -/
 lemma faceImage_b_succ_eq (n : ℕ) (b : Fin n) (a : Fin b.succ) :
@@ -220,12 +226,10 @@ lemma faceImage_zero_le_top_prod_horn :
   simp [face_singleton_compl]
   refine ⟨Set.mem_univ _, ?_⟩
   change Set.range (f₂' ⟨0, by omega⟩ b ∘ Fin.succ) ∪ {1} ≠ Set.univ
-  intro h'
-  rw [Set.eq_univ_iff_forall] at h'
-  have h'' := h' 0
-  simp at h''
-  obtain ⟨e, he⟩ := h''
-  have := he e.succ_ne_zero
+  rw [ne_eq, Set.union_singleton, Set.eq_univ_iff_forall, not_forall]
+  use 0
+  simp
+  intro ⟨e, he⟩
   aesop
 
 /-- for `0 ≤ a < b ≤ n` the `(a + 1)`-th face of `τ (a + 1) b` is the `(a + 1)`-th face of
@@ -260,7 +264,7 @@ lemma faceImage_succ_le (hab : a < b) :
 
 /-- for `0 ≤ a < b ≤ n`, the image of `Λ[n + 2, (a + 1) + 1]` under `g (a + 1) b` is contained
   in `Y(b, a)`. -/
-lemma innerHornImage_succ_le_filtration₄ (a : Fin b) :
+lemma innerHornImage_a_succ_le_filtration₄ (a : Fin b) :
     innerHornImage ⟨a.succ, by omega⟩ b
       ≤ filtration₄ b ⟨a, by simp; omega⟩ := by
   rw [innerHornImage_eq_iSup]
@@ -294,8 +298,7 @@ lemma innerHornImage_succ_le_filtration₄ (a : Fin b) :
       · next hb =>
         obtain ⟨b', hb'⟩ := hb
         subst hb' h''
-        rw [faceImage_b_succ_succ_eq ⟨a.succ, by omega⟩ b'.castSucc (by simp [Fin.le_iff_val_le_val]; omega)
-          (by simp [Fin.lt_iff_val_lt_val])]
+        rw [faceImage_b_succ_succ_eq n b' a.succ]
         exact le_sup_of_le_right (le_iSup₂_of_le ⟨b', by simp⟩ ⟨a.succ, by simp⟩ (le_refl _))
     -- the case where `j` is not any of the special faces
     exact le_sup_of_le_left (le_sup_of_le_right
@@ -329,7 +332,7 @@ lemma innerHornImage_zero_le_filtration₃ :
       · next hb =>
         obtain ⟨b', hb'⟩ := hb
         subst hb' h''
-        rw [faceImage_b_succ_succ_eq ⟨0, _⟩ b'.castSucc (Fin.zero_le _) b'.2]
+        rw [faceImage_b_succ_succ_eq n b' ⟨0, _⟩]
         exact le_sup_of_le_right (le_iSup₂_of_le ⟨b', by simp⟩ ⟨0, by simp⟩ (le_refl _))
     -- the case where `j` is not any of the special faces
     exact le_sup_of_le_left (le_sup_of_le_right
@@ -641,7 +644,7 @@ If b ≠ 0, (1, b) says b ≤ j, (2, b) says j < b
 
 -- really bad
 /-- for `0 ≤ b ≤ n`, the `1`-th face of `τ 0 b` is not contained in `Y(b)`. -/
-lemma faceImage_one_not_le_filtration₃ (b : Fin (n + 1)) :
+lemma faceImage_one_not_le_filtration₃ :
   ¬ faceImage 1 (g 0 b) ≤ filtration₃ b.castSucc := by
   simp [face_singleton_compl, filtration₃, filtration₁, unionProd]
   refine ⟨⟨⟨Set.nmem_setOf_iff.2 ?_, Set.nmem_setOf_iff.2 ?_⟩, ?_⟩, ?_⟩
@@ -833,7 +836,7 @@ def filtrationPushout_intermediate (a : Fin b) :
     · rw [subcomplex_le_innerHornImage_iff (by simp [Fin.le_iff_val_le_val]; omega) _ inf_le_left,
         le_inf_iff, not_and]
       exact fun _ ↦ τ.faceImage_succ_not_le_filtration₄ b a
-    · exact le_inf (τ.innerHornImage_le _ _) (τ.innerHornImage_succ_le_filtration₄ _ _)
+    · exact le_inf (τ.innerHornImage_le _ _) (τ.innerHornImage_a_succ_le_filtration₄ _ _)
 
 /--
 `0 ≤ b ≤ (n + 1)`
@@ -841,6 +844,7 @@ def filtrationPushout_intermediate (a : Fin b) :
 `filtration₃ b ↪ filtration₄ b 0`
 
 so this says `Y(b-1,b-1) = Y(b) ↪ Y(b,0)` is inner anodyne
+
 -/
 def filtrationPushout_join :
     Sq
@@ -864,7 +868,10 @@ def filtrationPushout_join :
       |                            |
       |                            |
       v                            V
-`τ(n+1)(n+1)` ------------> `Δ[2] ⊗ Δ[2]` -/
+`τ(n+1)(n+1)` ------------> `Δ[2] ⊗ Δ[2]`
+
+`Y(n + 1, n) ↪ Y(n + 1, n + 1) = ⊤` is inner anodyne
+-/
 def filtrationPushout_last (n : ℕ) :
     Sq
       (τ.innerHornImage (Fin.last (n + 1)) (Fin.last (n + 1)))
@@ -880,6 +887,8 @@ def filtrationPushout_last (n : ℕ) :
     |                |
     v                V
   `τ00` ---------> `Y(1)`
+
+`Y(0) ↪ Y(1)`
 -/
 def filtrationPushout_zero (n : ℕ) :
     Sq

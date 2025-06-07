@@ -171,14 +171,12 @@ def τ' (i : Σₗ (b : Fin (n + 1)), Fin b.succ) : (Δ[n] ⊗ Δ[2] : SSet) _�
 def σ' (i : Σₗ (b : Fin n), Fin b.succ) : (Δ[n] ⊗ Δ[2] : SSet) _⦋n + 1⦌ :=
   (stdSimplex.objEquiv.symm (σ i.2), σ.objMk₂ i)
 
-/-
 /-- for all `0 ≤ a ≤ b < n`, we get a nondegenerate `(n+1)`-simplex. -/
 def σ.nonDegenerateEquiv.toFun (i : Σₗ (b : Fin n), Fin b.succ) :
     (Δ[n] ⊗ Δ[2] : SSet).nonDegenerate (n + 1) := by
   refine ⟨σ' i, ?_⟩
   rcases i with ⟨b, a⟩
   sorry
--/
 
 /-- for all `0 ≤ a ≤ b ≤ n`, we get a nondegenerate `(n+2)`-simplex. -/
 def τ.nonDegenerateEquiv.toFun (i : Σₗ (b : Fin (n + 1)), Fin b.succ) :
